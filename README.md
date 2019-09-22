@@ -1,6 +1,6 @@
 # Overview
 
-A small X program which facilitates recursively warping the pointer to different quadrants on the screen. The program was inspired by the mousekeys feature of Kaleidoscope, a firmware for the Keyboardio.
+A small X program which facilitates recursively warping the pointer to different quadrants on the screen. The program was inspired by the mousekeys feature of Kaleidoscope, the firmware for the Keyboardio.
 
 # Installation
 
@@ -13,7 +13,7 @@ apt-get install libxfixes-dev libxtst-dev libx11-dev && make && sudo make instal
 ## Getting Started
 
 1. Run `warp -d` 
-2. Press M-u (meta is the command key) to activate the warping process.
+2. Press M-k (meta is the command key) to activate the warping process.
 3. Use u,i,j,k to repeatedly navigate to different quadrants.
 4. Press m to click.
 5. Press enter to finish.
@@ -32,7 +32,7 @@ apt-get install libxfixes-dev libxtst-dev libx11-dev && make && sudo make instal
 
  **-r** <num>: The number of rows in the grid.
 
- **-a**: Runs the warp in 'always active' mode. In this mode the navigation keys are always active and when pressed will immediately begin the warping process. If you use this you will likely want to remap the default keybindings to involve modifiers in order to avoid interference with typing.
+ **-a**: Runs warp in 'always active' mode. In this mode the navigation keys are always active and when pressed will immediately begin the warping process. If you use this you will likely want to remap the default keybindings to involve modifiers in order to avoid interference with typing.
 
  **-d**: Runs warp in the background.
 
@@ -40,10 +40,14 @@ apt-get install libxfixes-dev libxtst-dev libx11-dev && make && sudo make instal
 
 ## Example 1
 
-Uses a 3 by 3 grid instead of the default 2x2 grid.
+Uses a 3x2 grid instead of the default 2x2 grid. u, i, and o warp to the first
+three columns on the top row of the screen while j, k, and l warp to the bottom
+three columns as you might expect. m is used to simulate the first mouse
+button, while dot and comma simulate the second (scoll wheel) and third (right
+most) mouse buttons respectively.
 
 ```
-warp -c 3 -r 3
+warp -c 3 -r 2 -k M-k,u,i,o,j,k,l,m,period,comma
 ```
 
 ## Example 2

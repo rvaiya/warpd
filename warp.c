@@ -58,6 +58,7 @@ int lx, ly, ux, uy, cx, cy;
 int nc = 2, nr = 2;
 
 int opt_always_active = 0;
+int opt_daemonize = 0;
 
 struct {
     const char *key;
@@ -296,7 +297,7 @@ void proc_args(char **argv, int argc) {
     while((opt = getopt(argc, argv, "hdar:c:k:")) != -1) {
         switch(opt) {
         case 'd':
-            daemonize();
+            opt_daemonize++;
             break;
         case 'h':
             fprintf(stderr, usage);
@@ -427,8 +428,10 @@ int main(int argc, char **argv) {
 
     dpy = XOpenDisplay(NULL);
 
-    check_lock_file();
     proc_args(argv, argc);
+
+    check_lock_file();
+    if(opt_daemonize) daemonize();
 
     grab_key(activation_key);
 
