@@ -26,7 +26,7 @@ apt-get install libxfixes-dev libxtst-dev libx11-dev && make && sudo make instal
 
 # Options
 
- **-k** <key>[,<key>...]: A sequence of comma delimited keybindings which are ordered by their corresponding position in the grid. If '-a' is not specified then the first key is the activation key. Default values are M-k,u,i,j,k,m. Any extraneous keys are interpreted as mouse buttons (left, middle, and right click respectively).
+ **-k** <key>[,<key>...]: A sequence of comma delimited keybindings which are ordered by their corresponding position in the grid. If '-a' is not specified then the first key is the activation key. Default values are M-k,u,i,j,k,m. Any extraneous keys are interpreted as mouse buttons (left, middle, and right click respectively). Keys in /usr/include/X11/keysymdef.h without the XK_ prefix should work
 
  **-c** <num>: The number of columns in the grid.
 
