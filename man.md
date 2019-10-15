@@ -21,6 +21,8 @@ warp [-a] [-k \<first grid element key\>, \<second grid element key\>..] [-c \<n
 
  **-d**: Runs warp in the background.
 
+ **-l**: Prints a list of valid keys which can be passed to -k.
+
 # Examples
 
 ## Example 1

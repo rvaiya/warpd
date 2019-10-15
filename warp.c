@@ -33,6 +33,7 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <limits.h>
+#include "keynames.h"
 
 #define MAX_BINDINGS 200
 
@@ -47,7 +48,7 @@
 
 
 const char usage[] = 
-"warp [-h] [-a] [-r <number of rows>] [-c <number of columns>] [-k <grid element 1 key>[,<grid element 2 key>...]]\n\n"
+"warp [-l] [-h] [-a] [-r <number of rows>] [-c <number of columns>] [-k <grid element 1 key>[,<grid element 2 key>...]]\n\n"
 "See the manpage for more details and usage examples.\n";
 
 char lock_file[PATH_MAX];
@@ -83,14 +84,15 @@ Display *dpy;
 void set_cursor_visibility(int visible) {
     static int state = 1;
 
-    if(visible != state) {
-        if(visible)
-            XFixesShowCursor(dpy, DefaultRootWindow(dpy));
-        else
-            XFixesHideCursor(dpy, DefaultRootWindow(dpy));
+    if(visible == state) return;
 
-        state = visible;
-    }
+    if(visible)
+        XFixesShowCursor(dpy, DefaultRootWindow(dpy));
+    else
+        XFixesHideCursor(dpy, DefaultRootWindow(dpy));
+
+    XFlush(dpy);
+    state = visible;
 }
 
 uint32_t color(uint8_t red, uint8_t green, uint8_t blue) {
@@ -148,7 +150,13 @@ void draw(int hide) {
         XUnmapWindow(dpy, gridwins[i]);
 
     XFlush(dpy);
-    if(hide) return;
+
+    if(hide) {
+        set_cursor_visibility(1);
+        return;
+    }
+
+    set_cursor_visibility(0);
 
     XMoveWindow(dpy, mw, cx-(CURSOR_WIDTH/2), cy-(CURSOR_WIDTH/2));
     XResizeWindow(dpy, mw, CURSOR_WIDTH, CURSOR_WIDTH);
@@ -178,16 +186,16 @@ void draw(int hide) {
 
     for(i = 0; i < nc-1; i++) {
         XMoveWindow(dpy,
-        	gridwins[i],
-        	lx + (i+1) * colw - (GRID_LINE_WIDTH/2), ly);
+                gridwins[i],
+                lx + (i+1) * colw - (GRID_LINE_WIDTH/2), ly);
         XResizeWindow(dpy, gridwins[i], GRID_LINE_WIDTH, uy-ly);
         XMapRaised(dpy, gridwins[i]);
     }
 
     for(i = 0; i < nr-1; i++) {
         XMoveWindow(dpy,
-        	gridwins[nc+i-1],
-        	lx, ly + (i+1) * rowh - (GRID_LINE_WIDTH/2));
+                gridwins[nc+i-1],
+                lx, ly + (i+1) * rowh - (GRID_LINE_WIDTH/2));
         XResizeWindow(dpy, gridwins[nc+i-1], ux-lx, GRID_LINE_WIDTH);
         XMapRaised(dpy, gridwins[nc+i-1]);
     }
@@ -238,7 +246,6 @@ void focus_sector(int c, int r) {
     cx = (ux + lx) / 2;
 
     draw(0);
-    set_cursor_visibility(0);
 }
 
 void parse_key(const char* key, int *code, int *mods) {
@@ -294,8 +301,15 @@ void proc_args(char **argv, int argc) {
     int r, c;
     int opt;
 
-    while((opt = getopt(argc, argv, "hdar:c:k:")) != -1) {
+    while((opt = getopt(argc, argv, "hdar:c:k:l")) != -1) {
         switch(opt) {
+            size_t i;
+        case 'l':
+
+            for(i = 0; i < sizeof(keynames)/sizeof(keynames[0]); i++)
+                printf("%s\n", keynames[i]);
+            exit(0);
+            break;
         case 'd':
             opt_daemonize++;
             break;
@@ -396,30 +410,26 @@ void grab_key(const char *key) {
     	GrabModeAsync);
 }
 
-void cleanup(int s) {
-    unlink(lock_file);
-    exit(0);
-}
-
 int check_lock_file() {
     int fd;
 
-    sprintf(lock_file, "%s/.warp", getenv("HOME"));
-
-    signal(SIGTERM, cleanup);
-    signal(SIGINT, cleanup);
-
-    if(!access(lock_file, F_OK)) {
-        fprintf(stderr, "%s already exists aborting\n", lock_file);
+    const char *rundir = getenv("XDG_RUNTIME_DIR");
+    if(!rundir) {
+        fprintf(stderr, "Could not find XDG_RUNTIME_DIR, make sure X is running.");
         exit(1);
     }
 
-    fd = open(lock_file, O_CREAT | O_WRONLY, 0600);
-    if(fd < 0) {
+    sprintf(lock_file, "%s/warp.lock", rundir);
+
+    if((fd = open(lock_file, O_CREAT | O_TRUNC, 0600)) < 0) {
         perror("open");
         exit(1);
     }
-    close(fd);
+
+    if(flock(fd, LOCK_EX | LOCK_NB)) {
+        fprintf(stderr, "ERROR: warp already appears to be running.\n");
+        exit(1);
+    }
 }
 
 int main(int argc, char **argv) {
