@@ -1,6 +1,6 @@
 all:
 	-mkdir bin
-	gcc -lXfixes -lXtst -lX11 warp.c -o bin/warp
+	gcc warp.c -o bin/warp -lXfixes -lXtst -lX11
 man:
 	-mkdir bin
 	pandoc -s -t man -o - man.md|gzip > warp.1.gz

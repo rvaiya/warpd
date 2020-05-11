@@ -31,6 +31,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <fcntl.h>
+#include <sys/file.h>
 #include <signal.h>
 #include <limits.h>
 #include "keynames.h"
@@ -410,7 +411,7 @@ void grab_key(const char *key) {
     	GrabModeAsync);
 }
 
-int check_lock_file() {
+void check_lock_file() {
     int fd;
 
     const char *rundir = getenv("XDG_RUNTIME_DIR");
@@ -419,7 +420,7 @@ int check_lock_file() {
         exit(1);
     }
 
-    sprintf(lock_file, "%s/warp.lock", rundir);
+    sprintf(lock_file, "%s/warp.lock.%s", rundir, getenv("DISPLAY"));
 
     if((fd = open(lock_file, O_CREAT | O_TRUNC, 0600)) < 0) {
         perror("open");
