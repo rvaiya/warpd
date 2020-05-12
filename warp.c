@@ -63,16 +63,16 @@ int opt_always_active = 0;
 int opt_daemonize = 0;
 
 struct {
-    const char *key;
-    int c;
-    int r;
-    int btn;
+	const char *key;
+	int c;
+	int r;
+	int btn;
 } bindings[MAX_BINDINGS] = {
-    {"u", 0, 0, 0},
-    {"i", 1, 0, 0},
-    {"j", 0, 1, 0},
-    {"k", 1, 1, 0},
-    {"m", 0, 0, 1},
+	{"u", 0, 0, 0},
+	{"i", 1, 0, 0},
+	{"j", 0, 1, 0},
+	{"k", 1, 1, 0},
+	{"m", 0, 0, 1},
 };
 
 int bindings_sz = 5;
@@ -82,411 +82,425 @@ Display *dpy;
 //XFixes* functions are not idempotent (calling them more than
 //once crashes the client, so we need this wrapper function).
 
-void set_cursor_visibility(int visible) {
-    static int state = 1;
+static void set_cursor_visibility(int visible) 
+{
+	static int state = 1;
 
-    if(visible == state) return;
+	if(visible == state) return;
 
-    if(visible)
-        XFixesShowCursor(dpy, DefaultRootWindow(dpy));
-    else
-        XFixesHideCursor(dpy, DefaultRootWindow(dpy));
+	if(visible)
+		XFixesShowCursor(dpy, DefaultRootWindow(dpy));
+	else
+		XFixesHideCursor(dpy, DefaultRootWindow(dpy));
 
-    XFlush(dpy);
-    state = visible;
+	XFlush(dpy);
+	state = visible;
 }
 
-uint32_t color(uint8_t red, uint8_t green, uint8_t blue) {
-  XColor col;
-  col.red = (int)red << 8;
-  col.green = (int)green << 8;
-  col.blue = (int)blue << 8;
-  col.flags = DoRed | DoGreen | DoBlue;
+static uint32_t color(uint8_t red, uint8_t green, uint8_t blue) 
+{
+	XColor col;
+	col.red = (int)red << 8;
+	col.green = (int)green << 8;
+	col.blue = (int)blue << 8;
+	col.flags = DoRed | DoGreen | DoBlue;
 
-  assert(XAllocColor(dpy, XDefaultColormap(dpy, DefaultScreen(dpy)), &col));
-  return col.pixel;
+	assert(XAllocColor(dpy, XDefaultColormap(dpy, DefaultScreen(dpy)), &col));
+	return col.pixel;
 }
 
-Window create_win(int r, int g, int b) {
-    Window w = XCreateSimpleWindow(dpy,
-    	DefaultRootWindow(dpy),
-    	0, 0, 1, 1, 0, 0, 0);
+static Window create_win(int r, int g, int b) 
+{
+	Window w = XCreateSimpleWindow(dpy,
+				       DefaultRootWindow(dpy),
+				       0, 0, 1, 1, 0, 0, 0);
 
-    XChangeWindowAttributes(dpy,
-    	w, CWOverrideRedirect | CWBackPixel | CWBackingPixel,
-    	&(XSetWindowAttributes){
-            .backing_pixel = color(r,g,b),
-            .background_pixel = color(r,g,b),
-            .override_redirect = 1
-            });
-    XMapWindow(dpy, w);
-    return w;
-}
-
-
-void draw(int hide) {
-    int i,j;
-    int rowh, colw;
-    static Window bw1 = 0, bw2, bw3, bw4, mw;
-    static Window *gridwins;
-
-    if(!bw1) {
-        bw1 = create_win(BORDER_COLOR);
-        bw2 = create_win(BORDER_COLOR);
-        bw3 = create_win(BORDER_COLOR);
-        bw4 = create_win(BORDER_COLOR);
-        mw = create_win(CURSOR_COLOR);
-
-        gridwins = malloc((nr + nc - 2) * sizeof(Window));
-        for(i = 0; i < (nr + nc - 2); i++)
-            gridwins[i] = create_win(GRID_LINE_COLOR);
-    }
-
-    XUnmapWindow(dpy, bw1);
-    XUnmapWindow(dpy, bw2);
-    XUnmapWindow(dpy, bw3);
-    XUnmapWindow(dpy, bw4);
-    XUnmapWindow(dpy, mw);
-    for(i = 0; i < (nr + nc - 2); i++)
-        XUnmapWindow(dpy, gridwins[i]);
-
-    XFlush(dpy);
-
-    if(hide) {
-        set_cursor_visibility(1);
-        return;
-    }
-
-    set_cursor_visibility(0);
-
-    XMoveWindow(dpy, mw, cx-(CURSOR_WIDTH/2), cy-(CURSOR_WIDTH/2));
-    XResizeWindow(dpy, mw, CURSOR_WIDTH, CURSOR_WIDTH);
-
-    XMoveWindow(dpy, bw2, lx, ly);
-    XResizeWindow(dpy, bw2, ux-lx, BORDER_WIDTH);
-
-    XMoveWindow(dpy, bw1, lx, uy-BORDER_WIDTH);
-    XResizeWindow(dpy, bw1, ux-lx, BORDER_WIDTH);
-
-    XMoveWindow(dpy, bw3, lx, ly);
-    XResizeWindow(dpy, bw3, BORDER_WIDTH, uy-ly);
-
-    XMoveWindow(dpy, bw4, ux-BORDER_WIDTH, ly);
-    XResizeWindow(dpy, bw4, BORDER_WIDTH, uy-ly);
-
-    XMoveWindow(dpy, bw4, ux-BORDER_WIDTH, ly);
-    XResizeWindow(dpy, bw4, BORDER_WIDTH, uy-ly);
-
-    XMapRaised(dpy, bw1);
-    XMapRaised(dpy, bw2);
-    XMapRaised(dpy, bw3);
-    XMapRaised(dpy, bw4);
-
-    rowh = (uy-ly)/nr;
-    colw = (ux-lx)/nc;
-
-    for(i = 0; i < nc-1; i++) {
-        XMoveWindow(dpy,
-                gridwins[i],
-                lx + (i+1) * colw - (GRID_LINE_WIDTH/2), ly);
-        XResizeWindow(dpy, gridwins[i], GRID_LINE_WIDTH, uy-ly);
-        XMapRaised(dpy, gridwins[i]);
-    }
-
-    for(i = 0; i < nr-1; i++) {
-        XMoveWindow(dpy,
-                gridwins[nc+i-1],
-                lx, ly + (i+1) * rowh - (GRID_LINE_WIDTH/2));
-        XResizeWindow(dpy, gridwins[nc+i-1], ux-lx, GRID_LINE_WIDTH);
-        XMapRaised(dpy, gridwins[nc+i-1]);
-    }
-
-    XMapRaised(dpy, mw);
-
-    XWarpPointer(dpy, 0, DefaultRootWindow(dpy), 0, 0, 0, 0, cx, cy);
-    XFlush(dpy);
-}
-
-void click(int btn) {
-    XTestFakeButtonEvent(dpy, btn, True, CurrentTime);
-    XTestFakeButtonEvent(dpy, btn, False, CurrentTime);
-    XFlush(dpy);
-}
-
-void focus_sector(int c, int r) {
-    const int threshold = CURSOR_WIDTH;
-    int col_sz = (ux-lx)/nc;
-    int row_sz = (uy-ly)/nr;
-
-    int olx = lx;
-    int oly = ly;
-    int oux = ux;
-    int ouy = uy;
-
-    if(c != -1) {
-        lx += col_sz * c;
-        ux = lx + col_sz;
-    }
-
-    if(r != -1) {
-        ly += row_sz * r;
-        uy = ly + row_sz;
-    }
-
-    if((ux -lx) < threshold) {
-        ux = oux;
-        lx = olx;
-    }
-
-    if((uy -ly) < threshold) {
-        uy = ouy;
-        ly = oly;
-    }
-
-    cy = (uy + ly) / 2;
-    cx = (ux + lx) / 2;
-
-    draw(0);
-}
-
-void parse_key(const char* key, int *code, int *mods) {
-    KeySym sym;
-    if(!key || key[0] == 0) return;
-
-    *mods = 0;
-    while(key[1] == '-') {
-        switch(key[0]) {
-        case 'A':
-            *mods |= Mod1Mask;
-            break;
-        case 'M':
-            *mods |= Mod4Mask;
-            break;
-        case 'S':
-            *mods |= ShiftMask;
-            break;
-        case 'C':
-            *mods |= ControlMask;
-            break;
-        default:
-            fprintf(stderr, "%s is not a valid key\n", key);
-            exit(1);
-        }
-
-        key += 2;
-    }
-
-    sym = XStringToKeysym(key);
-
-    if(sym == NoSymbol) {
-        fprintf(stderr, "Could not find keysym for %s\n", key);
-        exit(1);
-    }
-
-    if(key[1] == '\0' && isupper(key[0]))
-        *mods |= ShiftMask;
-
-    *code = XKeysymToKeycode(dpy, sym);
-}
-
-void daemonize() {
-    if(!fork())
-        setsid();
-    else
-        exit(0);
-    
-    printf("Daemon started.\n");
-}
-
-void proc_args(char **argv, int argc) {
-    int r, c;
-    int opt;
-
-    while((opt = getopt(argc, argv, "hdar:c:k:l")) != -1) {
-        switch(opt) {
-            size_t i;
-        case 'l':
-
-            for(i = 0; i < sizeof(keynames)/sizeof(keynames[0]); i++)
-                printf("%s\n", keynames[i]);
-            exit(0);
-            break;
-        case 'd':
-            opt_daemonize++;
-            break;
-        case 'h':
-            fprintf(stderr, usage);
-            exit(1);
-            break;
-        case 'a':
-            opt_always_active++;
-            activation_key = NULL;
-            break;
-        case 'r':
-            nr = atoi(optarg);
-            if(nr <= 0) {
-                fprintf(stderr, "Number of rows must be greater than 0\n");
-                exit(1);
-            }
-            break;
-        case 'c':
-            nc = atoi(optarg);
-            if(nc <= 0) {
-                fprintf(stderr, "Number of columns must be greater than 0\n");
-                exit(1);
-            }
-            break;
-        case 'k':
-            {
-                int c = 0;
-                int r = 0;
-                int btn = 0;
-                bindings_sz = 0;
-
-                if(!opt_always_active) {
-                    activation_key = strtok(optarg, ",");
-                    optarg += strlen(optarg) + 1;
-                } 
-
-                for(const char *key = strtok(optarg, ",");key;key = strtok(NULL, ",")) {
-                    int code, mods;
-                    parse_key(key, &code, &mods);
-
-                    bindings[bindings_sz].key = key;
-                    bindings[bindings_sz].btn = btn;
-                    bindings[bindings_sz].c = c;
-                    bindings[bindings_sz++].r = r;
-
-                    c = (c+1) % nc;
-                    if(c == 0) r++;
-                    if(r >= nr) btn++;
-                }
-                break;
-            }
-        default:
-            exit(1);
-        }
-    }
-}
-
-void reset() {
-    XWindowAttributes attr;
-
-    XGetWindowAttributes(dpy, DefaultRootWindow(dpy), &attr);
-
-    XGrabKeyboard(dpy, DefaultRootWindow(dpy), 1, GrabModeAsync, GrabModeAsync, CurrentTime);
-
-    lx = 0;
-    ly = 0;
-    uy = attr.height;
-    ux = attr.width;
-    cx = ux/2;
-    cy = uy/2;
-
-    focus_sector(-1, -1);
+	XChangeWindowAttributes(dpy,
+				w, CWOverrideRedirect | CWBackPixel | CWBackingPixel,
+				&(XSetWindowAttributes){
+				.backing_pixel = color(r,g,b),
+				.background_pixel = color(r,g,b),
+				.override_redirect = 1
+				});
+	XMapWindow(dpy, w);
+	return w;
 }
 
 
-int key_eq(const char *key, XKeyEvent *ev) {
-    if(!key) return 0;
+static draw(int hide) 
+{
+	int i,j;
+	int rowh, colw;
+	static Window bw1 = 0, bw2, bw3, bw4, mw;
+	static Window *gridwins;
 
-    int code, mods;
-    parse_key(key, &code, &mods);
-    return ev->state == mods && ev->keycode == code;
+	if(!bw1) {
+		bw1 = create_win(BORDER_COLOR);
+		bw2 = create_win(BORDER_COLOR);
+		bw3 = create_win(BORDER_COLOR);
+		bw4 = create_win(BORDER_COLOR);
+		mw = create_win(CURSOR_COLOR);
+
+		gridwins = malloc((nr + nc - 2) * sizeof(Window));
+		for(i = 0; i < (nr + nc - 2); i++)
+			gridwins[i] = create_win(GRID_LINE_COLOR);
+	}
+
+	XUnmapWindow(dpy, bw1);
+	XUnmapWindow(dpy, bw2);
+	XUnmapWindow(dpy, bw3);
+	XUnmapWindow(dpy, bw4);
+	XUnmapWindow(dpy, mw);
+	for(i = 0; i < (nr + nc - 2); i++)
+		XUnmapWindow(dpy, gridwins[i]);
+
+	XFlush(dpy);
+
+	if(hide) {
+		set_cursor_visibility(1);
+		return;
+	}
+
+	set_cursor_visibility(0);
+
+	XMoveWindow(dpy, mw, cx-(CURSOR_WIDTH/2), cy-(CURSOR_WIDTH/2));
+	XResizeWindow(dpy, mw, CURSOR_WIDTH, CURSOR_WIDTH);
+
+	XMoveWindow(dpy, bw2, lx, ly);
+	XResizeWindow(dpy, bw2, ux-lx, BORDER_WIDTH);
+
+	XMoveWindow(dpy, bw1, lx, uy-BORDER_WIDTH);
+	XResizeWindow(dpy, bw1, ux-lx, BORDER_WIDTH);
+
+	XMoveWindow(dpy, bw3, lx, ly);
+	XResizeWindow(dpy, bw3, BORDER_WIDTH, uy-ly);
+
+	XMoveWindow(dpy, bw4, ux-BORDER_WIDTH, ly);
+	XResizeWindow(dpy, bw4, BORDER_WIDTH, uy-ly);
+
+	XMoveWindow(dpy, bw4, ux-BORDER_WIDTH, ly);
+	XResizeWindow(dpy, bw4, BORDER_WIDTH, uy-ly);
+
+	XMapRaised(dpy, bw1);
+	XMapRaised(dpy, bw2);
+	XMapRaised(dpy, bw3);
+	XMapRaised(dpy, bw4);
+
+	rowh = (uy-ly)/nr;
+	colw = (ux-lx)/nc;
+
+	for(i = 0; i < nc-1; i++) {
+		XMoveWindow(dpy,
+			    gridwins[i],
+			    lx + (i+1) * colw - (GRID_LINE_WIDTH/2), ly);
+		XResizeWindow(dpy, gridwins[i], GRID_LINE_WIDTH, uy-ly);
+		XMapRaised(dpy, gridwins[i]);
+	}
+
+	for(i = 0; i < nr-1; i++) {
+		XMoveWindow(dpy,
+			    gridwins[nc+i-1],
+			    lx, ly + (i+1) * rowh - (GRID_LINE_WIDTH/2));
+		XResizeWindow(dpy, gridwins[nc+i-1], ux-lx, GRID_LINE_WIDTH);
+		XMapRaised(dpy, gridwins[nc+i-1]);
+	}
+
+	XMapRaised(dpy, mw);
+
+	XWarpPointer(dpy, 0, DefaultRootWindow(dpy), 0, 0, 0, 0, cx, cy);
+	XFlush(dpy);
 }
 
-void grab_key(const char *key) {
-    if(!key) return;
-
-    int code, mods;
-
-    parse_key(key, &code, &mods);
-
-    XGrabKey(dpy,
-    	code,
-    	mods,
-    	DefaultRootWindow(dpy),
-    	False,
-    	GrabModeAsync,
-    	GrabModeAsync);
+static void click(int btn) 
+{
+	XTestFakeButtonEvent(dpy, btn, True, CurrentTime);
+	XTestFakeButtonEvent(dpy, btn, False, CurrentTime);
+	XFlush(dpy);
 }
 
-void check_lock_file() {
-    int fd;
+static void focus_sector(int c, int r) 
+{
+	const int threshold = CURSOR_WIDTH;
+	int col_sz = (ux-lx)/nc;
+	int row_sz = (uy-ly)/nr;
 
-    const char *rundir = getenv("XDG_RUNTIME_DIR");
-    if(!rundir) {
-        fprintf(stderr, "Could not find XDG_RUNTIME_DIR, make sure X is running.");
-        exit(1);
-    }
+	int olx = lx;
+	int oly = ly;
+	int oux = ux;
+	int ouy = uy;
 
-    sprintf(lock_file, "%s/warp.lock.%s", rundir, getenv("DISPLAY"));
+	if(c != -1) {
+		lx += col_sz * c;
+		ux = lx + col_sz;
+	}
 
-    if((fd = open(lock_file, O_CREAT | O_TRUNC, 0600)) < 0) {
-        perror("open");
-        exit(1);
-    }
+	if(r != -1) {
+		ly += row_sz * r;
+		uy = ly + row_sz;
+	}
 
-    if(flock(fd, LOCK_EX | LOCK_NB)) {
-        fprintf(stderr, "ERROR: warp already appears to be running.\n");
-        exit(1);
-    }
+	if((ux -lx) < threshold) {
+		ux = oux;
+		lx = olx;
+	}
+
+	if((uy -ly) < threshold) {
+		uy = ouy;
+		ly = oly;
+	}
+
+	cy = (uy + ly) / 2;
+	cx = (ux + lx) / 2;
+
+	draw(0);
 }
 
-int main(int argc, char **argv) {
-    int i;
-    int hidden = 1;
+static void parse_key(const char* key, int *code, int *mods) 
+{
+	KeySym sym;
+	if(!key || key[0] == 0) return;
 
-    dpy = XOpenDisplay(NULL);
+	*mods = 0;
+	while(key[1] == '-') {
+		switch(key[0]) {
+		case 'A':
+			*mods |= Mod1Mask;
+			break;
+		case 'M':
+			*mods |= Mod4Mask;
+			break;
+		case 'S':
+			*mods |= ShiftMask;
+			break;
+		case 'C':
+			*mods |= ControlMask;
+			break;
+		default:
+			fprintf(stderr, "%s is not a valid key\n", key);
+			exit(1);
+		}
 
-    proc_args(argv, argc);
+		key += 2;
+	}
 
-    check_lock_file();
-    if(opt_daemonize) daemonize();
+	sym = XStringToKeysym(key);
 
-    grab_key(activation_key);
+	if(sym == NoSymbol) {
+		fprintf(stderr, "Could not find keysym for %s\n", key);
+		exit(1);
+	}
 
-    if(opt_always_active) {
-        for(i = 0; i < bindings_sz; i++)
-            grab_key(bindings[i].key);
-    }
+	if(key[1] == '\0' && isupper(key[0]))
+		*mods |= ShiftMask;
 
-    while(1) {
-        XEvent ev;
-        XNextEvent(dpy, &ev);
-        if(ev.type == KeyPress) {
-            KeySym sym = XKeycodeToKeysym(dpy, ev.xkey.keycode, 0);
+	*code = XKeysymToKeycode(dpy, sym);
+}
 
-            if(key_eq(activation_key, &ev.xkey)) {
-                hidden = 0;
-                reset();
-                continue;
-            }
+static void daemonize() 
+{
+	if(!fork())
+		setsid();
+	else
+		exit(0);
 
-            if(sym == XK_Return) {
-                XUngrabKeyboard(dpy, CurrentTime);
-                set_cursor_visibility(1);
-                draw(1);
-                hidden = 1;
-                continue;
-            }
+	printf("Daemon started.\n");
+}
 
-            for (int i = 0; i < bindings_sz; i++) {
-                if(key_eq(bindings[i].key, &ev.xkey)) {
+static void proc_args(char **argv, int argc) 
+{
+	int r, c;
+	int opt;
 
-                    if(bindings[i].btn) {
-                        if(!hidden) draw(1);
-                        click(bindings[i].btn);
-                        if(!hidden) draw(0);
-                    } else {
-                        if(hidden) {
-                            hidden = 0;
-                            reset();
-                        }
-                        focus_sector(bindings[i].c, bindings[i].r);
-                    }
-                }
-            }
-        }
-    }
+	while((opt = getopt(argc, argv, "hdar:c:k:l")) != -1) {
+		switch(opt) {
+			size_t i;
+		case 'l':
+
+			for(i = 0; i < sizeof(keynames)/sizeof(keynames[0]); i++)
+				printf("%s\n", keynames[i]);
+			exit(0);
+			break;
+		case 'd':
+			opt_daemonize++;
+			break;
+		case 'h':
+			fprintf(stderr, usage);
+			exit(1);
+			break;
+		case 'a':
+			opt_always_active++;
+			activation_key = NULL;
+			break;
+		case 'r':
+			nr = atoi(optarg);
+			if(nr <= 0) {
+				fprintf(stderr, "Number of rows must be greater than 0\n");
+				exit(1);
+			}
+			break;
+		case 'c':
+			nc = atoi(optarg);
+			if(nc <= 0) {
+				fprintf(stderr, "Number of columns must be greater than 0\n");
+				exit(1);
+			}
+			break;
+		case 'k':
+			{
+				int c = 0;
+				int r = 0;
+				int btn = 0;
+				bindings_sz = 0;
+
+				if(!opt_always_active) {
+					activation_key = strtok(optarg, ",");
+					optarg += strlen(optarg) + 1;
+				} 
+
+				for(const char *key = strtok(optarg, ",");key;key = strtok(NULL, ",")) {
+					int code, mods;
+					parse_key(key, &code, &mods);
+
+					bindings[bindings_sz].key = key;
+					bindings[bindings_sz].btn = btn;
+					bindings[bindings_sz].c = c;
+					bindings[bindings_sz++].r = r;
+
+					c = (c+1) % nc;
+					if(c == 0) r++;
+					if(r >= nr) btn++;
+				}
+				break;
+			}
+		default:
+			exit(1);
+		}
+	}
+}
+
+static void reset() 
+{
+	XWindowAttributes attr;
+
+	XGetWindowAttributes(dpy, DefaultRootWindow(dpy), &attr);
+
+	XGrabKeyboard(dpy, DefaultRootWindow(dpy), 1, GrabModeAsync, GrabModeAsync, CurrentTime);
+
+	lx = 0;
+	ly = 0;
+	uy = attr.height;
+	ux = attr.width;
+	cx = ux/2;
+	cy = uy/2;
+
+	focus_sector(-1, -1);
+}
+
+
+static int key_eq(const char *key, XKeyEvent *ev) 
+{
+	if(!key) return 0;
+
+	int code, mods;
+	parse_key(key, &code, &mods);
+	return ev->state == mods && ev->keycode == code;
+}
+
+static void grab_key(const char *key) 
+{
+	if(!key) return;
+
+	int code, mods;
+
+	parse_key(key, &code, &mods);
+
+	XGrabKey(dpy,
+		 code,
+		 mods,
+		 DefaultRootWindow(dpy),
+		 False,
+		 GrabModeAsync,
+		 GrabModeAsync);
+}
+
+static void check_lock_file() 
+{
+	int fd;
+
+	const char *rundir = getenv("XDG_RUNTIME_DIR");
+	if(!rundir) {
+		fprintf(stderr, "Could not find XDG_RUNTIME_DIR, make sure X is running.");
+		exit(1);
+	}
+
+	sprintf(lock_file, "%s/warp.lock.%s", rundir, getenv("DISPLAY"));
+
+	if((fd = open(lock_file, O_CREAT | O_TRUNC, 0600)) < 0) {
+		perror("open");
+		exit(1);
+	}
+
+	if(flock(fd, LOCK_EX | LOCK_NB)) {
+		fprintf(stderr, "ERROR: warp already appears to be running.\n");
+		exit(1);
+	}
+}
+
+int main(int argc, char **argv) 
+{
+	int i;
+	int hidden = 1;
+
+	dpy = XOpenDisplay(NULL);
+
+	proc_args(argv, argc);
+
+	check_lock_file();
+	if(opt_daemonize) daemonize();
+
+	grab_key(activation_key);
+
+	if(opt_always_active) {
+		for(i = 0; i < bindings_sz; i++)
+			grab_key(bindings[i].key);
+	}
+
+	while(1) {
+		XEvent ev;
+		XNextEvent(dpy, &ev);
+		if(ev.type == KeyPress) {
+			KeySym sym = XKeycodeToKeysym(dpy, ev.xkey.keycode, 0);
+
+			if(key_eq(activation_key, &ev.xkey)) {
+				hidden = 0;
+				reset();
+				continue;
+			}
+
+			if(sym == XK_Return) {
+				XUngrabKeyboard(dpy, CurrentTime);
+				set_cursor_visibility(1);
+				draw(1);
+				hidden = 1;
+				continue;
+			}
+
+			for (int i = 0; i < bindings_sz; i++) {
+				if(key_eq(bindings[i].key, &ev.xkey)) {
+
+					if(bindings[i].btn) {
+						if(!hidden) draw(1);
+						click(bindings[i].btn);
+						if(!hidden) draw(0);
+					} else {
+						if(hidden) {
+							hidden = 0;
+							reset();
+						}
+						focus_sector(bindings[i].c, bindings[i].r);
+					}
+				}
+			}
+		}
+	}
 }
