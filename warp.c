@@ -126,7 +126,6 @@ static Window create_win(int r, int g, int b)
 	return w;
 }
 
-
 static draw(int hide) 
 {
 	int i,j;
@@ -449,8 +448,8 @@ static void check_lock_file()
 int main(int argc, char **argv) 
 {
 	int i;
-	int hidden = 1;
 
+	int is_active = 0;
 	dpy = XOpenDisplay(NULL);
 
 	proc_args(argv, argc);
@@ -472,8 +471,9 @@ int main(int argc, char **argv)
 			KeySym sym = XKeycodeToKeysym(dpy, ev.xkey.keycode, 0);
 
 			if(key_eq(activation_key, &ev.xkey)) {
-				hidden = 0;
 				reset();
+				draw(0);
+				is_active = 1;
 				continue;
 			}
 
@@ -481,22 +481,25 @@ int main(int argc, char **argv)
 				XUngrabKeyboard(dpy, CurrentTime);
 				set_cursor_visibility(1);
 				draw(1);
-				hidden = 1;
+				is_active = 0;
 				continue;
 			}
 
 			for (int i = 0; i < bindings_sz; i++) {
 				if(key_eq(bindings[i].key, &ev.xkey)) {
-
 					if(bindings[i].btn) {
-						if(!hidden) draw(1);
+						draw(1);
 						click(bindings[i].btn);
-						if(!hidden) draw(0);
+						//FIXME: Ugly kludge to fix the race condition between XTestFakeButtonEvent and XMapRaised
+						//TODO: Investigate the root cause (possibly related to WM window mapping and pointer grabs).
+						usleep(10000);
+						draw(0);
 					} else {
-						if(hidden) {
-							hidden = 0;
+						if(!is_active) {
+							is_active = 1;
 							reset();
 						}
+
 						focus_sector(bindings[i].c, bindings[i].r);
 					}
 				}
