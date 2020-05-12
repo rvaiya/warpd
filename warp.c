@@ -112,17 +112,24 @@ static uint32_t color(uint8_t red, uint8_t green, uint8_t blue)
 
 static Window create_win(int r, int g, int b) 
 {
-	Window w = XCreateSimpleWindow(dpy,
-				       DefaultRootWindow(dpy),
-				       0, 0, 1, 1, 0, 0, 0);
+	Window w = XCreateWindow(dpy,
+				 DefaultRootWindow(dpy),
+				 0,
+				 0,
+				 1,
+				 1,
+				 0,
+				 DefaultDepth(dpy, DefaultScreen(dpy)),
+				 InputOutput,
+				 DefaultVisual(dpy, DefaultScreen(dpy)),
+				 CWOverrideRedirect | CWBackPixel | CWBackingPixel,
+				 &(XSetWindowAttributes){
+				 .backing_pixel = color(r,g,b),
+				 .background_pixel = color(r,g,b),
+				 .override_redirect = 1
+				 });
 
-	XChangeWindowAttributes(dpy,
-				w, CWOverrideRedirect | CWBackPixel | CWBackingPixel,
-				&(XSetWindowAttributes){
-				.backing_pixel = color(r,g,b),
-				.background_pixel = color(r,g,b),
-				.override_redirect = 1
-				});
+
 	XMapWindow(dpy, w);
 	return w;
 }
@@ -251,8 +258,6 @@ static void focus_sector(int c, int r)
 
 	cy = (uy + ly) / 2;
 	cx = (ux + lx) / 2;
-
-	draw(0);
 }
 
 static void parse_key(const char* key, int *code, int *mods) 
@@ -477,9 +482,9 @@ int main(int argc, char **argv)
 			KeySym sym = XKeycodeToKeysym(dpy, ev.xkey.keycode, 0);
 
 			if(key_eq(activation_key, &ev.xkey)) {
+				is_active = 1;
 				reset();
 				draw(0);
-				is_active = 1;
 				continue;
 			}
 
@@ -500,6 +505,7 @@ int main(int argc, char **argv)
 						}
 
 						focus_sector(bindings[i].c, bindings[i].r);
+						draw(0);
 					}
 				}
 			}
