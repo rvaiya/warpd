@@ -7,7 +7,7 @@ A small X program which facilitates recursively warping the pointer to different
 Requires libxfixes-dev, libxtst-dev, and libx11-dev on debian. You will need to install the equivalent packages containing the appropriate header files on your distribution.
 
 ```
-apt-get install libxfixes-dev libxtst-dev libx11-dev && make && sudo make install
+sudo apt-get install libxfixes-dev libxtst-dev libx11-dev && make && sudo make install
 ```
 
 ## Getting Started
@@ -26,11 +26,11 @@ apt-get install libxfixes-dev libxtst-dev libx11-dev && make && sudo make instal
 
 # Options
 
- **-k** <key>[,<key>...]: A sequence of comma delimited keybindings which are ordered by their corresponding position in the grid. If '-a' is not specified then the first key is the activation key. Default values are M-k,u,i,j,k,m. Any extraneous keys are interpreted as mouse buttons (left, middle, and right click respectively). The -l flag yields a list of mappable keys.
+ **-k** <key>[,<key>...]: A sequence of comma delimited keybindings which are ordered by their corresponding position in the grid. If '-a' is not specified then the first key is the activation key. Default values are M-k,u,i,j,k,m. Any extraneous keys are interpreted as mouse buttons (left, middle, and right click respectively) followed by the close button (default return). The -l flag yields a list of mappable keys.
 
- **-c** <num>: The number of columns in the grid.
+ **-c** <num>: The number of columns in the grid. (default 2)
 
- **-r** <num>: The number of rows in the grid.
+ **-r** <num>: The number of rows in the grid. (default 2)
 
  **-a**: Runs warp in 'always active' mode. In this mode the navigation keys are always active and when pressed will immediately begin the warping process. If you use this you will likely want to remap the default keybindings to involve modifiers in order to avoid interference with typing.
 

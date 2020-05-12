@@ -54,6 +54,7 @@ const char usage[] =
 
 char lock_file[PATH_MAX];
 char *activation_key = "M-k";
+char *close_key = "Return";
 int lx, ly, ux, uy, cx, cy;
 
 //Number of columns and rows in the grid.
@@ -126,7 +127,7 @@ static Window create_win(int r, int g, int b)
 	return w;
 }
 
-static draw(int hide) 
+static void draw(int hide) 
 {
 	int i,j;
 	int rowh, colw;
@@ -360,6 +361,11 @@ static void proc_args(char **argv, int argc)
 					int code, mods;
 					parse_key(key, &code, &mods);
 
+					if(btn == 4) {
+						close_key = strdup(key);
+						continue;
+					}
+
 					bindings[bindings_sz].key = key;
 					bindings[bindings_sz].btn = btn;
 					bindings[bindings_sz].c = c;
@@ -477,13 +483,6 @@ int main(int argc, char **argv)
 				continue;
 			}
 
-			if(sym == XK_Return) {
-				XUngrabKeyboard(dpy, CurrentTime);
-				set_cursor_visibility(1);
-				draw(1);
-				is_active = 0;
-				continue;
-			}
 
 			for (int i = 0; i < bindings_sz; i++) {
 				if(key_eq(bindings[i].key, &ev.xkey)) {
@@ -503,6 +502,14 @@ int main(int argc, char **argv)
 						focus_sector(bindings[i].c, bindings[i].r);
 					}
 				}
+			}
+
+			if(key_eq(close_key, &ev.xkey)) {
+				XUngrabKeyboard(dpy, CurrentTime);
+				set_cursor_visibility(1);
+				draw(1);
+				is_active = 0;
+				continue;
 			}
 		}
 	}
