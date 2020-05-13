@@ -26,15 +26,21 @@ sudo apt-get install libxfixes-dev libxtst-dev libx11-dev && make && sudo make i
 
 # Options
 
- **-k** <key>[,<key>...]: A sequence of comma delimited keybindings which are ordered by their corresponding position in the grid. If '-a' is not specified then the first key is the activation key. Default values are M-k,u,i,j,k,m. Any extraneous keys are interpreted as mouse buttons (left, middle, and right click respectively) followed by the close button (default return). The -l flag yields a list of mappable keys.
+**-k** <key>[,<key>...]: A sequence of comma delimited keybindings which are ordered by their corresponding position in the grid. If '-a' is not specified then the first key is the activation key. Default values are M-k,u,i,j,k,m. Any extraneous keys are interpreted as mouse buttons (left, middle, and right click respectively) followed by the close button (default return). The -l flag yields a list of mappable keys.
 
- **-c** <num>: The number of columns in the grid. (default 2)
+**-m**  <up key>,<left key>,<down key>,<right key>: Specifies alternative movement keys, these are used to manually move the frame selection by a fixed interval and can be used to adjust for overshoot (default: w,a,s,d).
 
- **-r** <num>: The number of rows in the grid. (default 2)
+**-c** <num>: The number of columns in the grid.
 
- **-a**: Runs warp in 'always active' mode. In this mode the navigation keys are always active and when pressed will immediately begin the warping process. If you use this you will likely want to remap the default keybindings to involve modifiers in order to avoid interference with typing.
+**-r** <num>: The number of rows in the grid.
 
- **-d**: Runs warp in the background.
+**-a**: Runs the warp in 'always active' mode. In this mode the navigation keys are always active and when pressed will immediately begin the warping process. If you use this you will likely want to remap the default keybindings to involve modifiers in order to avoid interference with typing.
+
+**-d**: Runs warp in the background.
+
+**-l**: Prints a list of valid keys which can be passed to -k.
+
+**-i** <increment>: The size of the increment used by the movement keys (default 20).
 
 # Examples
 

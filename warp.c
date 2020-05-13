@@ -55,6 +55,14 @@ const char usage[] =
 char lock_file[PATH_MAX];
 char *activation_key = "M-k";
 char *close_key = "Return";
+
+char *up_key = "w";
+char *left_key = "a";
+char *down_key = "s";
+char *right_key = "d";
+
+int cursor_move_inc = 20;
+
 int lx, ly, ux, uy, cx, cy;
 
 //Number of columns and rows in the grid.
@@ -114,10 +122,7 @@ static Window create_win(int r, int g, int b)
 {
 	Window w = XCreateWindow(dpy,
 				 DefaultRootWindow(dpy),
-				 0,
-				 0,
-				 1,
-				 1,
+				 0, 0, 1, 1,
 				 0,
 				 DefaultDepth(dpy, DefaultScreen(dpy)),
 				 InputOutput,
@@ -215,6 +220,18 @@ static void draw(int hide)
 	XMapRaised(dpy, mw);
 
 	XWarpPointer(dpy, 0, DefaultRootWindow(dpy), 0, 0, 0, 0, cx, cy);
+	XFlush(dpy);
+}
+
+static void rel_warp(int x, int y) {
+	lx += x;
+	ly += y;
+	cx += x;
+	cy += y;
+	ux += x;
+	uy += y;
+
+	draw(0);
 	XFlush(dpy);
 }
 
@@ -316,7 +333,7 @@ static void proc_args(char **argv, int argc)
 	int r, c;
 	int opt;
 
-	while((opt = getopt(argc, argv, "hdar:c:k:l")) != -1) {
+	while((opt = getopt(argc, argv, "hdar:c:k:lm:i:")) != -1) {
 		switch(opt) {
 			size_t i;
 		case 'l':
@@ -349,6 +366,21 @@ static void proc_args(char **argv, int argc)
 				fprintf(stderr, "Number of columns must be greater than 0\n");
 				exit(1);
 			}
+			break;
+		case 'i':
+			cursor_move_inc = atoi(optarg);
+			break;
+		case 'm':
+			up_key = strtok(optarg, ",");
+			left_key = strtok(NULL, ",");
+			down_key = strtok(NULL, ",");
+			right_key = strtok(NULL, ",");
+
+			if(!up_key || !left_key || !down_key || !right_key) {
+				fprintf(stderr, "ERROR: Bad movement key spec, should be: <up key>,<left key>,<down key>,<right key>");
+				exit(1);
+			}
+
 			break;
 		case 'k':
 			{
@@ -480,6 +512,15 @@ int main(int argc, char **argv)
 		XNextEvent(dpy, &ev);
 		if(ev.type == KeyPress) {
 			KeySym sym = XKeycodeToKeysym(dpy, ev.xkey.keycode, 0);
+
+			if(key_eq(up_key, &ev.xkey))
+				rel_warp(0, -cursor_move_inc);
+			if(key_eq(down_key, &ev.xkey))
+				rel_warp(0, cursor_move_inc);
+			if(key_eq(left_key, &ev.xkey))
+				rel_warp(-cursor_move_inc, 0);
+			if(key_eq(right_key, &ev.xkey))
+				rel_warp(cursor_move_inc, 0);
 
 			if(key_eq(activation_key, &ev.xkey)) {
 				is_active = 1;
