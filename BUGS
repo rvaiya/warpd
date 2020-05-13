@@ -1,0 +1,3 @@
+XGrabKeyboard is exclusive preventing the program from being used in popup dialogs:
+
+Presently the only solution would appear to be using libevdev.

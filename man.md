@@ -7,48 +7,131 @@ A small X program which facilitates warping the pointer using the keyboard.
 
 # Usage
 
-warp [-a] [-k \<first grid element key\>, \<second grid element key\>..] [-c \<num\>] [-r \<num\>]
+warp [-d] [-l]
 
-# Options
+# Args
 
- **-k** \<key\>[,\<key\>...]: A sequence of comma delimited keybindings which are ordered by their corresponding position in the grid. If '-a' is not specified then the first key is the activation key. Default values are M-k,u,i,j,k,m. Any extraneous keys are interpreted as mouse buttons (left, middle, and right click respectively) followed by the close button (default return). The -l flag yields a list of mappable keys.
+ **-d**: Run warp in the background.
 
- **-m**  \<up key\>,\<left key\>,\<down key\>,\<right key\>: Specifies alternative movement keys, these are used to manually move the frame selection by a fixed interval and can be used to adjust for overshoot (default: w,a,s,d).
+ **-l**: Prints a list of valid keys which can be used as config values.
 
- **-c** \<num\>: The number of columns in the grid.
+# Overview
 
- **-r** \<num\>: The number of rows in the grid.
+By default `warp` divides the screen into a 2x2 grid which can. Each time a key is pressed the grid shrinks to cover the targetted area. Once the pointer 
+covers the target `m` can be pressed to simulate a mouse click.
 
- **-a**: Runs the warp in 'always active' mode. In this mode the navigation keys are always active and when pressed will immediately begin the warping process. If you use this you will likely want to remap the default keybindings to involve modifiers in order to avoid interference with typing.
 
- **-d**: Runs warp in the background.
+E.G
 
- **-l**: Prints a list of valid keys which can be passed to -k.
+```
+         +--------+--------+            +--------+--------+
+         |        |        |            |  u |  i |       |
+         |   u    |   i    |            |----m----+       |
+ M-x     |        |        |     u      |  j |  k |       |
+----->   +-----------------+   ----->   +---------+       |
+         |        |        |            |                 |
+         |   j    |   k    |            |                 |
+         |        |        |            |                 |
+         +--------+--------+            +--------+--------+
+```
 
- **-i** \<increment\>: The size of the increment used by the movement keys (default 20).
+
+# Hint Mode
+
+This is an experimental mode which populates the screen with a list of labels and
+allows the user to immediately warp the pointer to a given location by pressing
+the corresponding key sequence. It is similar to functionality provided by
+browser plugins like Vimperator but works outside of the browser and
+indiscriminately covers the entire screen. 
+
+## Notes
+
+Rather than saturating the screen with labels it is recommended that the user leave
+a few gaps and then use the movement keys (hjkl) to move to the
+final location. The rationale for this is as follows: 
+
+- **Efficiency**: A large number of labels necessitates the use of longer keysequences (since there are a finite number of two-key sequences) at which point the value of the label system is supplanted by manual mouse movement.
+
+- **Usability**: Packing every inch of the screen with labels causes a loss of context by obscuring UI elements.
+
+- **Performance**: Drawing routines have been optimized with a 20x20 grid in mind (the default) increasing the grid size beyond this may yield sub par performance.
+
+By tweaking hints_nc and hints_nr it should be possible to make most screen
+locations accessible with 2-4 key strokes. After a bit of practice this becomes
+second nature and is (in the author's opinion) superior to the grid method for
+quickly pinpointing text and UI elements.
+
+# Config Options
+
+The following configuration options can be placed in ~/.warprc to modify the behaviour of the program. Each option must be specified
+on its own line and have the format 
+
+```
+<option>: <value>
+```
+
+ **grid_keys** \<key\>[,\<key\>...]: A sequence of comma delimited keybindings which are ordered by their corresponding position in the grid. (default: u,i,j,k)
+
+ **activation_key** \<key\>: Activates grid or hint mode (if enabled) and allows for further manipulation of the pointer using the mapped keys. (default: M-x)
+
+ **up**  \<key\>: Move the entire frame up by a fixed interval. (default: w)
+
+ **left**  \<key\>: Move the entire frame left by a fixed interval. (default: a)
+
+ **down**  \<key\>: Move the entire frame down by a fixed interval. (default: s)
+
+ **right**  \<key\>: Move the entire frame right by a fixed interval. (default: d)
+
+ **close_key**  \<key\>: Prematurely terminate the movement session (default: Escape)
+
+ **button1**  \<key\>: Mouse button 1 (default: m)
+
+ **button2**  \<key\>: Mouse button 2 (default comma)
+
+ **button3**  \<key\>: Mouse button 3 (default period)
+
+ **nc** \<num\>: The number of columns in the grid. (default: 2)
+
+ **nr** \<num\>: The number of rows in the grid. (default: 2)
+
+ **movement_increment** \<num\>: The size of the fixed interval used by the movement keys. (default: 20)
+
+ **trigger_mods** <mod1>[-<mod2>...]: A set of modifiers which, when used in conjunction with the grid keys, immediately activates the grid and moves to the corresponding quadrant. E.G if set to "M-A" then 'M-A-u' (where M is the windows key) will immediately warp to the first quadrant when pressed. (default: unset)
+
+ **hint_mode** <true|false>: Enables an alternative mode which displays a group of labels and allows the user to immediately warp the cursor to the desired location. (default: false)
+
+ **hint_nc** <num>: The number of columns in hint mode. (default: 20)
+
+ **hint_nr** <num>: The number of rows in hint mode. (default: 20)
+
+ **hint_left** <key>: Moves the cursor left by movement_increment once a label has been selected in hint mode. (default: h)
+
+ **hint_down** <key>: Moves the cursor down by movement_increment once a label has been selected in hint mode. (default: j)
+ l
+ **hint_up** <key>: Moves the cursor up by movement_increment once a label has been selected in hint mode. (default: k)
+
+ **hint_right** <key>: Moves the cursor right by movement_increment once a label has been selected in hint mode. (default: l)
+
 
 # Examples
 
-## Example 1
-
-Uses a 3 by 3 grid instead of the default 2x2 grid.
+The following ~/.warprc causes warp to use a 3 by 3 grid instead of the default 2 by 2 grid with u,i,o corresponding to the columns in the top row and n,m,comma corresponding to the columns in the bottom row.
 
 ```
-warp -c 3 -r 3
+nr: 3
+nc: 3
+grid_keys: u,i,o,j,k,l,n,m,comma
 ```
 
-## Example 2
-Uses the keybindings Control+uijk instead of the standard uihj for warping, Control+m is the first muse button  and Control+a is the activation key.
+Enables hint mode (activated by M-x).
 
 ```
-warp -k C-a,C-u,C-i,C-j,C-k,C-m
+hint_mode: true
 ```
 
-## Example 3
+# Limitations/Bugs
 
-Starts warp in active mode so that C-u will always immediately move to the first grid element,
-C-i will immediately move to the second, and so on.
+- No multi monitor support (it may still work by treating the entire display as one giant screen, I haven't tried this).
 
-```
-warp -a -k C-u,C-i,C-j,C-k,C-m 
-```
+- Warp wont activate if the keyboard has already been grabbed by another program (including many popup menus). Using a minimalistic window manager is recommended :P.
+See https://github.com/rvaiya/warp/issues/3 for details.

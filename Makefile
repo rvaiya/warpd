@@ -1,6 +1,6 @@
 all:
 	-mkdir bin
-	gcc warp.c -o bin/warp -lXfixes -lXtst -lX11
+	gcc -g src/cfg.c src/grid.c src/hints.c src/main.c -o bin/warp -lXfixes -lXtst -lX11 -lXft -I/usr/include/freetype2
 man:
 	-mkdir bin
 	pandoc -s -t man -o - man.md|gzip > warp.1.gz
