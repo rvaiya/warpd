@@ -120,6 +120,18 @@ static void parse_keyseq(const char* key, int *code, int *mods)
 	}
 }
 
+KeyCode keycode(const char *s) 
+{
+	KeySym sym;
+
+	if(!(sym = XStringToKeysym(s))) {
+		fprintf(stderr, "ERROR: \"%s\" is not a valid keysym\n", s);
+		exit(-1);
+	}
+
+	return XKeysymToKeycode(dpy, sym);
+}
+
 int parse_keylist(const char *s, KeyCode *keycodes, int sz)
 {
 	int i, n = 0;
@@ -224,12 +236,12 @@ static void check_lock_file()
 static int hint_loop(struct cfg *cfg) 
 {
 		struct hint_keys hint_keys = (struct hint_keys) {
-			up: XKeysymToKeycode(dpy, XStringToKeysym(cfg->hint_up)),
-			down: XKeysymToKeycode(dpy, XStringToKeysym(cfg->hint_down)),
-			left: XKeysymToKeycode(dpy, XStringToKeysym(cfg->hint_left)),
-			right: XKeysymToKeycode(dpy, XStringToKeysym(cfg->hint_right)),
+			up: keycode(cfg->hint_up),
+			down: keycode(cfg->hint_down),
+			left: keycode(cfg->hint_left),
+			right: keycode(cfg->hint_right),
 
-			quit: XKeysymToKeycode(dpy, XStringToKeysym(cfg->close_key))
+			quit: keycode(cfg->close_key),
 		};
 
 		parse_keylist(cfg->buttons, hint_keys.buttons, sizeof hint_keys.buttons);
@@ -253,12 +265,12 @@ static int warp_loop(struct cfg *cfg)
 	int i,j;
 
 	struct grid_keys grid_keys = (struct grid_keys){
-		up: XKeysymToKeycode(dpy, XStringToKeysym(cfg->up)),
-		down: XKeysymToKeycode(dpy, XStringToKeysym(cfg->down)),
-		left: XKeysymToKeycode(dpy, XStringToKeysym(cfg->left)),
-		right: XKeysymToKeycode(dpy, XStringToKeysym(cfg->right)),
+		up: keycode(cfg->up),
+		down: keycode(cfg->down),
+		left: keycode(cfg->left),
+		right: keycode(cfg->right),
 
-		close_key: XKeysymToKeycode(dpy, XStringToKeysym(cfg->close_key))
+		close_key: keycode(cfg->close_key),
 	};
 
 	const char *key;
