@@ -54,7 +54,9 @@ final location. The rationale for this is as follows:
 
 - **Usability**: Packing every inch of the screen with labels causes a loss of context by obscuring UI elements.
 
-- **Performance**: Drawing routines have been optimized with a 20x20 grid in mind (the default) increasing the grid size beyond this may yield sub par performance.
+- **Performance**: Drawing routines have been optimized with a
+  20x20 grid in mind (the default) increasing the grid size beyond
+  this may yield subpar performance.
 
 By tweaking hints_nc and hints_nr it should be possible to make most screen
 locations accessible with 2-4 key strokes. After a bit of practice this becomes
@@ -96,21 +98,21 @@ on its own line and have the format
 
  **movement_increment** \<num\>: The size of the fixed interval used by the movement keys. (default: 20)
 
- **trigger_mods** <mod1>[-<mod2>...]: A set of modifiers which, when used in conjunction with the grid keys, immediately activates the grid and moves to the corresponding quadrant. E.G if set to "M-A" then 'M-A-u' (where M is the windows key) will immediately warp to the first quadrant when pressed. (default: unset)
+ **trigger_mods** \<mod1\>[-\<mod2\>...]: A set of modifiers which, when used in conjunction with the grid keys, immediately activates the grid and moves to the corresponding quadrant. E.G if set to `M-A` then `M-A-u` (where `M` is the windows key) will immediately warp to the first quadrant when pressed. (default: unset)
 
- **hint_mode** <true|false>: Enables an alternative mode which displays a group of labels and allows the user to immediately warp the cursor to the desired location. (default: false)
+ **hint_mode** \<true|false\>: Enables an alternative mode which displays a group of labels and allows the user to immediately warp the cursor to the desired location. (default: false)
 
- **hint_nc** <num>: The number of columns in hint mode. (default: 20)
+ **hint_nc** \<num\>: The number of columns in hint mode. (default: 20)
 
- **hint_nr** <num>: The number of rows in hint mode. (default: 20)
+ **hint_nr** \<num\>: The number of rows in hint mode. (default: 20)
 
- **hint_left** <key>: Moves the cursor left by movement_increment once a label has been selected in hint mode. (default: h)
+ **hint_left** \<key\>: Moves the cursor left by movement_increment once a label has been selected in hint mode. (default: h)
 
- **hint_down** <key>: Moves the cursor down by movement_increment once a label has been selected in hint mode. (default: j)
+ **hint_down** \<key\>: Moves the cursor down by movement_increment once a label has been selected in hint mode. (default: j)
  l
- **hint_up** <key>: Moves the cursor up by movement_increment once a label has been selected in hint mode. (default: k)
+ **hint_up** \<key\>: Moves the cursor up by movement_increment once a label has been selected in hint mode. (default: k)
 
- **hint_right** <key>: Moves the cursor right by movement_increment once a label has been selected in hint mode. (default: l)
+ **hint_right** \<key\>: Moves the cursor right by movement_increment once a label has been selected in hint mode. (default: l)
 
 
 # Examples
