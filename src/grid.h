@@ -34,14 +34,12 @@ struct grid_keys {
 	KeyCode left;
 	KeyCode down;
 
-	KeyCode button1;
-	KeyCode button2;
-	KeyCode button3;
+	KeyCode buttons[8];
 
 	KeyCode close_key;
 
-	KeyCode grid[MAX_ROWS][MAX_COLS];
+	KeyCode grid[MAX_ROWS*MAX_COLS];
 };
 
-void grid(Display *_dpy, int _nc, int _nr, int movement_increment, int startrow, int startcol, struct grid_keys *keys); 
+void grid(Display *_dpy, int _nr, int _nc, int movement_increment, int startrow, int startcol, const char *gridcol, const char *mousecol, struct grid_keys *keys);
 #endif

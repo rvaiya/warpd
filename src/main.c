@@ -48,6 +48,7 @@ Display *dpy;
 static int parse_mods(const char* s) 
 {
 	int mods = 0;
+	if(!s) return 0;
 	while(*s) {
 		switch(s[0]) {
 		case 'A':
@@ -117,6 +118,33 @@ static void parse_keyseq(const char* key, int *code, int *mods)
 
 		*code = XKeysymToKeycode(dpy, sym);
 	}
+}
+
+int parse_keylist(const char *s, KeyCode *keycodes, int sz)
+{
+	int i, n = 0;
+	char *_s = strdup(s), *key;
+
+
+	key = strtok(_s, ",");
+	for(i=0; i < sz; i++) {
+		if(key) {
+			KeySym sym;
+
+			if(!(sym = XStringToKeysym(key))) {
+				fprintf(stderr, "ERROR: \"%s\" is not a valid key\n", key);
+				exit(-1);
+			}
+
+			keycodes[n++] = XKeysymToKeycode(dpy, sym);
+		} else
+			keycodes[i] = 0;
+
+		key = strtok(NULL, ",");
+	}
+
+	free(_s);
+	return n;
 }
 
 static void grab_keyseq(const char *keyseq) 
@@ -201,19 +229,18 @@ static int hint_loop(struct cfg *cfg)
 			left: XKeysymToKeycode(dpy, XStringToKeysym(cfg->hint_left)),
 			right: XKeysymToKeycode(dpy, XStringToKeysym(cfg->hint_right)),
 
-			button1: XKeysymToKeycode(dpy, XStringToKeysym(cfg->button1)),
-			button2: XKeysymToKeycode(dpy, XStringToKeysym(cfg->button2)),
-			button3: XKeysymToKeycode(dpy, XStringToKeysym(cfg->button3)),
 			quit: XKeysymToKeycode(dpy, XStringToKeysym(cfg->close_key))
 		};
 
+		parse_keylist(cfg->buttons, hint_keys.buttons, sizeof hint_keys.buttons);
 		grab_keyseq(cfg->activation_key);
+
 		while(1) {
 			XEvent ev;
 			XNextEvent(dpy, &ev);
 
 			if(ev.type == KeyPress)
-				hints(dpy, cfg->hint_nc, cfg->hint_nr, cfg->movement_increment, &hint_keys);
+				hints(dpy, cfg->hint_nc, cfg->hint_nr, cfg->movement_increment, cfg->hint_bgcol, cfg->hint_fgcol, &hint_keys);
 		}
 
 		return 0;
@@ -221,6 +248,29 @@ static int hint_loop(struct cfg *cfg)
 
 static int warp_loop(struct cfg *cfg)
 {
+	int trigger_mods = parse_mods(cfg->trigger_mods);
+	char *s;
+	int i,j;
+
+	struct grid_keys grid_keys = (struct grid_keys){
+		up: XKeysymToKeycode(dpy, XStringToKeysym(cfg->up)),
+		down: XKeysymToKeycode(dpy, XStringToKeysym(cfg->down)),
+		left: XKeysymToKeycode(dpy, XStringToKeysym(cfg->left)),
+		right: XKeysymToKeycode(dpy, XStringToKeysym(cfg->right)),
+
+		close_key: XKeysymToKeycode(dpy, XStringToKeysym(cfg->close_key))
+	};
+
+	const char *key;
+
+	parse_keylist(cfg->buttons, grid_keys.buttons, sizeof grid_keys.buttons);
+
+	key = strtok(strdup(cfg->grid_keys), ",");
+	if(parse_keylist(cfg->grid_keys, grid_keys.grid, sizeof grid_keys.grid) < (cfg->nc * cfg->nr)) {
+		fprintf(stderr, "ERROR: Insufficient number of keys supplied to grid_key argument (must include %d keys).\n", cfg->nc*cfg->nr);
+		return -1;
+	}
+
 	if(cfg->nr <= 0) {
 		fprintf(stderr, "Number of rows must be greater than 0\n");
 		exit(1);
@@ -231,38 +281,10 @@ static int warp_loop(struct cfg *cfg)
 		exit(1);
 	}
 
-	struct grid_keys grid_keys = (struct grid_keys){
-		up: XKeysymToKeycode(dpy, XStringToKeysym(cfg->up)),
-		down: XKeysymToKeycode(dpy, XStringToKeysym(cfg->down)),
-		left: XKeysymToKeycode(dpy, XStringToKeysym(cfg->left)),
-		right: XKeysymToKeycode(dpy, XStringToKeysym(cfg->right)),
-
-		button1: XKeysymToKeycode(dpy, XStringToKeysym(cfg->button1)),
-		button2: XKeysymToKeycode(dpy, XStringToKeysym(cfg->button2)),
-		button3: XKeysymToKeycode(dpy, XStringToKeysym(cfg->button3)),
-
-		close_key: XKeysymToKeycode(dpy, XStringToKeysym(cfg->close_key))
-	};
-
-	const char *key = strtok(strdup(cfg->grid_keys), ",");
-
-	for(int i = 0;i<cfg->nr;i++)
-		for(int j = 0;j<cfg->nc;j++) {
-			if(!key) {
-				fprintf(stderr, "ERROR: Insufficient number of keys supplied to grid_key argument (must include %d keys).\n", cfg->nc*cfg->nr);
-				return -1;
-			}
-
-			grid_keys.grid[i][j] = XKeysymToKeycode(dpy, XStringToKeysym(key));
-			key = strtok(NULL, ",");
-		}
-
-	if(cfg->trigger_mods) {
-		int mods = parse_mods(cfg->trigger_mods);
-
+	if(trigger_mods) {
 		for(int i = 0;i<cfg->nr;i++)
 			for(int j = 0;j<cfg->nc;j++)
-				XGrabKey(dpy, grid_keys.grid[i][j], mods, DefaultRootWindow(dpy), False, GrabModeAsync, GrabModeAsync);
+				XGrabKey(dpy, grid_keys.grid[i*cfg->nc+j], trigger_mods, DefaultRootWindow(dpy), False, GrabModeAsync, GrabModeAsync);
 	}
 
 	grab_keyseq(cfg->activation_key);
@@ -275,14 +297,16 @@ static int warp_loop(struct cfg *cfg)
 			int startcol = -1;
 			int startrow = -1;
 
-			for(int i = 0;i<cfg->nr;i++)
-				for(int j = 0;j<cfg->nc;j++)
-					if(ev.xkey.keycode == grid_keys.grid[i][j]) {
-						startrow = i;
-						startcol = j;
-					}
+			if(trigger_mods && ev.xkey.state == trigger_mods) {
+				for(int i = 0;i<cfg->nr;i++)
+					for(int j = 0;j<cfg->nc;j++)
+						if(ev.xkey.keycode == grid_keys.grid[i*cfg->nc+j]) {
+							startrow = i;
+							startcol = j;
+						}
+			}
 
-			grid(dpy, cfg->nr, cfg->nc, cfg->movement_increment, startrow, startcol, &grid_keys);
+			grid(dpy, cfg->nr, cfg->nc, cfg->movement_increment, startrow, startcol, cfg->grid_col, cfg->grid_mouse_col, &grid_keys);
 		}
 	}
 

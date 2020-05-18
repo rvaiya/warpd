@@ -20,17 +20,17 @@
 
 #ifndef __H_HINTS_
 #define __H_HINTS_
+
+#include <X11/X.h>
 	
 struct hint_keys {
-	int up;
-	int right;
-	int left;
-	int down;
-	int button1;
-	int button2;
-	int button3;
-	int quit;
+	KeyCode up;
+	KeyCode right;
+	KeyCode left;
+	KeyCode down;
+	KeyCode buttons[8];
+	KeyCode quit;
 };
 
-void hints(Display *_dpy, int _nc, int _nr, int inc, struct hint_keys *keys);
+void hints(Display *_dpy, int _nc, int _nr, int inc, const char *bgcol, const char *fgcol, struct hint_keys *keys);
 #endif

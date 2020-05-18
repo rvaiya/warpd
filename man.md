@@ -86,11 +86,7 @@ on its own line and have the format
 
  **close_key**  \<key\>: Prematurely terminate the movement session (default: Escape)
 
- **button1**  \<key\>: Mouse button 1 (default: m)
-
- **button2**  \<key\>: Mouse button 2 (default comma)
-
- **button3**  \<key\>: Mouse button 3 (default period)
+ **buttons**  \<key\>[,\<key\>]: A list of keys corresponding to buttons (default: m,comma,period).
 
  **nc** \<num\>: The number of columns in the grid. (default: 2)
 
@@ -113,6 +109,14 @@ on its own line and have the format
  **hint_up** \<key\>: Moves the cursor up by movement_increment once a label has been selected in hint mode. (default: k)
 
  **hint_right** \<key\>: Moves the cursor right by movement_increment once a label has been selected in hint mode. (default: l)
+
+ **hint_bgcol** \<#hexcolor\>: The background hint color. (default: #00ff00)
+
+ **hint_fgcol** \<#hexcolor\>: The foreground hint color. (default: #000000)
+
+ **grid_col** \<#hexcolor\>: The color of the grid. (default: #00ff00)
+
+ **grid_mouse_col** \<#hexcolor\>: The color of the mouse indicator. (default: #00ff00)
 
 
 # Examples

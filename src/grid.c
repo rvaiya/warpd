@@ -27,16 +27,12 @@
 #include <stdint.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <string.h>
 #include "grid.h"
 
 #define CURSOR_WIDTH 15
 #define BORDER_WIDTH 5
 #define GRID_LINE_WIDTH 2
-
-//Colors defined in RGB
-#define GRID_LINE_COLOR 255,0,0
-#define BORDER_COLOR 255,0,0
-#define CURSOR_COLOR 0,255,0
 
 static int lx, ly, ux, uy, cx, cy;
 static int nc = 0, nr = 0;
@@ -63,6 +59,31 @@ static void set_cursor_visibility(int visible)
 	state = visible;
 }
 
+static int hex_to_rgb(const char *str, uint8_t *r, uint8_t *g, uint8_t *b) 
+{
+#define X2B(c) ((c >= '0' && c <= '9') ? (c & 0xF) : (((c | 0x20) - 'a') + 10))
+
+	if(str == NULL) return 0;
+	str = (*str == '#') ? str + 1 : str;
+
+	if(strlen(str) != 6)
+		return -1;
+
+	*r = X2B(str[0]);
+	*r <<= 4;
+	*r |= X2B(str[1]);
+
+	*g = X2B(str[2]);
+	*g <<= 4;
+	*g |= X2B(str[3]);
+
+	*b = X2B(str[4]);
+	*b <<= 4;
+	*b |= X2B(str[5]);
+
+	return 0;
+}
+
 static uint32_t color(uint8_t red, uint8_t green, uint8_t blue) 
 {
 	XColor col;
@@ -75,8 +96,14 @@ static uint32_t color(uint8_t red, uint8_t green, uint8_t blue)
 	return col.pixel;
 }
 
-static Window create_win(int r, int g, int b) 
+static Window create_win(const char *col) 
 {
+	uint8_t r = 0;
+	uint8_t g = 0;
+	uint8_t b = 0;
+
+	hex_to_rgb(col, &r, &g, &b);
+
 	Window w = XCreateWindow(dpy,
 				 DefaultRootWindow(dpy),
 				 0, 0, 1, 1,
@@ -179,7 +206,6 @@ static void rel_warp(int x, int y)
 	uy += y;
 
 	draw();
-	XFlush(dpy);
 }
 
 static void click(int btn) 
@@ -189,7 +215,7 @@ static void click(int btn)
 	XSync(dpy, False);
 }
 
-static void focus_sector(int c, int r) 
+static void focus_sector(int r, int c) 
 {
 	const int threshold = CURSOR_WIDTH;
 	int col_sz = (ux-lx)/nc;
@@ -237,7 +263,7 @@ static void reset()
 	cy = uy/2;
 }
 
-void grid(Display *_dpy, int _nr, int _nc, int movement_increment, int startrow, int startcol, struct grid_keys *keys) 
+void grid(Display *_dpy, int _nr, int _nc, int movement_increment, int startrow, int startcol, const char *gridcol, const char *mousecol, struct grid_keys *keys) 
 {
 	dpy = _dpy;
 
@@ -245,11 +271,11 @@ void grid(Display *_dpy, int _nr, int _nc, int movement_increment, int startrow,
 	int xfd = XConnectionNumber(dpy);
 
 	if(!bw1) {
-		bw1 = create_win(BORDER_COLOR);
-		bw2 = create_win(BORDER_COLOR);
-		bw3 = create_win(BORDER_COLOR);
-		bw4 = create_win(BORDER_COLOR);
-		mw = create_win(CURSOR_COLOR);
+		bw1 = create_win(gridcol);
+		bw2 = create_win(gridcol);
+		bw3 = create_win(gridcol);
+		bw4 = create_win(gridcol);
+		mw = create_win(mousecol);
 
 	}
 
@@ -261,12 +287,12 @@ void grid(Display *_dpy, int _nr, int _nc, int movement_increment, int startrow,
 
 		gridwins = malloc((nr + nc - 2) * sizeof(Window));
 		for(i = 0; i < (nr + nc - 2); i++)
-			gridwins[i] = create_win(GRID_LINE_COLOR);
+			gridwins[i] = create_win(gridcol);
 	}
 
 	XGrabKeyboard(dpy, DefaultRootWindow(dpy), 1, GrabModeAsync, GrabModeAsync, CurrentTime);
 	reset();
-	focus_sector(startcol, startrow);
+	focus_sector(startrow, startcol);
 	draw();
 
 	while(1) {
@@ -305,27 +331,24 @@ void grid(Display *_dpy, int _nr, int _nc, int movement_increment, int startrow,
 				if(keys->right == ev.xkey.keycode)
 					rel_warp(movement_increment, 0);
 
-				if(keys->button1 == ev.xkey.keycode ||
-				   keys->button2 == ev.xkey.keycode ||
-				   keys->button3 == ev.xkey.keycode) {
-					hide();
-					XUngrabKeyboard(dpy, CurrentTime);
+				for(int i=0;i<sizeof keys->buttons;i++)
+					if(keys->buttons[i] == ev.xkey.keycode) {
+						hide();
+						XUngrabKeyboard(dpy, CurrentTime);
 
-					click(keys->button1 == ev.xkey.keycode ? 1 : 
-					      keys->button2 == ev.xkey.keycode ? 2 : 3);
+						click(i+1);
 
-					//FIXME: Ugly kludge to fix the race condtion between XTestFakeButtonEvent and XMapRaised
-					//TODO: Investigate the root cause (possibly related to WM window mapping and pointer grabs).
-					usleep(10000);
+						//FIXME: Ugly kludge to fix the race condtion between XTestFakeButtonEvent and XMapRaised
+						//TODO: Investigate the root cause (possibly related to WM window mapping and pointer grabs).
+						usleep(10000);
 
-					if(XGrabKeyboard(dpy, DefaultRootWindow(dpy), 1, GrabModeAsync, GrabModeAsync, CurrentTime)) {
-						fprintf(stderr, "Failed to reacquire keyboard grab after click.\n");
-						return;
+						if(XGrabKeyboard(dpy, DefaultRootWindow(dpy), 1, GrabModeAsync, GrabModeAsync, CurrentTime)) {
+							fprintf(stderr, "Failed to reacquire keyboard grab after click.\n");
+							return;
+						}
+						if(i < 3) clicked++; //Don't timeout on scroll buttons.
+						hide();
 					}
-					clicked++;
-					hide();
-				}
-
 
 				if(keys->close_key == ev.xkey.keycode) {
 					XUngrabKeyboard(dpy, CurrentTime);
@@ -333,9 +356,9 @@ void grid(Display *_dpy, int _nr, int _nc, int movement_increment, int startrow,
 					return;
 				}
 
-				for (int i = 0; i < nc; i++)
-					for (int j = 0; j < nr; j++)
-						if(keys->grid[j][i] == ev.xkey.keycode) {
+				for (int i = 0; i < nr; i++)
+					for (int j = 0; j < nc; j++)
+						if(keys->grid[i*nc+j] == ev.xkey.keycode) {
 							focus_sector(i, j);
 							draw();
 						}

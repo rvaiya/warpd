@@ -258,7 +258,7 @@ static int filter_targets(const char *s, struct target **selected)
 	return 0;
 }
 
-static int generate_targets(int target_width, int target_height)
+static int generate_targets(int target_width, int target_height, const char *bgcol, const char *fgcol)
 {
 	int i, j;
 	XWindowAttributes info;
@@ -289,7 +289,7 @@ static int generate_targets(int target_width, int target_height)
 			hint[1] = hint_set2[j];
 			hint[2] = '\0';
 			create_target(target_width*j, target_height*i, target_width, target_height,
-				      20, "#00ff00", "#000000", strdup(hint),
+				      20, bgcol, fgcol, strdup(hint),
 				      &targets[nc*i+j]);
 		}
 	}
@@ -336,27 +336,23 @@ static void local_control(int inc, struct hint_keys *keys) {
 			XNextEvent(dpy, &ev);
 
 			if(ev.type == KeyPress) {
-				if(ev.xkey.keycode == keys->button1 ||
-				   ev.xkey.keycode == keys->button2 ||
-				   ev.xkey.keycode == keys->button3) {
+				for (int i = 0; i < sizeof keys->buttons; i++) {
+					if(ev.xkey.keycode == keys->buttons[i]) {
+						XUngrabKeyboard(dpy, CurrentTime);
+						XFlush(dpy);
 
-					XUngrabKeyboard(dpy, CurrentTime);
-					XFlush(dpy);
+						XTestFakeButtonEvent(dpy, i+1, True, CurrentTime);
+						XTestFakeButtonEvent(dpy, i+1, False, CurrentTime);
+						XSync(dpy, False);
 
-					const int btn = 
-						ev.xkey.keycode == keys->button1 ? 1 :
-						ev.xkey.keycode == keys->button2 ? 2 : 3;
-					XTestFakeButtonEvent(dpy, btn, True, CurrentTime);
-					XTestFakeButtonEvent(dpy, btn, False, CurrentTime);
-					XSync(dpy, False);
+						usleep(100000); //Give target an opportunity to grab the keyboard before we do.
+						if(XGrabKeyboard(dpy, DefaultRootWindow(dpy), False, GrabModeAsync, GrabModeAsync, CurrentTime)) {
+							fprintf(stderr, "Failed to grab keyboard (already grabbed?) try closing any active popups.\n");
+							return;
+						}
 
-					usleep(100000); //Give target an opportunity to grab the keyboard before we do.
-					if(XGrabKeyboard(dpy, DefaultRootWindow(dpy), False, GrabModeAsync, GrabModeAsync, CurrentTime)) {
-						fprintf(stderr, "Failed to grab keyboard (already grabbed?) try closing any active popups.\n");
-						return;
+						if(i < 3) post_click++; //Don't timeout on scroll buttons.
 					}
-
-					post_click++;
 				}
 
 				if(ev.xkey.keycode == keys->up)
@@ -380,7 +376,7 @@ static void local_control(int inc, struct hint_keys *keys) {
 	}
 }
 
-void hints(Display *_dpy, int _nc, int _nr, int inc, struct hint_keys *keys) {
+void hints(Display *_dpy, int _nc, int _nr, int inc, const char *bgcol, const char *fgcol, struct hint_keys *keys) {
 	dpy = _dpy;
 	XWindowAttributes info;
 
@@ -392,7 +388,7 @@ void hints(Display *_dpy, int _nc, int _nr, int inc, struct hint_keys *keys) {
 	XGetWindowAttributes(dpy, DefaultRootWindow(dpy), &info);
 	if(nr != _nr || nc != _nc) {
 		printf("Generating targets\n");
-		generate_targets(info.width / _nc, info.height / _nr);
+		generate_targets(info.width / _nc, info.height / _nr, bgcol, fgcol);
 	}
 	filter_targets("", NULL);
 

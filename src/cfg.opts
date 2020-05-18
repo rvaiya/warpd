@@ -10,9 +10,7 @@ right               string  "d"
 grid_keys           string  "u,i,j,k"
 activation_key      string  "M-x"
 close_key           string  "Escape"
-button1             string  "m"
-button2             string  "comma"
-button3             string  "period"
+buttons             string  "m,comma,period"
 trigger_mods        string  NULL
 
 hint_nc             int     20
@@ -22,3 +20,9 @@ hint_up             string  "k"
 hint_left           string  "h"
 hint_down           string  "j"
 hint_right          string  "l"
+
+hint_bgcol          string  "#00ff00"
+hint_fgcol          string  "#000000"
+
+grid_col            string  "#ff0000"
+grid_mouse_col      string  "#00ff00"
