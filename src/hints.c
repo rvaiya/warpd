@@ -186,12 +186,6 @@ static int calc_textbox_width(int height, const char *s)
 	return e.width;
 }
 
-static void hide_target(struct target *target)
-{
-	XUnmapWindow(dpy, target->win);
-	XFlush(dpy);
-}
-
 static Window show_target(struct target *target)
 {
 	uint8_t r, g, b;
@@ -250,13 +244,11 @@ static int filter_targets(const char *s, struct target **selected)
 			last = &targets[i];
 			show_target(targets + i);
 		} else
-			hide_target(targets + i);
-
-	XFlush(dpy);
+			XUnmapWindow(dpy, targets[i].win);
 
 	if(n == 1) {
 		*selected = last;
-		hide_target(last);
+		XUnmapWindow(dpy, (*selected)->win);
 		return 1;
 	} else if(n == 0) {
 		*selected = NULL;
@@ -418,7 +410,7 @@ void hints(Display *_dpy, int _nc, int _nr, int inc, struct hint_keys *keys) {
 				int i;
 
 				for(i = 0;i<nc*nr;i++)
-					hide_target(&targets[i]);
+					XUnmapWindow(dpy, targets[i].win);
 
 				XUngrabKeyboard(dpy, CurrentTime);
 				XFlush(dpy);

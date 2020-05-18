@@ -4,10 +4,10 @@ A small X program which facilitates recursively warping the pointer to different
 
 # Installation
 
-Requires libxfixes-dev, libxtst-dev, and libx11-dev on debian. You will need to install the equivalent packages containing the appropriate header files on your distribution.
+Requires libxinerama-dev, libxft-dev, libxfixes-dev, libxtst-dev, and libx11-dev on debian. You will need to install the equivalent packages containing the appropriate header files on your distribution.
 
 ```
-sudo apt-get install libxfixes-dev libxtst-dev libx11-dev && make && sudo make install libxinerama-dev libxft-dev
+sudo apt-get install libxinerama-dev libxft-dev libxfixes-dev libxtst-dev libx11-dev && make && sudo make install
 ```
 
 ## Getting Started
@@ -22,7 +22,7 @@ sudo apt-get install libxfixes-dev libxtst-dev libx11-dev && make && sudo make i
 
 # Overview
 
-By default `warp` divides the screen into a 2x2 grid which can. Each time a key
+By default `warp` divides the screen into a 2x2 grid. Each time a key
 is pressed the grid shrinks to cover the targetted area. Once the pointer
 covers the target `m` can be pressed to simulate a mouse click.
 
@@ -84,17 +84,17 @@ on its own line and have the format
 <option>: <value>
 ```
 
- **grid_keys** \<key\>[,\<key\>...]: A sequence of comma delimited keybindings which are ordered by their corresponding position in the grid. (default: u,i,j,k)
+ **grid_keys** \<key\>[,\<key\>...]: A sequence of comma delimited keybindings which correspond to grid positions. (default: u,i,j,k)
 
  **activation_key** \<key\>: Activates grid or hint mode (if enabled) and allows for further manipulation of the pointer using the mapped keys. (default: M-x)
 
- **up**  \<key\>: Move the entire frame up by a fixed interval. (default: w)
+ **up**  \<key\>: Move the entire grid up by a fixed interval. (default: w)
 
- **left**  \<key\>: Move the entire frame left by a fixed interval. (default: a)
+ **left**  \<key\>: Move the entire grid left by a fixed interval. (default: a)
 
- **down**  \<key\>: Move the entire frame down by a fixed interval. (default: s)
+ **down**  \<key\>: Move the entire grid down by a fixed interval. (default: s)
 
- **right**  \<key\>: Move the entire frame right by a fixed interval. (default: d)
+ **right**  \<key\>: Move the entire grid right by a fixed interval. (default: d)
 
  **close_key**  \<key\>: Prematurely terminate the movement session (default: Escape)
 
