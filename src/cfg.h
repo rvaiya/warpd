@@ -25,8 +25,12 @@ struct cfg {
     char* hint_right;
     char* hint_bgcol;
     char* hint_fgcol;
+    char* hint_characters;
     char* grid_col;
     char* grid_mouse_col;
+    int grid_pointer_size;
+    int grid_line_width;
+    int grid_activation_timeout;
 };
 
 struct cfg* parse_cfg(const char *fname);

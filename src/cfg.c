@@ -56,8 +56,12 @@ struct cfg* parse_cfg(const char *fname) {
     cfg->hint_right = "l";
     cfg->hint_bgcol = "#00ff00";
     cfg->hint_fgcol = "#000000";
+    cfg->hint_characters = "asdfghjkl;'/zxcvbm,./";
     cfg->grid_col = "#ff0000";
     cfg->grid_mouse_col = "#00ff00";
+    cfg->grid_pointer_size = 20;
+    cfg->grid_line_width = 5;
+    cfg->grid_activation_timeout = 300;
 
     FILE *fp = fopen(fname, "r");
     if(!fp) return cfg; //Return defaults if no config file xists..
@@ -111,10 +115,18 @@ struct cfg* parse_cfg(const char *fname) {
             cfg->hint_bgcol = strdup(val);
         else if(!strcmp(key, "hint_fgcol"))
             cfg->hint_fgcol = strdup(val);
+        else if(!strcmp(key, "hint_characters"))
+            cfg->hint_characters = strdup(val);
         else if(!strcmp(key, "grid_col"))
             cfg->grid_col = strdup(val);
         else if(!strcmp(key, "grid_mouse_col"))
             cfg->grid_mouse_col = strdup(val);
+        else if(!strcmp(key, "grid_pointer_size"))
+            cfg->grid_pointer_size = atoi(val);
+        else if(!strcmp(key, "grid_line_width"))
+            cfg->grid_line_width = atoi(val);
+        else if(!strcmp(key, "grid_activation_timeout"))
+            cfg->grid_activation_timeout = atoi(val);
 
         free(line);
         line = NULL;

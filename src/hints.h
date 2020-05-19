@@ -32,5 +32,5 @@ struct hint_keys {
 	KeyCode quit;
 };
 
-void hints(Display *_dpy, int _nc, int _nr, int inc, const char *bgcol, const char *fgcol, struct hint_keys *keys);
+void hints(Display *_dpy, int _nc, int _nr, char *_hint_characters, int inc, const char *bgcol, const char *fgcol, struct hint_keys *keys);
 #endif

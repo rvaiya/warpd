@@ -252,7 +252,7 @@ static int hint_loop(struct cfg *cfg)
 			XNextEvent(dpy, &ev);
 
 			if(ev.type == KeyPress)
-				hints(dpy, cfg->hint_nc, cfg->hint_nr, cfg->movement_increment, cfg->hint_bgcol, cfg->hint_fgcol, &hint_keys);
+				hints(dpy, cfg->hint_nc, cfg->hint_nr, cfg->hint_characters, cfg->movement_increment, cfg->hint_bgcol, cfg->hint_fgcol, &hint_keys);
 		}
 
 		return 0;
@@ -318,7 +318,18 @@ static int warp_loop(struct cfg *cfg)
 						}
 			}
 
-			grid(dpy, cfg->nr, cfg->nc, cfg->movement_increment, startrow, startcol, cfg->grid_col, cfg->grid_mouse_col, &grid_keys);
+			grid(dpy,
+			     cfg->nr,
+			     cfg->nc,
+			     cfg->grid_line_width,
+			     cfg->grid_pointer_size,
+			     cfg->grid_activation_timeout,
+			     cfg->movement_increment,
+			     startrow,
+			     startcol,
+			     cfg->grid_col,
+			     cfg->grid_mouse_col,
+			     &grid_keys);
 		}
 	}
 

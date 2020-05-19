@@ -1,28 +1,33 @@
-nr                  int     2
-nc                  int     2
+nr                       int     2
+nc                       int     2
 
-movement_increment  int     20
+movement_increment       int     20
 
-up                  string  "w"
-left                string  "a"
-down                string  "s"
-right               string  "d"
-grid_keys           string  "u,i,j,k"
-activation_key      string  "M-x"
-close_key           string  "Escape"
-buttons             string  "m,comma,period"
-trigger_mods        string  NULL
+up                       string  "w"
+left                     string  "a"
+down                     string  "s"
+right                    string  "d"
+grid_keys                string  "u,i,j,k"
+activation_key           string  "M-x"
+close_key                string  "Escape"
+buttons                  string  "m,comma,period"
+trigger_mods             string  NULL
 
-hint_nc             int     20
-hint_nr             int     20
-hint_mode           string  "false"
-hint_up             string  "k"
-hint_left           string  "h"
-hint_down           string  "j"
-hint_right          string  "l"
+hint_nc                  int     20
+hint_nr                  int     20
+hint_mode                string  "false"
+hint_up                  string  "k"
+hint_left                string  "h"
+hint_down                string  "j"
+hint_right               string  "l"
 
-hint_bgcol          string  "#00ff00"
-hint_fgcol          string  "#000000"
+hint_bgcol               string  "#00ff00"
+hint_fgcol               string  "#000000"
+hint_characters          string  "asdfghjkl;'/zxcvbm,./"
 
-grid_col            string  "#ff0000"
-grid_mouse_col      string  "#00ff00"
+grid_col                 string  "#ff0000"
+grid_mouse_col           string  "#00ff00"
+
+grid_pointer_size        int     20
+grid_line_width          int     5
+grid_activation_timeout  int     300

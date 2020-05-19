@@ -84,9 +84,9 @@ on its own line and have the format
 <option>: <value>
 ```
 
- **grid_keys** \<key\>[,\<key\>...]: A sequence of comma delimited keybindings which are ordered by their corresponding position in the grid. (default: u,i,j,k)
-
  **activation_key** \<key\>: Activates grid or hint mode (if enabled) and allows for further manipulation of the pointer using the mapped keys. (default: M-x)
+
+ **grid_keys** \<key\>[,\<key\>...]: A sequence of comma delimited keybindings which are ordered by their corresponding position in the grid. (default: u,i,j,k)
 
  **up**  \<key\>: Move the entire frame up by a fixed interval. (default: w)
 
@@ -108,11 +108,23 @@ on its own line and have the format
 
  **trigger_mods** \<mod1\>[-\<mod2\>...]: A set of modifiers which, when used in conjunction with the grid keys, immediately activates the grid and moves to the corresponding quadrant. E.G if set to `M-A` then `M-A-u` (where `M` is the windows key) will immediately warp to the first quadrant when pressed. (default: unset)
 
+ **grid_col** \<#hexcolor\>: The color of the grid. (default: #00ff00)
+
+ **grid_mouse_col** \<#hexcolor\>: The color of the mouse indicator. (default: #00ff00)
+
+ **grid_line_width** \<num\>: The size of grid lines. (default: 5)
+
+ **grid_pointer_size** \<num\>: The size of the grid pointer. (default: 20)
+
+ **grid_activation_timeout** \<time in ms\>: The length of time before warp automatically deactivates after the last click. 0 disables automatic deactivation entirely. (default: 300)
+
  **hint_mode** \<true|false\>: Enables an alternative mode which displays a group of labels and allows the user to immediately warp the cursor to the desired location. (default: false)
 
  **hint_nc** \<num\>: The number of columns in hint mode. (default: 20)
 
  **hint_nr** \<num\>: The number of rows in hint mode. (default: 20)
+
+ **hint_characters** \<char1\>[\<char2\>]: The set of charcters used to create hints, this must include at least max(hints_nc, hints_nr) characters. (default: asdfghjkl;'/zxcvbm,./)
 
  **hint_left** \<key\>: Moves the cursor left by movement_increment once a label has been selected in hint mode. (default: h)
 
@@ -125,13 +137,6 @@ on its own line and have the format
  **hint_bgcol** \<#hexcolor\>: The background hint color. (default: #00ff00)
 
  **hint_fgcol** \<#hexcolor\>: The foreground hint color. (default: #000000)
-
- **grid_col** \<#hexcolor\>: The color of the grid. (default: #00ff00)
-
- **grid_mouse_col** \<#hexcolor\>: The color of the mouse indicator. (default: #00ff00)
-
-
-
 
 # Examples
 

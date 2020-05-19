@@ -41,5 +41,18 @@ struct grid_keys {
 	KeyCode grid[MAX_ROWS*MAX_COLS];
 };
 
-void grid(Display *_dpy, int _nr, int _nc, int movement_increment, int startrow, int startcol, const char *gridcol, const char *mousecol, struct grid_keys *keys);
+
+void grid(Display *_dpy,
+	int _nr,
+	int _nc,
+	int _line_width,
+	int _cursor_width,
+	int double_click_timeout,
+	int movement_increment,
+	int startrow,
+	int startcol,
+	const char *gridcol,
+	const char *mousecol,
+	struct grid_keys *keys);
+
 #endif

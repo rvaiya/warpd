@@ -22,6 +22,7 @@
 #include <X11/extensions/XTest.h>
 #include <X11/Xft/Xft.h>
 #include <X11/Xlib.h>
+#include <X11/Xatom.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -45,8 +46,9 @@ struct target {
 	int h;
 };
 
-struct target targets[1024] = {0};
-int nc, nr;
+static struct target targets[1024] = {0};
+static int nc, nr;
+static char *hint_characters = "";
 
 static uint32_t x11_color(uint8_t red, uint8_t green, uint8_t blue) 
 {
@@ -62,6 +64,8 @@ static uint32_t x11_color(uint8_t red, uint8_t green, uint8_t blue)
 
 static Window create_win(uint8_t r, uint8_t g, uint8_t b, int x, int y, int w, int h) 
 {
+	long t = 1;
+
 	Window win = XCreateWindow(dpy,
 				   DefaultRootWindow(dpy),
 				   x, y, w, h,
@@ -77,6 +81,17 @@ static Window create_win(uint8_t r, uint8_t g, uint8_t b, int x, int y, int w, i
 				   });
 
 
+	/* Try and bypass compositing, doesn't seem to work on XFWM4 */
+	XChangeProperty(dpy,
+			win,
+			XInternAtom(dpy, "_NET_WM_BYPASS_COMPOSITOR", False),
+			XA_CARDINAL,
+			32,
+			PropModeReplace,
+			(unsigned char *)&t,
+			1);
+
+	XFlush(dpy);
 	return win;
 }
 
@@ -264,30 +279,30 @@ static int generate_targets(int target_width, int target_height, const char *bgc
 	XWindowAttributes info;
 	XGetWindowAttributes(dpy, DefaultRootWindow(dpy), &info);
 
-	const char hint_set1[] = "asdfghjkl;zxcvbn,./qwertyuiop[]\\";
-	const char hint_set2[] = "asdfghjkl;zxcvbn,./qwertyuiop[]\\";
+	const char hints[] = "asdfghjkl;zxcvbn,./qwertyuiop[]\\";
 
 	printf("%d %d\n", info.width, info.height);
 
 	nr = info.height / target_height;
 	nc = info.width / target_width;
 
-	if(nr > (sizeof(hint_set1)-1)) {
-		fprintf(stderr, "FATAL ERROR: Number of columns(%d) exceeds hint size (%zd), try reducing target size\n", nr, sizeof hint_set1);
+	if(nr > strlen(hint_characters)) {
+		fprintf(stderr, "FATAL ERROR: Number of rows (%d) exceeds hint size (%zd), try reducing the number of rows or increasing the size of the hint set.\n", nr, strlen(hint_characters));
 		exit(-1);
 	}
 
-	if(nc > (sizeof(hint_set2)-1)) {
-		fprintf(stderr, "FATAL ERROR: Number of columns(%d) exceeds hint size (%zd), try reducing target size\n", nc, sizeof hint_set2);
+	if(nc > strlen(hint_characters)) {
+		fprintf(stderr, "FATAL ERROR: Number of columns (%d) exceeds hint size (%zd), try reducing the number of columns or increasing the size of the hint set.\n", nc, strlen(hint_characters));
 		exit(-1);
 	}
 
 	for (i = 0; i < nr; i++) {
 		for (j = 0; j < nc; j++) {
 			char hint[4];
-			hint[0] = hint_set1[i];
-			hint[1] = hint_set2[j];
+			hint[0] = hint_characters[i];
+			hint[1] = hint_characters[j];
 			hint[2] = '\0';
+
 			create_target(target_width*j, target_height*i, target_width, target_height,
 				      20, bgcol, fgcol, strdup(hint),
 				      &targets[nc*i+j]);
@@ -376,9 +391,10 @@ static void local_control(int inc, struct hint_keys *keys) {
 	}
 }
 
-void hints(Display *_dpy, int _nc, int _nr, int inc, const char *bgcol, const char *fgcol, struct hint_keys *keys) {
+void hints(Display *_dpy, int _nc, int _nr, char *_hint_characters, int inc, const char *bgcol, const char *fgcol, struct hint_keys *keys) {
 	dpy = _dpy;
 	XWindowAttributes info;
+	hint_characters = _hint_characters;
 
 	if(XGrabKeyboard(dpy, DefaultRootWindow(dpy), False, GrabModeAsync, GrabModeAsync, CurrentTime)) {
 		fprintf(stderr, "Failed to grab keyboard (already grabbed?) try closing any active popups.\n");

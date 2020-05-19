@@ -30,14 +30,13 @@
 #include <string.h>
 #include "grid.h"
 
-#define CURSOR_WIDTH 15
-#define BORDER_WIDTH 5
-#define GRID_LINE_WIDTH 2
-
 static int lx, ly, ux, uy, cx, cy;
 static int nc = 0, nr = 0;
 static Window bw1 = 0, bw2, bw3, bw4, mw;
 static Window *gridwins = NULL;
+
+static int cursor_width = 0;
+static int line_width = 0;
 
 static Display *dpy;
 
@@ -148,23 +147,23 @@ static void draw()
 	hide();
 	set_cursor_visibility(0);
 
-	XMoveWindow(dpy, mw, cx-(CURSOR_WIDTH/2), cy-(CURSOR_WIDTH/2));
-	XResizeWindow(dpy, mw, CURSOR_WIDTH, CURSOR_WIDTH);
+	XMoveWindow(dpy, mw, cx-(cursor_width/2), cy-(cursor_width/2));
+	XResizeWindow(dpy, mw, cursor_width, cursor_width);
 
 	XMoveWindow(dpy, bw2, lx, ly);
-	XResizeWindow(dpy, bw2, ux-lx, BORDER_WIDTH);
+	XResizeWindow(dpy, bw2, ux-lx, line_width);
 
-	XMoveWindow(dpy, bw1, lx, uy-BORDER_WIDTH);
-	XResizeWindow(dpy, bw1, ux-lx, BORDER_WIDTH);
+	XMoveWindow(dpy, bw1, lx, uy-line_width);
+	XResizeWindow(dpy, bw1, ux-lx, line_width);
 
 	XMoveWindow(dpy, bw3, lx, ly);
-	XResizeWindow(dpy, bw3, BORDER_WIDTH, uy-ly);
+	XResizeWindow(dpy, bw3, line_width, uy-ly);
 
-	XMoveWindow(dpy, bw4, ux-BORDER_WIDTH, ly);
-	XResizeWindow(dpy, bw4, BORDER_WIDTH, uy-ly);
+	XMoveWindow(dpy, bw4, ux-line_width, ly);
+	XResizeWindow(dpy, bw4, line_width, uy-ly);
 
-	XMoveWindow(dpy, bw4, ux-BORDER_WIDTH, ly);
-	XResizeWindow(dpy, bw4, BORDER_WIDTH, uy-ly);
+	XMoveWindow(dpy, bw4, ux-line_width, ly);
+	XResizeWindow(dpy, bw4, line_width, uy-ly);
 
 	XMapRaised(dpy, bw1);
 	XMapRaised(dpy, bw2);
@@ -177,16 +176,16 @@ static void draw()
 	for(i = 0; i < nc-1; i++) {
 		XMoveWindow(dpy,
 			    gridwins[i],
-			    lx + (i+1) * colw - (GRID_LINE_WIDTH/2), ly);
-		XResizeWindow(dpy, gridwins[i], GRID_LINE_WIDTH, uy-ly);
+			    lx + (i+1) * colw - (line_width/2), ly);
+		XResizeWindow(dpy, gridwins[i], line_width, uy-ly);
 		XMapRaised(dpy, gridwins[i]);
 	}
 
 	for(i = 0; i < nr-1; i++) {
 		XMoveWindow(dpy,
 			    gridwins[nc+i-1],
-			    lx, ly + (i+1) * rowh - (GRID_LINE_WIDTH/2));
-		XResizeWindow(dpy, gridwins[nc+i-1], ux-lx, GRID_LINE_WIDTH);
+			    lx, ly + (i+1) * rowh - (line_width/2));
+		XResizeWindow(dpy, gridwins[nc+i-1], ux-lx, line_width);
 		XMapRaised(dpy, gridwins[nc+i-1]);
 	}
 
@@ -217,7 +216,7 @@ static void click(int btn)
 
 static void focus_sector(int r, int c) 
 {
-	const int threshold = CURSOR_WIDTH;
+	const int threshold = cursor_width;
 	int col_sz = (ux-lx)/nc;
 	int row_sz = (uy-ly)/nr;
 
@@ -263,9 +262,22 @@ static void reset()
 	cy = uy/2;
 }
 
-void grid(Display *_dpy, int _nr, int _nc, int movement_increment, int startrow, int startcol, const char *gridcol, const char *mousecol, struct grid_keys *keys) 
+void grid(Display *_dpy,
+	int _nr,
+	int _nc,
+	int _line_width,
+	int _cursor_width,
+	int double_click_timeout,
+	int movement_increment,
+	int startrow,
+	int startcol,
+	const char *gridcol,
+	const char *mousecol,
+	struct grid_keys *keys) 
 {
 	dpy = _dpy;
+	line_width = _line_width;
+	cursor_width = _cursor_width;
 
 	int clicked = 0;
 	int xfd = XConnectionNumber(dpy);
@@ -296,7 +308,6 @@ void grid(Display *_dpy, int _nr, int _nc, int movement_increment, int startrow,
 	draw();
 
 	while(1) {
-		const int double_click_timeout = 300;
 		fd_set fds;
 
 		FD_ZERO(&fds);
@@ -306,7 +317,7 @@ void grid(Display *_dpy, int _nr, int _nc, int movement_increment, int startrow,
 		       &fds,
 		       NULL,
 		       NULL,
-		       clicked ? &(struct timeval){0, double_click_timeout*1000} : NULL);
+		       (clicked && double_click_timeout) ? &(struct timeval){0, double_click_timeout*1000} : NULL);
 
 		if(!XPending(dpy)) {
 			hide();
