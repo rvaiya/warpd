@@ -96,9 +96,9 @@ on its own line and have the format
 
  **trigger_mods** \<mod1\>[-\<mod2\>...]: A set of modifiers which, when used in conjunction with the grid keys, immediately activates the grid and moves to the corresponding quadrant. E.G if set to `M-A` then `M-A-u` (where `M` is the windows key) will immediately warp to the first quadrant when pressed. (default: unset)
 
- **grid_col** \<#hexcolor\>: The color of the grid. (default: #00ff00)
+ **grid_col** \<hexcolor\>: The color of the grid. (default: 00ff00)
 
- **grid_mouse_col** \<#hexcolor\>: The color of the mouse indicator. (default: #00ff00)
+ **grid_mouse_col** \<hexcolor\>: The color of the mouse indicator. (default: 00ff00)
 
  **grid_line_width** \<num\>: The size of grid lines. (default: 5)
 
