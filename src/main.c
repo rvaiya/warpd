@@ -36,6 +36,7 @@
 #include "grid.h"
 #include "hints.h"
 #include "cfg.h"
+#include "dbg.h"
 
 const char usage[] = 
 "warp [-l] [-h] \n\n"
@@ -235,30 +236,30 @@ static void check_lock_file()
 
 static int hint_loop(struct cfg *cfg) 
 {
-		struct hint_keys hint_keys = (struct hint_keys) {
-			up: keycode(cfg->hint_up),
-			down: keycode(cfg->hint_down),
-			left: keycode(cfg->hint_left),
-			right: keycode(cfg->hint_right),
+	struct hint_keys hint_keys = (struct hint_keys) {
+		up: keycode(cfg->hint_up),
+		down: keycode(cfg->hint_down),
+		left: keycode(cfg->hint_left),
+		right: keycode(cfg->hint_right),
 
-			quit: keycode(cfg->close_key),
-		};
+		quit: keycode(cfg->close_key),
+	};
 
-		parse_keylist(cfg->buttons, hint_keys.buttons, sizeof hint_keys.buttons);
-		grab_keyseq(cfg->activation_key);
+	parse_keylist(cfg->buttons, hint_keys.buttons, sizeof hint_keys.buttons);
+	grab_keyseq(cfg->activation_key);
 
-		while(1) {
-			XEvent ev;
-			XNextEvent(dpy, &ev);
+	while(1) {
+		XEvent ev;
+		XNextEvent(dpy, &ev);
 
-			if(ev.type == KeyPress)
-				hints(dpy, cfg->hint_nc, cfg->hint_nr, cfg->hint_characters, cfg->movement_increment, cfg->hint_bgcol, cfg->hint_fgcol, &hint_keys);
-		}
+		if(ev.type == KeyPress)
+			hints(dpy, cfg->hint_nc, cfg->hint_nr, cfg->hint_characters, cfg->movement_increment, cfg->hint_bgcol, cfg->hint_fgcol, &hint_keys);
+	}
 
-		return 0;
+	return 0;
 }
 
-static int warp_loop(struct cfg *cfg)
+static int grid_loop(struct cfg *cfg)
 {
 	int trigger_mods = parse_mods(cfg->trigger_mods);
 	char *s;
@@ -299,8 +300,10 @@ static int warp_loop(struct cfg *cfg)
 				XGrabKey(dpy, grid_keys.grid[i*cfg->nc+j], trigger_mods, DefaultRootWindow(dpy), False, GrabModeAsync, GrabModeAsync);
 	}
 
+	dbg("Attempting to grab activation key (%s)\n", cfg->activation_key);
 	grab_keyseq(cfg->activation_key);
 
+	dbg("Entering outer grid loop.");
 	while(1) {
 		XEvent ev;
 		XNextEvent(dpy, &ev);
@@ -308,6 +311,7 @@ static int warp_loop(struct cfg *cfg)
 		if(ev.type == KeyPress) {
 			int startcol = -1;
 			int startrow = -1;
+			dbg("Activation key pressed, activating grid.");
 
 			if(trigger_mods && ev.xkey.state == trigger_mods) {
 				for(int i = 0;i<cfg->nr;i++)
@@ -341,7 +345,6 @@ int main(int argc, char **argv)
 	char path[PATH_MAX];
 	struct cfg *cfg;
 
-	
 	if(!(dpy = XOpenDisplay(NULL))) {
 		fprintf(stderr,
 			"Failed to establish X connection, make sure X is running.\n");
@@ -355,8 +358,9 @@ int main(int argc, char **argv)
 
 	if(opt_daemonize) daemonize();
 
+	dbg("Entering main loop");
 	if(!strcmp(cfg->hint_mode, "true"))
 		return hint_loop(cfg);
 	else
-		return warp_loop(cfg);
+		return grid_loop(cfg);
 }

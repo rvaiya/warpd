@@ -29,6 +29,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "grid.h"
+#include "dbg.h"
 
 static int lx, ly, ux, uy, cx, cy;
 static int nc = 0, nr = 0;
@@ -126,6 +127,7 @@ static void hide()
 {
 	int i;
 
+	dbg("Hiding grid.");
 	XUnmapWindow(dpy, bw1);
 	XUnmapWindow(dpy, bw2);
 	XUnmapWindow(dpy, bw3);
@@ -144,6 +146,7 @@ static void draw()
 	int i,j;
 	int rowh, colw;
 
+	dbg("Drawing grid (%d,%d,%d,%d).", lx, ly, ux, uy);
 	hide();
 	set_cursor_visibility(0);
 
@@ -307,6 +310,7 @@ void grid(Display *_dpy,
 	focus_sector(startrow, startcol);
 	draw();
 
+	dbg("Entering main grid loop.");
 	while(1) {
 		fd_set fds;
 
