@@ -4,21 +4,22 @@
 #define _CFG_H_
 
 struct cfg {
-    int nr;
-    int nc;
+    int grid_nr;
+    int grid_nc;
     int movement_increment;
-    char* up;
-    char* left;
-    char* down;
-    char* right;
+    char* grid_up;
+    char* grid_left;
+    char* grid_down;
+    char* grid_right;
     char* grid_keys;
-    char* activation_key;
+    char* hint_activation_key;
+    char* grid_activation_key;
+    char* discrete_activation_key;
     char* close_key;
     char* buttons;
     char* trigger_mods;
     int hint_nc;
     int hint_nr;
-    char* hint_mode;
     char* hint_up;
     char* hint_left;
     char* hint_down;
@@ -31,6 +32,10 @@ struct cfg {
     int grid_pointer_size;
     int grid_line_width;
     int grid_activation_timeout;
+    char* discrete_left;
+    char* discrete_down;
+    char* discrete_up;
+    char* discrete_right;
 };
 
 struct cfg* parse_cfg(const char *fname);

@@ -35,6 +35,7 @@
 #include "keynames.h"
 #include "grid.h"
 #include "hints.h"
+#include "discrete.h"
 #include "cfg.h"
 #include "dbg.h"
 
@@ -234,110 +235,125 @@ static void check_lock_file()
 	}
 }
 
-static int hint_loop(struct cfg *cfg) 
+static int keyseq_eq(const char *s, XKeyEvent *ev) 
 {
-	struct hint_keys hint_keys = (struct hint_keys) {
-		up: keycode(cfg->hint_up),
-		down: keycode(cfg->hint_down),
-		left: keycode(cfg->hint_left),
-		right: keycode(cfg->hint_right),
+	if(!s) return 0;
 
-		quit: keycode(cfg->close_key),
-	};
-
-	parse_keylist(cfg->buttons, hint_keys.buttons, sizeof hint_keys.buttons);
-	grab_keyseq(cfg->activation_key);
-
-	while(1) {
-		XEvent ev;
-		XNextEvent(dpy, &ev);
-
-		if(ev.type == KeyPress)
-			hints(dpy, cfg->hint_nc, cfg->hint_nr, cfg->hint_characters, cfg->movement_increment, cfg->hint_bgcol, cfg->hint_fgcol, &hint_keys);
-	}
-
-	return 0;
+	int code, mods;
+	parse_keyseq(s, &code, &mods);
+	return ev->state == mods && ev->keycode == code;
 }
 
-static int grid_loop(struct cfg *cfg)
+static int loop(struct cfg *cfg)
 {
 	int trigger_mods = parse_mods(cfg->trigger_mods);
 	char *s;
 	int i,j;
+	struct hint_keys hint_keys;
+	struct grid_keys grid_keys;
+	struct discrete_keys discrete_keys;
 
-	struct grid_keys grid_keys = (struct grid_keys){
-		up: keycode(cfg->up),
-		down: keycode(cfg->down),
-		left: keycode(cfg->left),
-		right: keycode(cfg->right),
-
-		close_key: keycode(cfg->close_key),
+	hint_keys = (struct hint_keys){
+		up:     keycode(cfg->hint_up),
+		down:   keycode(cfg->hint_down),
+		left:   keycode(cfg->hint_left),
+		right:  keycode(cfg->hint_right),
+		quit:   keycode(cfg->close_key),
 	};
 
-	const char *key;
+	discrete_keys = (struct discrete_keys){
+		up:     keycode(cfg->discrete_up),
+		down:   keycode(cfg->discrete_down),
+		left:   keycode(cfg->discrete_left),
+		right:  keycode(cfg->discrete_right),
+		quit:   keycode(cfg->close_key),
+	};
 
+	grid_keys = (struct grid_keys){
+		up:         keycode(cfg->grid_up),
+		down:       keycode(cfg->grid_down),
+		left:       keycode(cfg->grid_left),
+		right:      keycode(cfg->grid_right),
+		close_key:  keycode(cfg->close_key),
+	};
+
+	parse_keylist(cfg->buttons, discrete_keys.buttons, sizeof discrete_keys.buttons);
 	parse_keylist(cfg->buttons, grid_keys.buttons, sizeof grid_keys.buttons);
+	parse_keylist(cfg->buttons, hint_keys.buttons, sizeof hint_keys.buttons);
 
-	key = strtok(strdup(cfg->grid_keys), ",");
-	if(parse_keylist(cfg->grid_keys, grid_keys.grid, sizeof grid_keys.grid) < (cfg->nc * cfg->nr)) {
-		fprintf(stderr, "ERROR: Insufficient number of keys supplied to grid_key argument (must include %d keys).\n", cfg->nc*cfg->nr);
+	if(parse_keylist(cfg->grid_keys,
+		grid_keys.grid,
+		sizeof grid_keys.grid) < (cfg->grid_nc * cfg->grid_nr)) {
+		fprintf(stderr, "ERROR: Insufficient number of keys supplied to grid_key argument (must include %d keys).\n", cfg->grid_nc*cfg->grid_nr);
 		return -1;
 	}
 
-	if(cfg->nr <= 0) {
-		fprintf(stderr, "Number of rows must be greater than 0\n");
-		exit(1);
-	}
-
-	if(cfg->nc <= 0) {
-		fprintf(stderr, "Number of columns must be greater than 0\n");
-		exit(1);
-	}
+	grab_keyseq(cfg->hint_activation_key);
+	grab_keyseq(cfg->grid_activation_key);
+	grab_keyseq(cfg->discrete_activation_key);
 
 	if(trigger_mods) {
-		for(int i = 0;i<cfg->nr;i++)
-			for(int j = 0;j<cfg->nc;j++)
-				XGrabKey(dpy, grid_keys.grid[i*cfg->nc+j], trigger_mods, DefaultRootWindow(dpy), False, GrabModeAsync, GrabModeAsync);
+		for(int i = 0;i<cfg->grid_nr;i++)
+			for(int j = 0;j<cfg->grid_nc;j++)
+				XGrabKey(dpy,
+					 grid_keys.grid[i*cfg->grid_nc+j],
+					 trigger_mods,
+					 DefaultRootWindow(dpy),
+					 False,
+					 GrabModeAsync,
+					 GrabModeAsync);
 	}
 
-	dbg("Attempting to grab activation key (%s)\n", cfg->activation_key);
-	grab_keyseq(cfg->activation_key);
-
-	dbg("Entering outer grid loop.");
+	dbg("Entering main loop.");
 	while(1) {
 		XEvent ev;
 		XNextEvent(dpy, &ev);
 
 		if(ev.type == KeyPress) {
-			int startcol = -1;
-			int startrow = -1;
-			dbg("Activation key pressed, activating grid.");
+			if(keyseq_eq(cfg->grid_activation_key, &ev.xkey)) {
+				int startcol = -1;
+				int startrow = -1;
+				dbg("Activation key pressed, activating grid.");
 
-			if(trigger_mods && ev.xkey.state == trigger_mods) {
-				for(int i = 0;i<cfg->nr;i++)
-					for(int j = 0;j<cfg->nc;j++)
-						if(ev.xkey.keycode == grid_keys.grid[i*cfg->nc+j]) {
-							startrow = i;
-							startcol = j;
-						}
+				if(trigger_mods && ev.xkey.state == trigger_mods) {
+					for(int i = 0;i<cfg->grid_nr;i++)
+						for(int j = 0;j<cfg->grid_nc;j++)
+							if(ev.xkey.keycode == grid_keys.grid[i*cfg->grid_nc+j]) {
+								startrow = i;
+								startcol = j;
+							}
+				}
+
+				grid(dpy,
+				     cfg->grid_nr,
+				     cfg->grid_nc,
+				     cfg->grid_line_width,
+				     cfg->grid_pointer_size,
+				     cfg->grid_activation_timeout,
+				     cfg->movement_increment,
+				     startrow,
+				     startcol,
+				     cfg->grid_col,
+				     cfg->grid_mouse_col,
+				     &grid_keys);
+
+			} else if(keyseq_eq(cfg->discrete_activation_key, &ev.xkey)) {
+				discrete(dpy,
+					 cfg->movement_increment,
+					 cfg->grid_activation_timeout,
+					 &discrete_keys);
+			} else {
+				hints(dpy,
+				      cfg->hint_nc,
+				      cfg->hint_nr,
+				      cfg->hint_characters,
+				      cfg->movement_increment,
+				      cfg->hint_bgcol,
+				      cfg->hint_fgcol,
+				      &hint_keys);
 			}
-
-			grid(dpy,
-			     cfg->nr,
-			     cfg->nc,
-			     cfg->grid_line_width,
-			     cfg->grid_pointer_size,
-			     cfg->grid_activation_timeout,
-			     cfg->movement_increment,
-			     startrow,
-			     startcol,
-			     cfg->grid_col,
-			     cfg->grid_mouse_col,
-			     &grid_keys);
 		}
 	}
-
-	return 0;
 }
 
 int main(int argc, char **argv) 
@@ -358,9 +374,5 @@ int main(int argc, char **argv)
 
 	if(opt_daemonize) daemonize();
 
-	dbg("Entering main loop");
-	if(!strcmp(cfg->hint_mode, "true"))
-		return hint_loop(cfg);
-	else
-		return grid_loop(cfg);
+	return loop(cfg);
 }

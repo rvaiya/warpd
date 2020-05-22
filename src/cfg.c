@@ -35,33 +35,38 @@ struct cfg* parse_cfg(const char *fname) {
     size_t n = 0, ln = 0;
     struct cfg *cfg = malloc(sizeof(struct cfg));
 
-    cfg->nr = 2;
-    cfg->nc = 2;
+    cfg->grid_nr = 2;
+    cfg->grid_nc = 2;
     cfg->movement_increment = 20;
-    cfg->up = "w";
-    cfg->left = "a";
-    cfg->down = "s";
-    cfg->right = "d";
+    cfg->grid_up = "w";
+    cfg->grid_left = "a";
+    cfg->grid_down = "s";
+    cfg->grid_right = "d";
     cfg->grid_keys = "u,i,j,k";
-    cfg->activation_key = "M-x";
+    cfg->hint_activation_key = "M-z";
+    cfg->grid_activation_key = "M-x";
+    cfg->discrete_activation_key = "M-c";
     cfg->close_key = "Escape";
     cfg->buttons = "m,comma,period";
     cfg->trigger_mods = NULL;
     cfg->hint_nc = 20;
     cfg->hint_nr = 20;
-    cfg->hint_mode = "false";
     cfg->hint_up = "k";
     cfg->hint_left = "h";
     cfg->hint_down = "j";
     cfg->hint_right = "l";
     cfg->hint_bgcol = "#00ff00";
     cfg->hint_fgcol = "#000000";
-    cfg->hint_characters = "asdfghjkl;'/zxcvbm,./";
+    cfg->hint_characters = "asdfghjkl;'zxcvbm,./";
     cfg->grid_col = "#ff0000";
     cfg->grid_mouse_col = "#00ff00";
     cfg->grid_pointer_size = 20;
     cfg->grid_line_width = 5;
     cfg->grid_activation_timeout = 300;
+    cfg->discrete_left = "h";
+    cfg->discrete_down = "j";
+    cfg->discrete_up = "k";
+    cfg->discrete_right = "l";
 
     FILE *fp = fopen(fname, "r");
     if(!fp) return cfg; //Return defaults if no config file xists..
@@ -73,24 +78,28 @@ struct cfg* parse_cfg(const char *fname) {
             exit(1);
         }
 
-        if(!strcmp(key, "nr"))
-            cfg->nr = atoi(val);
-        else if(!strcmp(key, "nc"))
-            cfg->nc = atoi(val);
+        if(!strcmp(key, "grid_nr"))
+            cfg->grid_nr = atoi(val);
+        else if(!strcmp(key, "grid_nc"))
+            cfg->grid_nc = atoi(val);
         else if(!strcmp(key, "movement_increment"))
             cfg->movement_increment = atoi(val);
-        else if(!strcmp(key, "up"))
-            cfg->up = strdup(val);
-        else if(!strcmp(key, "left"))
-            cfg->left = strdup(val);
-        else if(!strcmp(key, "down"))
-            cfg->down = strdup(val);
-        else if(!strcmp(key, "right"))
-            cfg->right = strdup(val);
+        else if(!strcmp(key, "grid_up"))
+            cfg->grid_up = strdup(val);
+        else if(!strcmp(key, "grid_left"))
+            cfg->grid_left = strdup(val);
+        else if(!strcmp(key, "grid_down"))
+            cfg->grid_down = strdup(val);
+        else if(!strcmp(key, "grid_right"))
+            cfg->grid_right = strdup(val);
         else if(!strcmp(key, "grid_keys"))
             cfg->grid_keys = strdup(val);
-        else if(!strcmp(key, "activation_key"))
-            cfg->activation_key = strdup(val);
+        else if(!strcmp(key, "hint_activation_key"))
+            cfg->hint_activation_key = strdup(val);
+        else if(!strcmp(key, "grid_activation_key"))
+            cfg->grid_activation_key = strdup(val);
+        else if(!strcmp(key, "discrete_activation_key"))
+            cfg->discrete_activation_key = strdup(val);
         else if(!strcmp(key, "close_key"))
             cfg->close_key = strdup(val);
         else if(!strcmp(key, "buttons"))
@@ -101,8 +110,6 @@ struct cfg* parse_cfg(const char *fname) {
             cfg->hint_nc = atoi(val);
         else if(!strcmp(key, "hint_nr"))
             cfg->hint_nr = atoi(val);
-        else if(!strcmp(key, "hint_mode"))
-            cfg->hint_mode = strdup(val);
         else if(!strcmp(key, "hint_up"))
             cfg->hint_up = strdup(val);
         else if(!strcmp(key, "hint_left"))
@@ -127,6 +134,14 @@ struct cfg* parse_cfg(const char *fname) {
             cfg->grid_line_width = atoi(val);
         else if(!strcmp(key, "grid_activation_timeout"))
             cfg->grid_activation_timeout = atoi(val);
+        else if(!strcmp(key, "discrete_left"))
+            cfg->discrete_left = strdup(val);
+        else if(!strcmp(key, "discrete_down"))
+            cfg->discrete_down = strdup(val);
+        else if(!strcmp(key, "discrete_up"))
+            cfg->discrete_up = strdup(val);
+        else if(!strcmp(key, "discrete_right"))
+            cfg->discrete_right = strdup(val);
 
         free(line);
         line = NULL;

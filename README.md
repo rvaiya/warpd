@@ -16,7 +16,6 @@ sudo apt-get install libxinerama-dev libxft-dev libxfixes-dev libxtst-dev libx11
 2. Press M-x (meta is the command key) to activate the warping process.
 3. Use u,i,j,k to repeatedly navigate to different quadrants.
 4. Press m to click.
-5. Press enter to finish.
 6. RTFM
 7. For luck.
 
@@ -84,25 +83,27 @@ on its own line and have the format
 <option>: <value>
 ```
 
- **activation_key** \<key\>: Activates grid or hint mode (if enabled) and allows for further manipulation of the pointer using the mapped keys. (default: M-x)
+ **grid_activation_key** \<key\>: Activates grid mode and allows for further manipulation of the pointer using the mapped keys. (default: M-x)
+
+ **hint_activation_key** \<key\>: Activates hint mode. (default: M-z)
 
  **grid_keys** \<key\>[,\<key\>...]: A sequence of comma delimited keybindings which are ordered by their corresponding position in the grid. (default: u,i,j,k)
 
- **up**  \<key\>: Move the entire frame up by a fixed interval. (default: w)
+ **grid_up**  \<key\>: Move the entire grid up by a fixed interval. (default: w)
 
- **left**  \<key\>: Move the entire frame left by a fixed interval. (default: a)
+ **grid_left**  \<key\>: Move the entire grid left by a fixed interval. (default: a)
 
- **down**  \<key\>: Move the entire frame down by a fixed interval. (default: s)
+ **grid_down**  \<key\>: Move the entire grid down by a fixed interval. (default: s)
 
- **right**  \<key\>: Move the entire frame right by a fixed interval. (default: d)
+ **grid_right**  \<key\>: Move the entire grid right by a fixed interval. (default: d)
 
  **close_key**  \<key\>: Prematurely terminate the movement session (default: Escape)
 
  **buttons**  \<key\>[,\<key\>]: A list of keys corresponding to buttons (default: m,comma,period).
 
- **nc** \<num\>: The number of columns in the grid. (default: 2)
+ **grid_nc** \<num\>: The number of columns in the grid. (default: 2)
 
- **nr** \<num\>: The number of rows in the grid. (default: 2)
+ **grid_nr** \<num\>: The number of rows in the grid. (default: 2)
 
  **movement_increment** \<num\>: The size of the fixed interval used by the movement keys. (default: 20)
 
@@ -124,12 +125,12 @@ on its own line and have the format
 
  **hint_nr** \<num\>: The number of rows in hint mode. (default: 20)
 
- **hint_characters** \<char1\>[\<char2\>]: The set of charcters used to create hints, this must include at least max(hints_nc, hints_nr) characters. (default: asdfghjkl;'/zxcvbm,./)
+ **hint_characters** \<char1\>[\<char2\>]: The set of charcters used to create hints, this must include at least max(hints_nc, hints_nr) characters. (default: asdfghjkl;'zxcvbm,./)
 
  **hint_left** \<key\>: Moves the cursor left by movement_increment once a label has been selected in hint mode. (default: h)
 
  **hint_down** \<key\>: Moves the cursor down by movement_increment once a label has been selected in hint mode. (default: j)
- l
+
  **hint_up** \<key\>: Moves the cursor up by movement_increment once a label has been selected in hint mode. (default: k)
 
  **hint_right** \<key\>: Moves the cursor right by movement_increment once a label has been selected in hint mode. (default: l)
@@ -138,22 +139,25 @@ on its own line and have the format
 
  **hint_fgcol** \<#hexcolor\>: The foreground hint color. (default: #000000)
 
+ **discrete_activation_key**  \<key\>: Activate discrete movement mode (manual cursor movement). (default: M-c)
+
+ **discrete_up**  \<key\>: Move the cursor up in discrete mode. (default: w)
+
+ **discrete_left**  \<key\>: Move the cursor left in discrete mode. (default: a)
+
+ **discrete_down**  \<key\>: Move the cursor down in discrete mode. (default: s)
+
+ **discrete_right**  \<key\>: Move the cursor right in discrete mode. (default: d)
+
 # Examples
 
 The following ~/.warprc causes warp to use a 3 by 3 grid instead of the default 2 by 2 grid with u,i,o corresponding to the columns in the top row and n,m,comma corresponding to the columns in the bottom row.
 
 ```
-nr: 3
-nc: 3
+grid_nr: 3
+grid_nc: 3
 grid_keys: u,i,o,j,k,l,n,m,comma
 ```
-
-Enables hint mode (activated by M-x).
-
-```
-hint_mode: true
-```
-
 # Limitations/Bugs
 
 - No multi monitor support (it may still work by treating the entire display as one giant screen, I haven't tried this). If you use this program and desire this feature feel free to harass me via email or submit a pull request.

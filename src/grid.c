@@ -38,6 +38,7 @@ static Window *gridwins = NULL;
 
 static int cursor_width = 0;
 static int line_width = 0;
+static int hidden = 0;
 
 static Display *dpy;
 
@@ -111,11 +112,12 @@ static Window create_win(const char *col)
 				 DefaultDepth(dpy, DefaultScreen(dpy)),
 				 InputOutput,
 				 DefaultVisual(dpy, DefaultScreen(dpy)),
-				 CWOverrideRedirect | CWBackPixel | CWBackingPixel,
+				 CWOverrideRedirect | CWBackPixel | CWBackingPixel | CWEventMask,
 				 &(XSetWindowAttributes){
 				 .backing_pixel = color(r,g,b),
 				 .background_pixel = color(r,g,b),
-				 .override_redirect = 1
+				 .override_redirect = 1,
+				 .event_mask = ExposureMask,
 				 });
 
 
@@ -125,29 +127,41 @@ static Window create_win(const char *col)
 
 static void hide() 
 {
-	int i;
-
-	dbg("Hiding grid.");
-	XUnmapWindow(dpy, bw1);
-	XUnmapWindow(dpy, bw2);
-	XUnmapWindow(dpy, bw3);
-	XUnmapWindow(dpy, bw4);
-	XUnmapWindow(dpy, mw);
-
-	for(i = 0; i < (nr + nc - 2); i++)
-		XUnmapWindow(dpy, gridwins[i]);
-
-	set_cursor_visibility(1);
-	XFlush(dpy);
 }
 
-static void draw() 
+static void redraw() 
 {
 	int i,j;
 	int rowh, colw;
+	static int mapped = 0;
 
-	dbg("Drawing grid (%d,%d,%d,%d).", lx, ly, ux, uy);
-	hide();
+	if(hidden) {
+		XUnmapWindow(dpy, bw1);
+		XUnmapWindow(dpy, bw2);
+		XUnmapWindow(dpy, bw3);
+		XUnmapWindow(dpy, bw4);
+		XUnmapWindow(dpy, mw);
+
+		for(i = 0; i < (nr + nc - 2); i++)
+			XUnmapWindow(dpy, gridwins[i]);
+
+		mapped = 0;
+		set_cursor_visibility(1);
+		XFlush(dpy);
+
+		return;
+	}
+
+	if(!mapped) {
+		XMapRaised(dpy, bw1);
+		XMapRaised(dpy, bw2);
+		XMapRaised(dpy, bw3);
+		XMapRaised(dpy, bw4);
+		for(i = 0; i < nc+nr-2; i++) XMapRaised(dpy, gridwins[i]);
+		XMapRaised(dpy, mw);
+
+		mapped = 1;
+	}
 	set_cursor_visibility(0);
 
 	XMoveWindow(dpy, mw, cx-(cursor_width/2), cy-(cursor_width/2));
@@ -168,10 +182,6 @@ static void draw()
 	XMoveWindow(dpy, bw4, ux-line_width, ly);
 	XResizeWindow(dpy, bw4, line_width, uy-ly);
 
-	XMapRaised(dpy, bw1);
-	XMapRaised(dpy, bw2);
-	XMapRaised(dpy, bw3);
-	XMapRaised(dpy, bw4);
 
 	rowh = (uy-ly)/nr;
 	colw = (ux-lx)/nc;
@@ -181,7 +191,6 @@ static void draw()
 			    gridwins[i],
 			    lx + (i+1) * colw - (line_width/2), ly);
 		XResizeWindow(dpy, gridwins[i], line_width, uy-ly);
-		XMapRaised(dpy, gridwins[i]);
 	}
 
 	for(i = 0; i < nr-1; i++) {
@@ -189,10 +198,7 @@ static void draw()
 			    gridwins[nc+i-1],
 			    lx, ly + (i+1) * rowh - (line_width/2));
 		XResizeWindow(dpy, gridwins[nc+i-1], ux-lx, line_width);
-		XMapRaised(dpy, gridwins[nc+i-1]);
 	}
-
-	XMapRaised(dpy, mw);
 
 	XWarpPointer(dpy, 0, DefaultRootWindow(dpy), 0, 0, 0, 0, cx, cy);
 	XFlush(dpy);
@@ -207,7 +213,7 @@ static void rel_warp(int x, int y)
 	ux += x;
 	uy += y;
 
-	draw();
+	redraw();
 }
 
 static void click(int btn) 
@@ -263,6 +269,7 @@ static void reset()
 	ux = attr.width;
 	cx = ux/2;
 	cy = uy/2;
+	hidden = 0;
 }
 
 void grid(Display *_dpy,
@@ -308,7 +315,7 @@ void grid(Display *_dpy,
 	XGrabKeyboard(dpy, DefaultRootWindow(dpy), 1, GrabModeAsync, GrabModeAsync, CurrentTime);
 	reset();
 	focus_sector(startrow, startcol);
-	draw();
+	redraw();
 
 	dbg("Entering main grid loop.");
 	while(1) {
@@ -323,16 +330,13 @@ void grid(Display *_dpy,
 		       NULL,
 		       (clicked && double_click_timeout) ? &(struct timeval){0, double_click_timeout*1000} : NULL);
 
-		if(!XPending(dpy)) {
-			hide();
-			XUngrabKeyboard(dpy, CurrentTime);
-
-			return;
-		}
+		if(!XPending(dpy)) goto exit;
 
 		while(XPending(dpy)) {
 			XEvent ev;
 			XNextEvent(dpy, &ev);
+
+			if(ev.type == Expose) redraw();
 
 			if(ev.type == KeyPress) {
 				KeySym sym = XKeycodeToKeysym(dpy, ev.xkey.keycode, 0);
@@ -348,7 +352,8 @@ void grid(Display *_dpy,
 
 				for(int i=0;i<sizeof keys->buttons;i++)
 					if(keys->buttons[i] == ev.xkey.keycode) {
-						hide();
+						hidden = 1;
+						redraw();
 						XUngrabKeyboard(dpy, CurrentTime);
 
 						click(i+1);
@@ -362,22 +367,24 @@ void grid(Display *_dpy,
 							return;
 						}
 						if(i < 3) clicked++; //Don't timeout on scroll buttons.
-						hide();
 					}
 
-				if(keys->close_key == ev.xkey.keycode) {
-					XUngrabKeyboard(dpy, CurrentTime);
-					hide();
-					return;
-				}
+				if(keys->close_key == ev.xkey.keycode)
+					goto exit;
 
 				for (int i = 0; i < nr; i++)
 					for (int j = 0; j < nc; j++)
 						if(keys->grid[i*nc+j] == ev.xkey.keycode) {
 							focus_sector(i, j);
-							draw();
+							redraw();
 						}
 			}
 		}
 	}
+
+exit:
+	hidden = 1;
+	redraw();
+	XUngrabKeyboard(dpy, CurrentTime);
+	return;
 }

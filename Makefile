@@ -1,6 +1,6 @@
 all:
 	-mkdir bin
-	gcc -g src/cfg.c src/grid.c src/hints.c src/main.c -o bin/warp -lXfixes -lXtst -lX11 -lXft -I/usr/include/freetype2
+	gcc -g src/cfg.c src/discrete.c src/grid.c src/hints.c src/main.c -o bin/warp -lXfixes -lXtst -lX11 -lXft -I/usr/include/freetype2
 debug:
 	-mkdir bin
 	gcc -g -DDEBUG src/cfg.c src/grid.c src/hints.c src/main.c -o bin/warp -lXfixes -lXtst -lX11 -lXft -I/usr/include/freetype2
