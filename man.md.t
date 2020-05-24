@@ -72,71 +72,7 @@ on its own line and have the format
 <option>: <value>
 ```
 
-**grid_nr**: The number of rows in the grid. (default: 2).
-
-**grid_nc**: The number of columns in the grid. (default: 2).
-
-**movement_increment**: The movement increment used for grid and discrete mode. (default: 20).
-
-**grid_up**: Move the entire grid up by a fixed interval. (default: w).
-
-**grid_left**: Move the entire grid left by a fixed interval. (default: a).
-
-**grid_down**: Move the entire grid down by a fixed interval. (default: s).
-
-**grid_right**: Move the entire grid right by a fixed interval. (default: d).
-
-**grid_keys**: A sequence of comma delimited keybindings which are ordered bookwise with respect to grid position. (default: u,i,j,k).
-
-**hint_activation_key**: Activates hint mode. (default: M-z).
-
-**grid_activation_key**: Activates grid mode and allows for further manipulation of the pointer using the mapped keys. (default: M-x).
-
-**discrete_activation_key**: Activate discrete movement mode (manual cursor movement). (default: M-c).
-
-**close_key**: Prematurely terminate the movement session. (default: Escape).
-
-**buttons**: The number of columns in the grid. (default: m,comma,period).
-
-**trigger_mods**: A set of modifiers which, when used in conjunction with the grid keys, immediately activates the grid and moves to the corresponding quadrant. E.G if set to `M-A` then `M-A-u` (where `M` is the windows key) will immediately warp to the first quadrant when pressed. (default: M-C).
-
-**hint_nc**: The number of columns in hint mode. (default: 20).
-
-**hint_nr**: The number of rows in hint mode. (default: 20).
-
-**hint_up**: Moves the cursor up by movement_increment once a label has been selected in hint mode. (default: k).
-
-**hint_left**: Moves the cursor left by movement_increment once a label has been selected in hint mode. (default: h).
-
-**hint_down**: Moves the cursor down by movement_increment once a label has been selected in hint mode. (default: j).
-
-**hint_right**: Moves the cursor right by movement_increment once a label has been selected in hint mode. (default: l).
-
-**hint_bgcol**: The background hint color. (default: #00ff00).
-
-**hint_fgcol**: The foreground hint color. (default: #000000).
-
-**hint_characters**: The set of hint characters used by hint mode. (default: asdfghjkl;'zxcvbm,./).
-
-**grid_col**: The color of the grid. (default: #ff0000).
-
-**grid_mouse_col**: The color of the mouse indicator. (default: #00ff00).
-
-**grid_pointer_size**: The size of the grid pointer. (default: 20).
-
-**grid_line_width**: The size of grid lines. (default: 5).
-
-**grid_activation_timeout**: The length of time before warp automatically deactivates after the last click. 0 disables automatic deactivation entirely. (default: 300).
-
-**discrete_left**: Move the cursor left in discrete mode. (default: h).
-
-**discrete_down**: Move the cursor down in discrete mode. (default: j).
-
-**discrete_up**: Move the cursor up in discrete mode. (default: k).
-
-**discrete_right**: Move the cursor right in discrete mode. (default: l).
-
-
+{opts}
 
 # Examples
 

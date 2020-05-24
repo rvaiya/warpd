@@ -4,8 +4,8 @@ all:
 debug:
 	-mkdir bin
 	gcc -g -DDEBUG src/cfg.c src/grid.c src/hints.c src/main.c -o bin/warp -lXfixes -lXtst -lX11 -lXft -I/usr/include/freetype2
-man:
-	-mkdir bin
+assets:
+	python3 gen_assets.py
 	pandoc -s -t man -o - man.md|gzip > warp.1.gz
 install:
 	install -m755 bin/warp /usr/bin

@@ -176,6 +176,14 @@ static void grab_keyseq(const char *keyseq)
 		 False,
 		 GrabModeAsync,
 		 GrabModeAsync);
+
+	XGrabKey(dpy,
+		 code,
+		 mods | Mod2Mask, //To avoid being foiled by numlock.
+		 DefaultRootWindow(dpy),
+		 False,
+		 GrabModeAsync,
+		 GrabModeAsync);
 }
 
 static void daemonize() 
@@ -310,20 +318,27 @@ static int loop(struct cfg *cfg)
 		XNextEvent(dpy, &ev);
 
 		if(ev.type == KeyPress) {
-			if(keyseq_eq(cfg->grid_activation_key, &ev.xkey)) {
-				int startcol = -1;
-				int startrow = -1;
-				dbg("Activation key pressed, activating grid.");
+			if(trigger_mods && ev.xkey.state == trigger_mods) {
+				int found = 0;
 
-				if(trigger_mods && ev.xkey.state == trigger_mods) {
-					for(int i = 0;i<cfg->grid_nr;i++)
-						for(int j = 0;j<cfg->grid_nc;j++)
-							if(ev.xkey.keycode == grid_keys.grid[i*cfg->grid_nc+j]) {
-								startrow = i;
-								startcol = j;
-							}
-				}
+				for(int i = 0;i<cfg->grid_nr && !found;i++)
+					for(int j = 0;j<cfg->grid_nc && !found;j++)
+						if(ev.xkey.keycode == grid_keys.grid[i*cfg->grid_nc+j]) {
+							grid(dpy,
+							     cfg->grid_nr,
+							     cfg->grid_nc,
+							     cfg->grid_line_width,
+							     cfg->grid_pointer_size,
+							     cfg->grid_activation_timeout,
+							     cfg->movement_increment,
+							     i, j,
+							     cfg->grid_col,
+							     cfg->grid_mouse_col,
+							     &grid_keys);
 
+							found++;
+						}
+			} else if(keyseq_eq(cfg->grid_activation_key, &ev.xkey)) {
 				grid(dpy,
 				     cfg->grid_nr,
 				     cfg->grid_nc,
@@ -331,8 +346,8 @@ static int loop(struct cfg *cfg)
 				     cfg->grid_pointer_size,
 				     cfg->grid_activation_timeout,
 				     cfg->movement_increment,
-				     startrow,
-				     startcol,
+				     -1,
+				     -1,
 				     cfg->grid_col,
 				     cfg->grid_mouse_col,
 				     &grid_keys);
