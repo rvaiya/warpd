@@ -249,7 +249,7 @@ static int keyseq_eq(const char *s, XKeyEvent *ev)
 
 	int code, mods;
 	parse_keyseq(s, &code, &mods);
-	return ev->state == mods && ev->keycode == code;
+	return (ev->state & ~Mod2Mask) == mods && ev->keycode == code;
 }
 
 static int loop(struct cfg *cfg)
@@ -302,7 +302,7 @@ static int loop(struct cfg *cfg)
 
 	if(trigger_mods) {
 		for(int i = 0;i<cfg->grid_nr;i++)
-			for(int j = 0;j<cfg->grid_nc;j++)
+			for(int j = 0;j<cfg->grid_nc;j++) {
 				XGrabKey(dpy,
 					 grid_keys.grid[i*cfg->grid_nc+j],
 					 trigger_mods,
@@ -310,6 +310,15 @@ static int loop(struct cfg *cfg)
 					 False,
 					 GrabModeAsync,
 					 GrabModeAsync);
+
+				XGrabKey(dpy,
+					 grid_keys.grid[i*cfg->grid_nc+j],
+					 trigger_mods | Mod2Mask,
+					 DefaultRootWindow(dpy),
+					 False,
+					 GrabModeAsync,
+					 GrabModeAsync);
+			}
 	}
 
 	dbg("Entering main loop.");
@@ -318,7 +327,7 @@ static int loop(struct cfg *cfg)
 		XNextEvent(dpy, &ev);
 
 		if(ev.type == KeyPress) {
-			if(trigger_mods && ev.xkey.state == trigger_mods) {
+			if(trigger_mods && (ev.xkey.state & ~Mod2Mask) == trigger_mods) {
 				int found = 0;
 
 				for(int i = 0;i<cfg->grid_nr && !found;i++)
