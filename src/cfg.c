@@ -67,6 +67,8 @@ struct cfg* parse_cfg(const char *fname) {
     cfg->discrete_down = "j";
     cfg->discrete_up = "k";
     cfg->discrete_right = "l";
+    cfg->discrete_indicator_color = "#00ff00";
+    cfg->discrete_indicator_size = 30;
 
     FILE *fp = fopen(fname, "r");
     if(!fp) return cfg; //Return defaults if no config file xists..
@@ -142,6 +144,10 @@ struct cfg* parse_cfg(const char *fname) {
             cfg->discrete_up = strdup(val);
         else if(!strcmp(key, "discrete_right"))
             cfg->discrete_right = strdup(val);
+        else if(!strcmp(key, "discrete_indicator_color"))
+            cfg->discrete_indicator_color = strdup(val);
+        else if(!strcmp(key, "discrete_indicator_size"))
+            cfg->discrete_indicator_size = atoi(val);
 
         free(line);
         line = NULL;

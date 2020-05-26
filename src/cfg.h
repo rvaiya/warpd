@@ -36,6 +36,8 @@ struct cfg {
     char* discrete_down;
     char* discrete_up;
     char* discrete_right;
+    char* discrete_indicator_color;
+    int discrete_indicator_size;
 };
 
 struct cfg* parse_cfg(const char *fname);

@@ -193,7 +193,9 @@ static void daemonize()
 	else
 		exit(0);
 
-	printf("Daemon started.\n");
+	printf("Daemon started\n");
+	freopen("/dev/null", "w", stderr);
+	freopen("/dev/null", "w", stdout);
 }
 
 static void proc_args(char **argv, int argc) 
@@ -365,7 +367,9 @@ static int loop(struct cfg *cfg)
 				discrete(dpy,
 					 cfg->movement_increment,
 					 cfg->grid_activation_timeout,
-					 &discrete_keys);
+					 &discrete_keys,
+					 cfg->discrete_indicator_color,
+					 cfg->discrete_indicator_size);
 			} else {
 				hints(dpy,
 				      cfg->hint_nc,

@@ -136,6 +136,10 @@ on its own line and have the format
 
 **discrete_right**: Move the cursor right in discrete mode. (default: l).
 
+**discrete_indicator_color**: The color of the discrete status indicator (default: #00ff00).
+
+**discrete_indicator_size**: The height (in pixels) of the discrete status indicator (default: 30).
+
 
 
 # Examples

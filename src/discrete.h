@@ -14,5 +14,5 @@ struct discrete_keys {
 	KeyCode quit;
 };
 
-void discrete(Display *_dpy, const int inc, const int double_click_timeout, struct discrete_keys *keys);
+void discrete(Display *_dpy, const int inc, const int double_click_timeout, struct discrete_keys *keys, const char *indicator_color, size_t indicator_sz);
 #endif

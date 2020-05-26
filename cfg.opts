@@ -39,3 +39,5 @@ discrete_left            string  "h"                     "Move the cursor left i
 discrete_down            string  "j"                     "Move the cursor down in discrete mode."
 discrete_up              string  "k"                     "Move the cursor up in discrete mode."
 discrete_right           string  "l"                     "Move the cursor right in discrete mode."
+discrete_indicator_color string  "#00ff00"               "The color of the discrete status indicator"
+discrete_indicator_size  int     30                      "The height (in pixels) of the discrete status indicator"

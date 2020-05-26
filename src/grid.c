@@ -125,10 +125,6 @@ static Window create_win(const char *col)
 	return w;
 }
 
-static void hide() 
-{
-}
-
 static void redraw() 
 {
 	int i,j;
