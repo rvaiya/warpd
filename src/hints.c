@@ -29,7 +29,7 @@
 #include <assert.h>
 #include "hints.h"
 
-Display *dpy;
+static Display *dpy;
 
 #define FONT_NAME "*"
 
