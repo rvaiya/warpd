@@ -1,9 +1,13 @@
+CC=gcc
+CFLAGS=-lXfixes -lXtst -lX11 -lXft -I/usr/include/freetype2 -DCOMMIT=\"$(shell git show-ref -s HEAD)\" -o bin/warp 
+SRC=src/cfg.c src/discrete.c src/grid.c src/hints.c src/main.c 
+
 all:
 	-mkdir bin
-	gcc -g src/cfg.c src/discrete.c src/grid.c src/hints.c src/main.c -o bin/warp -lXfixes -lXtst -lX11 -lXft -I/usr/include/freetype2
+	$(CC) $(SRC) $(CFLAGS) 
 debug:
 	-mkdir bin
-	gcc -g -DDEBUG src/cfg.c src/grid.c src/hints.c src/main.c -o bin/warp -lXfixes -lXtst -lX11 -lXft -I/usr/include/freetype2
+	$(CC) -g -DDEBUG $(SRC) $(CFLAGS) 
 assets:
 	python3 gen_assets.py
 	pandoc -s -t man -o - man.md|gzip > warp.1.gz

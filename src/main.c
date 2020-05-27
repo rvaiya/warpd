@@ -40,7 +40,7 @@
 #include "dbg.h"
 
 const char usage[] = 
-"warp [-l] [-h] \n\n"
+"warp [-l] [-h] [-v] \n\n"
 "See the manpage for more details and usage examples.\n";
 
 char lock_file[PATH_MAX];
@@ -203,7 +203,7 @@ static void proc_args(char **argv, int argc)
 	int r, c;
 	int opt;
 
-	while((opt = getopt(argc, argv, "dl")) != -1) {
+	while((opt = getopt(argc, argv, "dlv")) != -1) {
 		switch(opt) {
 			size_t i;
 		case 'l':
@@ -214,6 +214,10 @@ static void proc_args(char **argv, int argc)
 			break;
 		case 'd':
 			opt_daemonize++;
+			break;
+		case 'v':
+			fprintf(stderr, "Compiled from git commit: "COMMIT"\n");
+			exit(0);
 			break;
 		default:
 			fprintf(stderr, usage);

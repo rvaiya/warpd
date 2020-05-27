@@ -18,7 +18,7 @@ static void hide()
 
 static void draw()
 {
-	XMapWindow(dpy, indicator);
+	XMapRaised(dpy, indicator);
 }
 
 
