@@ -1,3 +1,25 @@
+/* Copyright © 2019 Raheman Vaiya.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice (including the next
+ * paragraph) shall be included in all copies or substantial portions of the
+ * Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
 /*
  * ---------------------------------------------------------------------
  * This program is free software; you can redistribute it and/or modify
@@ -21,16 +43,21 @@
 #ifndef __H_HINTS_
 #define __H_HINTS_
 
-#include <X11/X.h>
+#include <stdint.h>
 	
 struct hint_keys {
-	KeyCode up;
-	KeyCode right;
-	KeyCode left;
-	KeyCode down;
-	KeyCode buttons[8];
-	KeyCode quit;
+	uint16_t up;
+	uint16_t right;
+	uint16_t left;
+	uint16_t down;
+	uint16_t quit;
 };
 
-void hints(Display *_dpy, int _nc, int _nr, char *_hint_characters, int inc, const char *bgcol, const char *fgcol, struct hint_keys *keys);
+int hints(Display *_dpy,
+	  size_t _nc,
+	  size_t _nr,
+	  char *_hint_characters,
+	  const char *bgcol,
+	  const char *fgcol,
+	  struct hint_keys *keys);
 #endif

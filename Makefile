@@ -1,6 +1,6 @@
 CC=gcc
-CFLAGS=-lXfixes -lXtst -lX11 -lXft -I/usr/include/freetype2 -DCOMMIT=\"$(shell git show-ref -s HEAD)\" -o bin/warp 
-SRC=src/cfg.c src/discrete.c src/grid.c src/hints.c src/main.c 
+CFLAGS=-lXfixes -lXi -lXtst -lX11 -lXft -I/usr/include/freetype2 -DCOMMIT=\"$(shell git show-ref -s HEAD)\" -o bin/warp -Wall -Wextra
+SRC=src/cfg.c src/input.c src/discrete.c src/grid.c src/hints.c src/main.c 
 
 all:
 	-mkdir bin

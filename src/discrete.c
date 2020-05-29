@@ -1,3 +1,25 @@
+/* Copyright © 2019 Raheman Vaiya.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice (including the next
+ * paragraph) shall be included in all copies or substantial portions of the
+ * Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
 #include <X11/Xlib.h>
 #include <X11/keysym.h>
 #include <X11/extensions/XTest.h>
@@ -7,6 +29,7 @@
 #include <string.h>
 #include <assert.h>
 #include "discrete.h"
+#include "input.h"
 
 static Display *dpy;
 static Window indicator = None;
@@ -14,17 +37,20 @@ static Window indicator = None;
 static void hide()
 {
 	XUnmapWindow(dpy, indicator);
+	XFlush(dpy);
 }
 
 static void draw()
 {
 	XMapRaised(dpy, indicator);
+	XFlush(dpy);
 }
 
 
 static void rel_warp(int x, int y) 
 {
 	XWarpPointer(dpy, 0, None, 0, 0, 0, 0, x, y);
+	XFlush(dpy);
 }
 
 static void click(int btn) 
@@ -98,74 +124,63 @@ static Window create_win(const char *col, int x, int y, int w, int h)
 					  });
 
 
-	XMapWindow(dpy, win);
 	return win;
 }
 
-void discrete(Display *_dpy, const int inc, const int double_click_timeout, struct discrete_keys *keys, const char *indicator_color, size_t indicator_sz)
+int discrete(Display *_dpy,
+	     const int increment,
+	     const int double_click_timeout,
+	     int start_button,
+	     struct discrete_keys *keys,
+	     const char *indicator_color,
+	     size_t indicator_sz)
 {
 	dpy = _dpy;
 	int clicked = 0;
-	int xfd = XConnectionNumber(dpy);
-	XWindowAttributes info;
 
+	XWindowAttributes info;
 	XGetWindowAttributes(dpy, DefaultRootWindow(dpy), &info);
 
-	if(XGrabKeyboard(dpy, DefaultRootWindow(dpy), False, GrabModeAsync, GrabModeAsync, CurrentTime)) {
-		fprintf(stderr, "Failed to grab the keyboard\n");
-		return;
-	}
 
 	if(indicator == None)
 		indicator = create_win(indicator_color,
-			info.width - indicator_sz - 20, 20,
-			indicator_sz, indicator_sz);
+				       info.width - indicator_sz - 20, 20,
+				       indicator_sz, indicator_sz);
 
 	draw();
-	while(1) {
-		fd_set fds;
 
-		FD_ZERO(&fds);
-		FD_SET(xfd, &fds);
-
-		select(xfd+1,
-		       &fds,
-		       NULL,
-		       NULL,
-		       (clicked && double_click_timeout) ? &(struct timeval){0, double_click_timeout*1000} : NULL);
-
-		if(!XPending(dpy)) goto cleanup;
-
-		while(XPending(dpy)) {
-			XEvent ev;
-			XNextEvent(dpy, &ev);
-
-			if(ev.type == KeyPress) {
-				int i;
-
-				if(ev.xkey.keycode == keys->up)
-					rel_warp(0, -inc);
-				if(ev.xkey.keycode == keys->down)
-					rel_warp(0, inc);
-				if(ev.xkey.keycode == keys->left)
-					rel_warp(-inc, 0);
-				if(ev.xkey.keycode == keys->right)
-					rel_warp(inc, 0);
-				if(ev.xkey.keycode == keys->quit)
-					goto cleanup;
-
-				for (i = 0; i < sizeof keys->buttons/sizeof keys->buttons[0]; i++)
-					if(keys->buttons[i] == ev.xkey.keycode) {
-						if(i < 3) clicked++; //Don't timeout on scroll
-						click(i+1);
-						break;
-					}
-			}
-		}
+	if(start_button) {
+		clicked = 1;
+		click(start_button);
 	}
 
-cleanup:
-	XUngrabKeyboard(dpy, CurrentTime);
+	while(1) {
+		size_t i;
+		uint16_t keyseq;
+
+		keyseq = input_next_key(clicked ? double_click_timeout : 0);
+		if(!keyseq)
+			break;
+
+		if(keyseq == keys->up)
+			rel_warp(0, -increment);
+		if(keyseq == keys->down)
+			rel_warp(0, increment);
+		if(keyseq == keys->left)
+			rel_warp(-increment, 0);
+		if(keyseq == keys->right)
+			rel_warp(increment, 0);
+		if(keyseq == keys->quit)
+			break;
+
+		for (i = 0; i < sizeof keys->buttons/sizeof keys->buttons[0]; i++)
+			if(keys->buttons[i] == keyseq) {
+				if(i < 3) clicked++; //Don't timeout on scroll
+				click(i+1);
+				break;
+			}
+	}
+
 	hide();
-	return;
+	return 0;
 }

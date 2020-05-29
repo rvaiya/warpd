@@ -7,7 +7,7 @@ A small X program which facilitates warping the pointer using the keyboard.
 
 # Usage
 
-warp [-d] [-l]
+warp [-d] [-l] [-v]
 
 # Args
 
@@ -15,9 +15,26 @@ warp [-d] [-l]
 
  **-l**: Prints a list of valid keys which can be used as config values.
 
+ **-v**: Prints the current version.
+
 # Overview
 
-By default `warp` divides the screen into a 2x2 grid which can. Each time a key is pressed the grid shrinks to cover the targetted area. Once the pointer 
+Warp has several modes which can be used to control the keyboard. The two main
+modes are 'grid mode' and 'hint mode' which are used to position the cursor
+before the user is dropped in to 'discrete mode' (either by pressing a mouse
+button in the case of grid mode or by selecting a label in the case of hint
+mode) for further manipulation .  While in 'discrete mode' the user can move
+the cursor by a fixed (configurable) interval by using the discrete movement
+keys (hjkl) and finally simulate a mouse click by pressing one of `buttons`
+(defualt: m, comma, period). 'discrete mode' can also be activated and used on
+its own to facilitate short distance pointer control by pressing its dedicated
+activation key (see `Config Options`).
+
+
+## Grid Mode (M-x)
+
+By default `warp` divides the screen into a 2x2 grid which can. Each time a key
+is pressed the grid shrinks to cover the targetted area. Once the pointer
 covers the target `m` can be pressed to simulate a mouse click.
 
 
@@ -36,7 +53,7 @@ E.G
 ```
 
 
-# Hint Mode
+## Hint Mode (M-z)
 
 This is an experimental mode which populates the screen with a list of labels and
 allows the user to immediately warp the pointer to a given location by pressing
@@ -76,17 +93,19 @@ on its own line and have the format
 
 # Examples
 
-The following ~/.warprc causes warp to use a 3 by 3 grid instead of the default 2 by 2 grid with u,i,o corresponding to the columns in the top row and n,m,comma corresponding to the columns in the bottom row.
+The following ~/.warprc causes warp to use a 3 by 3 grid instead of the default 2 by 2 grid with u,i,o corresponding to the columns in the top row and n,m,comma corresponding to the columns in the bottom row. The left, middle and right buttons can be clicked by pressing z, x, and c respectively.
 
 ```
 grid_nr: 3
 grid_nc: 3
 grid_keys: u,i,o,j,k,l,n,m,comma
+buttons: z,x,c
 ```
 
 # Limitations/Bugs
 
-- No multi monitor support (it may still work by treating the entire display as one giant screen, I haven't tried this).
+- No multi monitor support (it may still work by treating the entire display as one giant screen, I haven't tried this). If you use this program and desire this feature feel free to harass me via email or submit a pull request.
 
-- Warp wont activate if the keyboard has already been grabbed by another program (including many popup menus). Using a minimalistic window manager is recommended :P.
-See https://github.com/rvaiya/warp/issues/3 for details.
+- Programs which use Xinput to directly manipulate input devices may misbehave. See [Issue #3](https://github.com/rvaiya/warp/issues/3#issuecomment-628936249) for details.
+
+- Hint mode draws a lot of windows, if you experience performance issues try turning off your compositor.

@@ -1,27 +1,41 @@
 # Overview
 
-A small X program which facilitates recursively warping the pointer to different quadrants on the screen. The program was inspired by the mousekeys feature of Kaleidoscope, the firmware for the Keyboardio.
+A small X program which provides different mechanisms for manipulating the cursor using the keyboard. The program was originally inspired by the mousekeys feature of Kaleidoscope, the firmware for the Keyboardio.
 
 # Installation
 
-Requires libxinerama-dev, libxft-dev, libxfixes-dev, libxtst-dev, and libx11-dev on debian. You will need to install the equivalent packages containing the appropriate header files on your distribution.
+Requires libxi-dev libxinerama-dev, libxft-dev, libxfixes-dev, libxtst-dev, and libx11-dev on debian. You will need to install the equivalent packages containing the appropriate header files on your distribution.
+
+On Debian:
 
 ```
-sudo apt-get install libxinerama-dev libxft-dev libxfixes-dev libxtst-dev libx11-dev && make && sudo make install
+sudo apt-get install libxi-dev libxinerama-dev libxft-dev libxfixes-dev libxtst-dev libx11-dev && make && sudo make install
 ```
 
 ## Getting Started
 
 1. Run `warp -d` 
+
+### Grid Mode
 2. Press M-x (meta is the command key) to activate the warping process.
 3. Use u,i,j,k to repeatedly navigate to different quadrants.
-4. Press m to click.
+4. Press m to left click, comma to middle click or period to right click.
+
+### Hint Mode
+2. Press M-z (meta is the command key) to generate a list of hints
+3. - Enter the key sequence associated with the desired target
+   - Use the discrete movement keys (default hjkl) to adjust the cursor if necessary
+4. Press m to left click, comma to middle click or period to right click.
+
 6. RTFM
-7. For luck.
+7. Edit `~/.warprc` to taste.
+8. For luck.
 
 # Overview
 
-By default `warp` divides the screen into a 2x2 grid. Each time a key
+## Grid Mode
+
+By default grid mode divides the screen into a 2x2 grid. Each time a key
 is pressed the grid shrinks to cover the targetted area. Once the pointer
 covers the target `m` can be pressed to simulate a mouse click.
 
@@ -42,20 +56,23 @@ E.G
 
 ## Demo
 
+<p align="center">
 <img src="demo_warp.gif" height="400px"/>
+</p>
 
-# Hint Mode
+## Hint Mode
 
-This is an experimental mode which populates the screen with a list of labels and
-allows the user to immediately warp the pointer to a given location by pressing
-the corresponding key sequence. It is similar to functionality provided by
-browser plugins like Vimperator but works outside of the browser and
-indiscriminately covers the entire screen. 
+This is an experimental mode which populates the screen with a list of labels
+and allows the user to immediately warp the pointer to a given location by
+pressing the corresponding key sequence. It is similar to functionality
+provided by browser plugins like Vimperator but works outside of the browser
+and indiscriminately covers the entire screen. 
 
 ## Demo
 
+<p align="center">
 <img src="demo_hints.gif" height="400px"/>
-
+</p>
 
 ## Notes
 
@@ -69,7 +86,7 @@ final location. The rationale for this is as follows:
 
 - **Performance**: Drawing routines have been optimized with a 20x20 grid in mind (the default) increasing the grid size beyond this may yield sub par performance.
 
-By tweaking hints_nc and hints_nr it should be possible to make most screen
+By tweaking `hints_nc` and `hints_nr` it should be possible to make most screen
 locations accessible with 2-4 key strokes. After a bit of practice this becomes
 second nature and is (in the author's opinion) superior to the grid method for
 quickly pinpointing text and UI elements.
@@ -82,7 +99,9 @@ on its own line and have the format
 ```
 <option>: <value>
 ```
+
 {opts}
+
 # Examples
 
 The following ~/.warprc causes warp to use a 3 by 3 grid instead of the default 2 by 2 grid with u,i,o corresponding to the columns in the top row and n,m,comma corresponding to the columns in the bottom row.
@@ -96,7 +115,10 @@ grid_keys: u,i,o,j,k,l,n,m,comma
 
 - No multi monitor support (it may still work by treating the entire display as one giant screen, I haven't tried this). If you use this program and desire this feature feel free to harass me via email or submit a pull request.
 
-- Warp wont activate if the keyboard has already been grabbed by another program (including many popup menus). Using a minimalistic window manager is recommended :P.
-See [#3](https://github.com/rvaiya/warp/issues/3) for details.
+- ~~Warp wont activate if the keyboard has already been grabbed by another program (including many popup menus). Using a minimalistic window manager is recommended :P.~~ See [Issue #3](https://github.com/rvaiya/warp/issues/3#issuecomment-628936249) for details.
+
+- Hint mode draws a lot of windows, if you experience performance issues try turning off your compositor.
 
 - This was a small one off c file that ballooned into a small project, I did not originally plan to publish it. Consequently the code is ugly/will eat your face. You have been warned.
+
+

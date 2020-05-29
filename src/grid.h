@@ -1,3 +1,25 @@
+/* Copyright © 2019 Raheman Vaiya.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice (including the next
+ * paragraph) shall be included in all copies or substantial portions of the
+ * Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
 /*
  * ---------------------------------------------------------------------
  * This program is free software; you can redistribute it and/or modify
@@ -24,30 +46,27 @@
 #define MAX_COLS 100
 #define MAX_ROWS 100
 
-#include <X11/X.h>
-#include <X11/Xlib.h>
-#include "grid.h"
+#include <stdint.h>
 
 struct grid_keys {
-	KeyCode up;
-	KeyCode right;
-	KeyCode left;
-	KeyCode down;
+	uint16_t up;
+	uint16_t right;
+	uint16_t left;
+	uint16_t down;
 
-	KeyCode buttons[8];
+	uint16_t buttons[8];
 
-	KeyCode close_key;
+	uint16_t close_key;
 
-	KeyCode grid[MAX_ROWS*MAX_COLS];
+	uint16_t grid[MAX_ROWS*MAX_COLS];
 };
 
 
-void grid(Display *_dpy,
+int grid(Display *_dpy,
 	int _nr,
 	int _nc,
 	int _line_width,
 	int _cursor_width,
-	int double_click_timeout,
 	int movement_increment,
 	int startrow,
 	int startcol,

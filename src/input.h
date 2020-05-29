@@ -20,27 +20,14 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef _H_DISCRETE_
-#define _H_DISCRETE_
+#ifndef __H_INPUT_
+#define __H_INPUT_
+void init_input(Display *_dpy);
 
-#include <stdint.h>
+void input_ungrab_keyboard();
+uint16_t input_wait_for_key(uint16_t *keys, size_t n);
+uint16_t input_next_key();
 
-struct discrete_keys {
-	uint16_t buttons[8];
-
-	uint16_t up;
-	uint16_t down;
-	uint16_t left;
-	uint16_t right;
-
-	uint16_t quit;
-};
-
-int discrete(Display *_dpy,
-	const int increment,
-	const int double_click_timeout,
-	int start_button,
-	struct discrete_keys *keys,
-	const char *indicator_color,
-	size_t indicator_sz);
+const char* input_keyseq_to_string(uint16_t seq);
+uint16_t input_parse_keyseq(const char* key);
 #endif

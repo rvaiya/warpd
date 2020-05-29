@@ -1,21 +1,23 @@
-/*
- * ---------------------------------------------------------------------
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 3 of the License, or
- * (at your option) any later version.
+/* Copyright © 2019 Raheman Vaiya.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-
- * Original Author: Raheman Vaiya
- * ---------------------------------------------------------------------
+ * The above copyright notice and this permission notice (including the next
+ * paragraph) shall be included in all copies or substantial portions of the
+ * Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
  */
 
 #include <X11/extensions/Xinerama.h>
@@ -28,6 +30,8 @@
 #include <unistd.h>
 #include <assert.h>
 #include "hints.h"
+#include "input.h"
+#include "dbg.h"
 
 static Display *dpy;
 
@@ -47,7 +51,7 @@ struct target {
 };
 
 static struct target targets[1024] = {0};
-static int nc, nr;
+static size_t nc, nr;
 static char *hint_characters = "";
 
 static uint32_t x11_color(uint8_t red, uint8_t green, uint8_t blue) 
@@ -201,7 +205,7 @@ static int calc_textbox_width(int height, const char *s)
 	return e.width;
 }
 
-static Window show_target(struct target *target)
+static void show_target(struct target *target)
 {
 	uint8_t r, g, b;
 
@@ -218,7 +222,6 @@ static Window show_target(struct target *target)
 
 static void create_target(int x, int y, int w, int h, int font_height, const char *bgcol, const char *fgcol, const char *s, struct target *target)
 {
-	Window win;
 	uint8_t r, g, b;
 	int tw;
 	int winh, winw;
@@ -247,14 +250,14 @@ static void create_target(int x, int y, int w, int h, int font_height, const cha
 
 static int filter_targets(const char *s, struct target **selected)
 {
-	int i, n = 0;
+	size_t i, n = 0;
 	struct target *last;
 
 	if(selected)
 		*selected = NULL;
 
 	for (i = 0; i < nr*nc; i++)
-		if(strstr(targets[i].s, s)) {
+		if(strstr(targets[i].s, s) == targets[i].s) {
 			n++;
 			last = &targets[i];
 			show_target(targets + i);
@@ -273,26 +276,28 @@ static int filter_targets(const char *s, struct target **selected)
 	return 0;
 }
 
-static int generate_targets(int target_width, int target_height, const char *bgcol, const char *fgcol)
+static void generate_targets(int target_width, int target_height, const char *bgcol, const char *fgcol)
 {
-	int i, j;
+	size_t i, j;
 	XWindowAttributes info;
 	XGetWindowAttributes(dpy, DefaultRootWindow(dpy), &info);
-
-	const char hints[] = "asdfghjkl;zxcvbn,./qwertyuiop[]\\";
-
-	printf("%d %d\n", info.width, info.height);
 
 	nr = info.height / target_height;
 	nc = info.width / target_width;
 
 	if(nr > strlen(hint_characters)) {
-		fprintf(stderr, "FATAL ERROR: Number of rows (%d) exceeds hint size (%zd), try reducing the number of rows or increasing the size of the hint set.\n", nr, strlen(hint_characters));
+		fprintf(stderr,
+			"FATAL ERROR: Number of rows (%zd) exceeds hint size (%zd), try reducing the number of rows or increasing the size of the hint set.\n",
+			nr, strlen(hint_characters));
+
 		exit(-1);
 	}
 
 	if(nc > strlen(hint_characters)) {
-		fprintf(stderr, "FATAL ERROR: Number of columns (%d) exceeds hint size (%zd), try reducing the number of columns or increasing the size of the hint set.\n", nc, strlen(hint_characters));
+		fprintf(stderr,
+			"FATAL ERROR: Number of columns (%zd) exceeds hint size (%zd), try reducing the number of columns or increasing the size of the hint set.\n",
+			nc, strlen(hint_characters));
+
 		exit(-1);
 	}
 
@@ -313,141 +318,74 @@ static int generate_targets(int target_width, int target_height, const char *bgc
 	XFlush(dpy);
 }
 
-static void local_control(int inc, struct hint_keys *keys) {
-	const int double_click_timeout = 200;
-	int post_click = 0;
-	int xfd = XConnectionNumber(dpy);
-	if(!keys) {
-		keys = &(struct hint_keys){
-			.up = XKeysymToKeycode(dpy, XK_k),
-			.down = XKeysymToKeycode(dpy, XK_j),
-			.right = XKeysymToKeycode(dpy, XK_l),
-			.left = XKeysymToKeycode(dpy, XK_h),
-		};
-	}
-
-	while(1) {
-		XEvent ev;
-		fd_set fds;
-
-		FD_ZERO(&fds);
-		FD_SET(xfd, &fds);
-
-		select(xfd+1,
-		       &fds,
-		       NULL,
-		       NULL,
-		       post_click ? &(struct timeval){0, double_click_timeout*1000} : NULL);
-
-		if(!XPending(dpy)) {
-			//printf("Click timeout, closing movement\n");
-			XUngrabKeyboard(dpy, CurrentTime);
-			XFlush(dpy);
-
-			return;
-		}
-
-		while(XPending(dpy)) {
-			XNextEvent(dpy, &ev);
-
-			if(ev.type == KeyPress) {
-				for (int i = 0; i < sizeof keys->buttons; i++) {
-					if(ev.xkey.keycode == keys->buttons[i]) {
-						XUngrabKeyboard(dpy, CurrentTime);
-						XFlush(dpy);
-
-						XTestFakeButtonEvent(dpy, i+1, True, CurrentTime);
-						XTestFakeButtonEvent(dpy, i+1, False, CurrentTime);
-						XSync(dpy, False);
-
-						usleep(100000); //Give target an opportunity to grab the keyboard before we do.
-						if(XGrabKeyboard(dpy, DefaultRootWindow(dpy), False, GrabModeAsync, GrabModeAsync, CurrentTime)) {
-							fprintf(stderr, "Failed to grab keyboard (already grabbed?) try closing any active popups.\n");
-							return;
-						}
-
-						if(i < 3) post_click++; //Don't timeout on scroll buttons.
-					}
-				}
-
-				if(ev.xkey.keycode == keys->up)
-					XWarpPointer(dpy, 0, None, 0, 0, 0, 0, 0, -inc);
-				else if(ev.xkey.keycode == keys->down)
-					XWarpPointer(dpy, 0, None, 0, 0, 0, 0, 0, inc);
-				else if(ev.xkey.keycode == keys->right)
-					XWarpPointer(dpy, 0, None, 0, 0, 0, 0, inc, 0);
-				else if(ev.xkey.keycode == keys->left)
-					XWarpPointer(dpy, 0, None, 0, 0, 0, 0, -inc, 0);
-				else if(ev.xkey.keycode == keys->quit) {
-					XUngrabKeyboard(dpy, CurrentTime);
-					XFlush(dpy);
-					return;
-				}
-			}
-
-
-			XSync(dpy, False);
-		}
-	}
+static const char *normalize(const char *s)
+{
+	if(!strcmp(s, "apostrophe"))
+		return "'";
+	else if(!strcmp(s, "period"))
+		return ".";
+	else if(!strcmp(s, "slash"))
+		return "/";
+	else if(!strcmp(s, "comma"))
+		return ",";
+	else if(!strcmp(s, "semicolon"))
+		return ";";
+	else
+		return s;
 }
 
-void hints(Display *_dpy, int _nc, int _nr, char *_hint_characters, int inc, const char *bgcol, const char *fgcol, struct hint_keys *keys) {
+int hints(Display *_dpy,
+	  size_t _nc,
+	  size_t _nr,
+	  char *_hint_characters,
+	  const char *bgcol,
+	  const char *fgcol,
+	  struct hint_keys *keys) 
+{
+	char buf[256];
 	dpy = _dpy;
 	XWindowAttributes info;
 	hint_characters = _hint_characters;
 
-	if(XGrabKeyboard(dpy, DefaultRootWindow(dpy), False, GrabModeAsync, GrabModeAsync, CurrentTime)) {
-		fprintf(stderr, "Failed to grab keyboard (already grabbed?) try closing any active popups.\n");
-		return;
-	}
-
 	XGetWindowAttributes(dpy, DefaultRootWindow(dpy), &info);
 	if(nr != _nr || nc != _nc) {
-		printf("Generating targets\n");
+		dbg("Generating targets\n");
 		generate_targets(info.width / _nc, info.height / _nr, bgcol, fgcol);
 	}
 	filter_targets("", NULL);
 
-	char buf[256] = {0};
 	buf[0] = '\0';
+	uint16_t backspace = input_parse_keyseq("BackSpace");
 
 	while(1) {
-		XEvent ev;
-		XNextEvent(dpy, &ev);
-		if(ev.type == KeyPress) {
-			struct target *target;
-			KeySym key = XKeycodeToKeysym(dpy, ev.xkey.keycode, 0);
+		struct target *target;
 
-			if(ev.xkey.keycode == keys->quit) {
-				int i;
+		int keyseq = input_next_key(0);
+		if(keyseq == keys->quit) {
+			size_t i;
 
-				for(i = 0;i<nc*nr;i++)
-					XUnmapWindow(dpy, targets[i].win);
+			for(i = 0;i<nc*nr;i++)
+				XUnmapWindow(dpy, targets[i].win);
 
-				XUngrabKeyboard(dpy, CurrentTime);
+			XFlush(dpy);
+			return -1;
+		}
+
+		if(keyseq == backspace) {
+			if(buf[0] != '\0')
+				buf[strlen(buf)-1] = '\0';
+		} else {
+			strcpy(buf + strlen(buf), normalize(input_keyseq_to_string(keyseq)));
+		}
+
+		if(filter_targets(buf, &target)) {
+			if(target) {
+				XWarpPointer(dpy, 0, DefaultRootWindow(dpy), 0, 0, 0, 0, target->x+target->w/2, target->y+target->h/2);
 				XFlush(dpy);
-				return;
+				return 0;
 			}
 
-			if(key == XK_BackSpace) {
-				if(buf[0] != '\0')
-					buf[strlen(buf)-1] = '\0';
-			} else {
-				char s[20];
-				XLookupString(&ev.xkey, s, sizeof s, NULL, NULL);
-
-				strcpy(buf + strlen(buf), s);
-			}
-
-			if(filter_targets(buf, &target)) {
-				if(target) {
-					XWarpPointer(dpy, 0, DefaultRootWindow(dpy), 0, 0, 0, 0, target->x+target->w/2, target->y+target->h/2);
-					XSync(dpy, False);
-					local_control(inc, keys);
-				}
-
-				return;
-			}
+			return -1;
 		}
 	}
 }

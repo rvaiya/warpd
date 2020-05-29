@@ -4,20 +4,25 @@
 #define _CFG_H_
 
 struct cfg {
+    char* hint_activation_key;
+    char* grid_activation_key;
+    char* discrete_activation_key;
+    int movement_increment;
+    char* close_key;
+    char* buttons;
+    char* trigger_mods;
+    int double_click_timeout;
     int grid_nr;
     int grid_nc;
-    int movement_increment;
     char* grid_up;
     char* grid_left;
     char* grid_down;
     char* grid_right;
     char* grid_keys;
-    char* hint_activation_key;
-    char* grid_activation_key;
-    char* discrete_activation_key;
-    char* close_key;
-    char* buttons;
-    char* trigger_mods;
+    char* grid_col;
+    char* grid_mouse_col;
+    int grid_pointer_size;
+    int grid_line_width;
     int hint_nc;
     int hint_nr;
     char* hint_up;
@@ -27,11 +32,6 @@ struct cfg {
     char* hint_bgcol;
     char* hint_fgcol;
     char* hint_characters;
-    char* grid_col;
-    char* grid_mouse_col;
-    int grid_pointer_size;
-    int grid_line_width;
-    int grid_activation_timeout;
     char* discrete_left;
     char* discrete_down;
     char* discrete_up;

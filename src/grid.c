@@ -1,21 +1,23 @@
-/*
- * ---------------------------------------------------------------------
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 3 of the License, or
- * (at your option) any later version.
+/* Copyright © 2019 Raheman Vaiya.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
  *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-
- * Original Author: Raheman Vaiya
- * ---------------------------------------------------------------------
+ * The above copyright notice and this permission notice (including the next
+ * paragraph) shall be included in all copies or substantial portions of the
+ * Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
  */
 
 #include <X11/Xlib.h>
@@ -30,6 +32,7 @@
 #include <string.h>
 #include "grid.h"
 #include "dbg.h"
+#include "input.h"
 
 static int lx, ly, ux, uy, cx, cy;
 static int nc = 0, nr = 0;
@@ -127,7 +130,7 @@ static Window create_win(const char *col)
 
 static void redraw() 
 {
-	int i,j;
+	int i;
 	int rowh, colw;
 	static int mapped = 0;
 
@@ -196,7 +199,6 @@ static void redraw()
 		XResizeWindow(dpy, gridwins[nc+i-1], ux-lx, line_width);
 	}
 
-	XWarpPointer(dpy, 0, DefaultRootWindow(dpy), 0, 0, 0, 0, cx, cy);
 	XFlush(dpy);
 }
 
@@ -210,13 +212,6 @@ static void rel_warp(int x, int y)
 	uy += y;
 
 	redraw();
-}
-
-static void click(int btn) 
-{
-	XTestFakeButtonEvent(dpy, btn, True, CurrentTime);
-	XTestFakeButtonEvent(dpy, btn, False, CurrentTime);
-	XSync(dpy, False);
 }
 
 static void focus_sector(int r, int c) 
@@ -268,12 +263,11 @@ static void reset()
 	hidden = 0;
 }
 
-void grid(Display *_dpy,
+int grid(Display *_dpy,
 	int _nr,
 	int _nc,
 	int _line_width,
 	int _cursor_width,
-	int double_click_timeout,
 	int movement_increment,
 	int startrow,
 	int startcol,
@@ -284,9 +278,6 @@ void grid(Display *_dpy,
 	dpy = _dpy;
 	line_width = _line_width;
 	cursor_width = _cursor_width;
-
-	int clicked = 0;
-	int xfd = XConnectionNumber(dpy);
 
 	if(!bw1) {
 		bw1 = create_win(gridcol);
@@ -308,79 +299,48 @@ void grid(Display *_dpy,
 			gridwins[i] = create_win(gridcol);
 	}
 
-	XGrabKeyboard(dpy, DefaultRootWindow(dpy), 1, GrabModeAsync, GrabModeAsync, CurrentTime);
 	reset();
 	focus_sector(startrow, startcol);
 	redraw();
 
 	dbg("Entering main grid loop.");
 	while(1) {
-		fd_set fds;
+		uint16_t keyseq = input_next_key(0);
 
-		FD_ZERO(&fds);
-		FD_SET(xfd, &fds);
+		if(keys->up == keyseq)
+			rel_warp(0, -movement_increment);
+		if(keys->down == keyseq)
+			rel_warp(0, movement_increment);
+		if(keys->left == keyseq)
+			rel_warp(-movement_increment, 0);
+		if(keys->right == keyseq)
+			rel_warp(movement_increment, 0);
 
-		select(xfd+1,
-		       &fds,
-		       NULL,
-		       NULL,
-		       (clicked && double_click_timeout) ? &(struct timeval){0, double_click_timeout*1000} : NULL);
+		for(size_t i=0;i<sizeof keys->buttons / sizeof keys->buttons[0];i++)
+			if(keys->buttons[i] == keyseq) {
+				hidden = 1;
+				redraw();
 
-		if(!XPending(dpy)) goto exit;
+				XWarpPointer(dpy, 0, DefaultRootWindow(dpy), 0, 0, 0, 0, cx, cy);
+				XFlush(dpy);
 
-		while(XPending(dpy)) {
-			XEvent ev;
-			XNextEvent(dpy, &ev);
-
-			if(ev.type == Expose) redraw();
-
-			if(ev.type == KeyPress) {
-				KeySym sym = XKeycodeToKeysym(dpy, ev.xkey.keycode, 0);
-
-				if(keys->up == ev.xkey.keycode)
-					rel_warp(0, -movement_increment);
-				if(keys->down == ev.xkey.keycode)
-					rel_warp(0, movement_increment);
-				if(keys->left == ev.xkey.keycode)
-					rel_warp(-movement_increment, 0);
-				if(keys->right == ev.xkey.keycode)
-					rel_warp(movement_increment, 0);
-
-				for(int i=0;i<sizeof keys->buttons;i++)
-					if(keys->buttons[i] == ev.xkey.keycode) {
-						hidden = 1;
-						redraw();
-						XUngrabKeyboard(dpy, CurrentTime);
-
-						click(i+1);
-
-						//FIXME: Ugly kludge to fix the race condtion between XTestFakeButtonEvent and XMapRaised
-						//TODO: Investigate the root cause (possibly related to WM window mapping and pointer grabs).
-						usleep(10000);
-
-						if(XGrabKeyboard(dpy, DefaultRootWindow(dpy), 1, GrabModeAsync, GrabModeAsync, CurrentTime)) {
-							fprintf(stderr, "Failed to reacquire keyboard grab after click.\n");
-							return;
-						}
-						if(i < 3) clicked++; //Don't timeout on scroll buttons.
-					}
-
-				if(keys->close_key == ev.xkey.keycode)
-					goto exit;
-
-				for (int i = 0; i < nr; i++)
-					for (int j = 0; j < nc; j++)
-						if(keys->grid[i*nc+j] == ev.xkey.keycode) {
-							focus_sector(i, j);
-							redraw();
-						}
+				return  i+1;
 			}
-		}
+
+		if(keys->close_key == keyseq) goto exit;
+
+		for (int i = 0; i < nr; i++)
+			for (int j = 0; j < nc; j++)
+				if(keys->grid[i*nc+j] == keyseq) {
+					focus_sector(i, j);
+					redraw();
+				}
 	}
 
 exit:
 	hidden = 1;
 	redraw();
-	XUngrabKeyboard(dpy, CurrentTime);
-	return;
+
+	XWarpPointer(dpy, 0, DefaultRootWindow(dpy), 0, 0, 0, 0, cx, cy);
+	return -1;
 }
