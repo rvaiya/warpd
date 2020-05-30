@@ -28,6 +28,7 @@
 #include <ctype.h>
 #include <X11/keysym.h>
 #include <X11/extensions/XInput2.h>
+#include <X11/extensions/XTest.h>
 #include <sys/file.h>
 #include <limits.h>
 #include <unistd.h>
@@ -39,6 +40,8 @@
 #include "input.h"
 #include "keynames.h"
 
+#define MAX_BTNS 8
+
 static Display *dpy;
 static int opt_daemonize = 0;
 
@@ -46,7 +49,7 @@ static const char usage[] =
 "warp [-l] [-h] [-v] \n\n"
 "See the manpage for more details and usage examples.\n";
 
-static uint16_t keyseq(const char *s) 
+static uint16_t get_keyseq(const char *s) 
 {
 	uint16_t seq;
 
@@ -156,6 +159,12 @@ int main(int argc, char **argv) {
 	struct grid_keys grid_keys;
 	struct discrete_keys discrete_keys;
 
+	uint16_t buttons[MAX_BTNS];
+
+	uint16_t discrete_activation_key;
+	uint16_t hint_activation_key;
+	uint16_t grid_activation_key;
+
 	if(!(dpy = XOpenDisplay(NULL))) {
 		fprintf(stderr,
 			"Failed to establish X connection, make sure X is running.\n");
@@ -170,81 +179,110 @@ int main(int argc, char **argv) {
 	init_input(dpy);
 
 	hint_keys = (struct hint_keys){
-		up:     keyseq(cfg->hint_up),
-		down:   keyseq(cfg->hint_down),
-		left:   keyseq(cfg->hint_left),
-		right:  keyseq(cfg->hint_right),
-		quit:   keyseq(cfg->close_key),
+		up:     get_keyseq(cfg->hint_up),
+		down:   get_keyseq(cfg->hint_down),
+		left:   get_keyseq(cfg->hint_left),
+		right:  get_keyseq(cfg->hint_right),
 	};
 
 	discrete_keys = (struct discrete_keys){
-		up:     keyseq(cfg->discrete_up),
-		down:   keyseq(cfg->discrete_down),
-		left:   keyseq(cfg->discrete_left),
-		right:  keyseq(cfg->discrete_right),
-		quit:   keyseq(cfg->close_key),
+		up:     get_keyseq(cfg->discrete_up),
+		down:   get_keyseq(cfg->discrete_down),
+		left:   get_keyseq(cfg->discrete_left),
+		right:  get_keyseq(cfg->discrete_right),
 	};
 
 	grid_keys = (struct grid_keys){
-		up:         keyseq(cfg->grid_up),
-		down:       keyseq(cfg->grid_down),
-		left:       keyseq(cfg->grid_left),
-		right:      keyseq(cfg->grid_right),
-		close_key:  keyseq(cfg->close_key),
+		up:         get_keyseq(cfg->grid_up),
+		down:       get_keyseq(cfg->grid_down),
+		left:       get_keyseq(cfg->grid_left),
+		right:      get_keyseq(cfg->grid_right),
 	};
 
-	parse_keylist(cfg->buttons, discrete_keys.buttons, sizeof discrete_keys.buttons / sizeof discrete_keys.buttons[0]);
-	parse_keylist(cfg->buttons, grid_keys.buttons, sizeof grid_keys.buttons / sizeof grid_keys.buttons[0]);
+	parse_keylist(cfg->buttons,
+		      buttons,
+		      sizeof buttons / sizeof buttons[0]);
 
 	parse_keylist(cfg->grid_keys,
 		      grid_keys.grid,
 		      sizeof grid_keys.grid / sizeof grid_keys.grid[0]);
 
-	uint16_t discrete_activation_key = keyseq(cfg->discrete_activation_key);
-	uint16_t hint_activation_key = keyseq(cfg->hint_activation_key);
-	uint16_t grid_activation_key = keyseq(cfg->grid_activation_key);
-
-	uint16_t grab_keys[] = {
-		grid_activation_key,
-		hint_activation_key,
-		discrete_activation_key,
-	};
+	discrete_activation_key = get_keyseq(cfg->discrete_activation_key);
+	hint_activation_key = get_keyseq(cfg->hint_activation_key);
+	grid_activation_key = get_keyseq(cfg->grid_activation_key);
 
 	if(opt_daemonize) daemonize();
+
+	init_hint(dpy,
+		  cfg->hint_characters,
+		  cfg->hint_bgcol,
+		  cfg->hint_fgcol,
+		  cfg->hint_width,
+		  cfg->hint_height,
+		  cfg->hint_opacity,
+		  &hint_keys);
+
+	init_grid(dpy,
+		  cfg->grid_nr,
+		  cfg->grid_nc,
+		  cfg->grid_line_width,
+		  cfg->grid_pointer_size,
+		  cfg->movement_increment,
+		  cfg->grid_col,
+		  cfg->grid_mouse_col,
+		  &grid_keys);
+
+	init_discrete(dpy,
+		      cfg->movement_increment,
+		      &discrete_keys,
+		      cfg->discrete_indicator_color,
+		      cfg->discrete_indicator_size);
+
 	while(1) {
-		int start_btn = 0;
+		uint16_t grab_keys[] = {
+			grid_activation_key,
+			hint_activation_key,
+			discrete_activation_key,
+		};
+		uint16_t keyseq;
+		uint16_t exitkey;
 
-		uint16_t keyseq = input_wait_for_key(grab_keys, sizeof grab_keys/sizeof grab_keys[0]);
+		keyseq = input_wait_for_key(grab_keys, sizeof grab_keys/sizeof grab_keys[0]);
+start:
+		input_grab_keyboard();
 
-		if(grid_activation_key == keyseq) {
-			start_btn = grid(dpy,
-					 cfg->grid_nr,
-					 cfg->grid_nc,
-					 cfg->grid_line_width,
-					 cfg->grid_pointer_size,
-					 cfg->movement_increment,
-					 -1, -1,
-					 cfg->grid_col,
-					 cfg->grid_mouse_col,
-					 &grid_keys);
-		} else if(hint_activation_key == keyseq) {
-			start_btn = hints(dpy,
-					  cfg->hint_nc,
-					  cfg->hint_nr,
-					  cfg->hint_characters,
-					  cfg->hint_bgcol,
-					  cfg->hint_fgcol,
-					  &hint_keys);
-		}
+		if(grid_activation_key == keyseq)
+			exitkey = grid_warp(-1,-1);
+		else if(hint_activation_key == keyseq) {
+			exitkey = hint_warp();
+		} else
+			exitkey = discrete_warp(0);
 
-		if(start_btn != -1) {
-			discrete(dpy,
-				 cfg->movement_increment,
-				 cfg->double_click_timeout,
-				 start_btn,
-				 &discrete_keys,
-				 cfg->discrete_indicator_color,
-				 cfg->discrete_indicator_size);
+		while(1) {
+			int timeout = 0;
+			size_t i;
+
+			if(exitkey == hint_activation_key ||
+			   exitkey == grid_activation_key ||
+			   exitkey == discrete_activation_key) {
+				keyseq = exitkey;
+				goto start;
+			}
+
+			for (i = 0; i < MAX_BTNS; i++)
+				if(buttons[i] && (exitkey & 0xFF) == buttons[i]) {
+					input_click(i+1);
+					break;
+				}
+
+			if(i == 0)
+				timeout = cfg->double_click_timeout;
+			else if(exitkey && i == MAX_BTNS) 
+				break;
+
+			exitkey = discrete_warp(timeout);
+			if(exitkey == TIMEOUT_KEYSEQ)
+				break;
 		}
 
 		input_ungrab_keyboard();

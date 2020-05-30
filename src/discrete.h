@@ -26,21 +26,16 @@
 #include <stdint.h>
 
 struct discrete_keys {
-	uint16_t buttons[8];
-
 	uint16_t up;
 	uint16_t down;
 	uint16_t left;
 	uint16_t right;
-
-	uint16_t quit;
 };
 
-int discrete(Display *_dpy,
-	const int increment,
-	const int double_click_timeout,
-	int start_button,
-	struct discrete_keys *keys,
-	const char *indicator_color,
-	size_t indicator_sz);
+uint16_t discrete_warp(int timeout);
+void init_discrete(Display *_dpy,
+		  const int _increment,
+		  struct discrete_keys *_keys,
+		  const char *indicator_color,
+		  size_t indicator_sz);
 #endif

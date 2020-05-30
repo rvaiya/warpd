@@ -22,7 +22,6 @@
 
 #include <X11/Xlib.h>
 #include <X11/keysym.h>
-#include <X11/extensions/XTest.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -33,6 +32,8 @@
 
 static Display *dpy;
 static Window indicator = None;
+static struct discrete_keys *keys;
+static int increment;
 
 static void hide()
 {
@@ -51,15 +52,6 @@ static void rel_warp(int x, int y)
 {
 	XWarpPointer(dpy, 0, None, 0, 0, 0, 0, x, y);
 	XFlush(dpy);
-}
-
-static void click(int btn) 
-{
-	hide();
-	XTestFakeButtonEvent(dpy, btn, True, CurrentTime);
-	XTestFakeButtonEvent(dpy, btn, False, CurrentTime);
-	XSync(dpy, False);
-	draw();
 }
 
 static int hex_to_rgb(const char *str, uint8_t *r, uint8_t *g, uint8_t *b) 
@@ -127,16 +119,39 @@ static Window create_win(const char *col, int x, int y, int w, int h)
 	return win;
 }
 
-int discrete(Display *_dpy,
-	     const int increment,
-	     const int double_click_timeout,
-	     int start_button,
-	     struct discrete_keys *keys,
-	     const char *indicator_color,
-	     size_t indicator_sz)
+uint16_t discrete_warp(int timeout)
 {
+	draw();
+
+	while(1) {
+		uint16_t keyseq;
+
+		keyseq = input_next_key(timeout);
+
+		if(keyseq == keys->up)
+			rel_warp(0, -increment);
+		else if(keyseq == keys->down)
+			rel_warp(0, increment);
+		else if(keyseq == keys->left)
+			rel_warp(-increment, 0);
+		else if(keyseq == keys->right)
+			rel_warp(increment, 0);
+		else {
+			hide();
+			return keyseq;
+		}
+	}
+}
+
+void init_discrete(Display *_dpy,
+		  const int _increment,
+		  struct discrete_keys *_keys,
+		  const char *indicator_color,
+		  size_t indicator_sz)
+{
+	keys = _keys;
 	dpy = _dpy;
-	int clicked = 0;
+	increment = _increment;
 
 	XWindowAttributes info;
 	XGetWindowAttributes(dpy, DefaultRootWindow(dpy), &info);
@@ -146,41 +161,4 @@ int discrete(Display *_dpy,
 		indicator = create_win(indicator_color,
 				       info.width - indicator_sz - 20, 20,
 				       indicator_sz, indicator_sz);
-
-	draw();
-
-	if(start_button) {
-		clicked = 1;
-		click(start_button);
-	}
-
-	while(1) {
-		size_t i;
-		uint16_t keyseq;
-
-		keyseq = input_next_key(clicked ? double_click_timeout : 0);
-		if(!keyseq)
-			break;
-
-		if(keyseq == keys->up)
-			rel_warp(0, -increment);
-		if(keyseq == keys->down)
-			rel_warp(0, increment);
-		if(keyseq == keys->left)
-			rel_warp(-increment, 0);
-		if(keyseq == keys->right)
-			rel_warp(increment, 0);
-		if(keyseq == keys->quit)
-			break;
-
-		for (i = 0; i < sizeof keys->buttons/sizeof keys->buttons[0]; i++)
-			if(keys->buttons[i] == keyseq) {
-				if(i < 3) clicked++; //Don't timeout on scroll
-				click(i+1);
-				break;
-			}
-	}
-
-	hide();
-	return 0;
 }

@@ -8,9 +8,7 @@ struct cfg {
     char* grid_activation_key;
     char* discrete_activation_key;
     int movement_increment;
-    char* close_key;
     char* buttons;
-    char* trigger_mods;
     int double_click_timeout;
     int grid_nr;
     int grid_nc;
@@ -23,8 +21,8 @@ struct cfg {
     char* grid_mouse_col;
     int grid_pointer_size;
     int grid_line_width;
-    int hint_nc;
-    int hint_nr;
+    int hint_width;
+    int hint_height;
     char* hint_up;
     char* hint_left;
     char* hint_down;
@@ -32,6 +30,7 @@ struct cfg {
     char* hint_bgcol;
     char* hint_fgcol;
     char* hint_characters;
+    int hint_opacity;
     char* discrete_left;
     char* discrete_down;
     char* discrete_up;

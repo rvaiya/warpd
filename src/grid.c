@@ -43,6 +43,9 @@ static int cursor_width = 0;
 static int line_width = 0;
 static int hidden = 0;
 
+struct grid_keys *keys;
+static int movement_increment;
+
 static Display *dpy;
 
 //XFixes* functions are not idempotent (calling them more than
@@ -151,16 +154,6 @@ static void redraw()
 		return;
 	}
 
-	if(!mapped) {
-		XMapRaised(dpy, bw1);
-		XMapRaised(dpy, bw2);
-		XMapRaised(dpy, bw3);
-		XMapRaised(dpy, bw4);
-		for(i = 0; i < nc+nr-2; i++) XMapRaised(dpy, gridwins[i]);
-		XMapRaised(dpy, mw);
-
-		mapped = 1;
-	}
 	set_cursor_visibility(0);
 
 	XMoveWindow(dpy, mw, cx-(cursor_width/2), cy-(cursor_width/2));
@@ -181,7 +174,6 @@ static void redraw()
 	XMoveWindow(dpy, bw4, ux-line_width, ly);
 	XResizeWindow(dpy, bw4, line_width, uy-ly);
 
-
 	rowh = (uy-ly)/nr;
 	colw = (ux-lx)/nc;
 
@@ -197,6 +189,17 @@ static void redraw()
 			    gridwins[nc+i-1],
 			    lx, ly + (i+1) * rowh - (line_width/2));
 		XResizeWindow(dpy, gridwins[nc+i-1], ux-lx, line_width);
+	}
+
+	if(!mapped) {
+		XMapRaised(dpy, bw1);
+		XMapRaised(dpy, bw2);
+		XMapRaised(dpy, bw3);
+		XMapRaised(dpy, bw4);
+		for(i = 0; i < nc+nr-2; i++) XMapRaised(dpy, gridwins[i]);
+		XMapRaised(dpy, mw);
+
+		mapped = 1;
 	}
 
 	XFlush(dpy);
@@ -263,42 +266,8 @@ static void reset()
 	hidden = 0;
 }
 
-int grid(Display *_dpy,
-	int _nr,
-	int _nc,
-	int _line_width,
-	int _cursor_width,
-	int movement_increment,
-	int startrow,
-	int startcol,
-	const char *gridcol,
-	const char *mousecol,
-	struct grid_keys *keys) 
+uint16_t grid_warp(int startrow, int startcol)
 {
-	dpy = _dpy;
-	line_width = _line_width;
-	cursor_width = _cursor_width;
-
-	if(!bw1) {
-		bw1 = create_win(gridcol);
-		bw2 = create_win(gridcol);
-		bw3 = create_win(gridcol);
-		bw4 = create_win(gridcol);
-		mw = create_win(mousecol);
-
-	}
-
-	if(nc != _nc || nr != _nr) {
-		int i;
-
-		nc = _nc;
-		nr = _nr;
-
-		gridwins = malloc((nr + nc - 2) * sizeof(Window));
-		for(i = 0; i < (nr + nc - 2); i++)
-			gridwins[i] = create_win(gridcol);
-	}
-
 	reset();
 	focus_sector(startrow, startcol);
 	redraw();
@@ -309,38 +278,64 @@ int grid(Display *_dpy,
 
 		if(keys->up == keyseq)
 			rel_warp(0, -movement_increment);
-		if(keys->down == keyseq)
+		else if(keys->down == keyseq)
 			rel_warp(0, movement_increment);
-		if(keys->left == keyseq)
+		else if(keys->left == keyseq)
 			rel_warp(-movement_increment, 0);
-		if(keys->right == keyseq)
+		else if(keys->right == keyseq)
 			rel_warp(movement_increment, 0);
+		else {
+			int found = 0;
 
-		for(size_t i=0;i<sizeof keys->buttons / sizeof keys->buttons[0];i++)
-			if(keys->buttons[i] == keyseq) {
+			for (int i = 0; i < nr; i++)
+				for (int j = 0; j < nc; j++)
+					if(keys->grid[i*nc+j] == keyseq) {
+						focus_sector(i, j);
+						redraw();
+						found = 1;
+					}
+
+			if(!found) {
 				hidden = 1;
 				redraw();
 
 				XWarpPointer(dpy, 0, DefaultRootWindow(dpy), 0, 0, 0, 0, cx, cy);
 				XFlush(dpy);
 
-				return  i+1;
+				return  keyseq;
 			}
-
-		if(keys->close_key == keyseq) goto exit;
-
-		for (int i = 0; i < nr; i++)
-			for (int j = 0; j < nc; j++)
-				if(keys->grid[i*nc+j] == keyseq) {
-					focus_sector(i, j);
-					redraw();
-				}
+		}
 	}
+}
 
-exit:
-	hidden = 1;
-	redraw();
+void init_grid(Display *_dpy,
+	       int _nr,
+	       int _nc,
+	       int _line_width,
+	       int _cursor_width,
+	       int _movement_increment,
+	       const char *gridcol,
+	       const char *mousecol,
+	       struct grid_keys *_keys) 
+{
+	int i;
 
-	XWarpPointer(dpy, 0, DefaultRootWindow(dpy), 0, 0, 0, 0, cx, cy);
-	return -1;
+	dpy = _dpy;
+	line_width = _line_width;
+	cursor_width = _cursor_width;
+	keys = _keys;
+	movement_increment = _movement_increment;
+	nr = _nr;
+	nc = _nc;
+
+	bw1 = create_win(gridcol);
+	bw2 = create_win(gridcol);
+	bw3 = create_win(gridcol);
+	bw4 = create_win(gridcol);
+	mw = create_win(mousecol);
+
+	gridwins = malloc((nr + nc - 2) * sizeof(Window));
+	for(i = 0; i < (nr + nc - 2); i++)
+		gridwins[i] = create_win(gridcol);
+
 }

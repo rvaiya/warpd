@@ -39,9 +39,7 @@ struct cfg* parse_cfg(const char *fname) {
     cfg->grid_activation_key = "M-x";
     cfg->discrete_activation_key = "M-c";
     cfg->movement_increment = 20;
-    cfg->close_key = "Escape";
     cfg->buttons = "m,comma,period";
-    cfg->trigger_mods = "M-C";
     cfg->double_click_timeout = 300;
     cfg->grid_nr = 2;
     cfg->grid_nc = 2;
@@ -54,8 +52,8 @@ struct cfg* parse_cfg(const char *fname) {
     cfg->grid_mouse_col = "#00ff00";
     cfg->grid_pointer_size = 20;
     cfg->grid_line_width = 5;
-    cfg->hint_nc = 20;
-    cfg->hint_nr = 20;
+    cfg->hint_width = 40;
+    cfg->hint_height = 30;
     cfg->hint_up = "k";
     cfg->hint_left = "h";
     cfg->hint_down = "j";
@@ -63,6 +61,7 @@ struct cfg* parse_cfg(const char *fname) {
     cfg->hint_bgcol = "#00ff00";
     cfg->hint_fgcol = "#000000";
     cfg->hint_characters = "asdfghjkl;'zxcvbm,./";
+    cfg->hint_opacity = 100;
     cfg->discrete_left = "h";
     cfg->discrete_down = "j";
     cfg->discrete_up = "k";
@@ -88,12 +87,8 @@ struct cfg* parse_cfg(const char *fname) {
             cfg->discrete_activation_key = strdup(val);
         else if(!strcmp(key, "movement_increment"))
             cfg->movement_increment = atoi(val);
-        else if(!strcmp(key, "close_key"))
-            cfg->close_key = strdup(val);
         else if(!strcmp(key, "buttons"))
             cfg->buttons = strdup(val);
-        else if(!strcmp(key, "trigger_mods"))
-            cfg->trigger_mods = strdup(val);
         else if(!strcmp(key, "double_click_timeout"))
             cfg->double_click_timeout = atoi(val);
         else if(!strcmp(key, "grid_nr"))
@@ -118,10 +113,10 @@ struct cfg* parse_cfg(const char *fname) {
             cfg->grid_pointer_size = atoi(val);
         else if(!strcmp(key, "grid_line_width"))
             cfg->grid_line_width = atoi(val);
-        else if(!strcmp(key, "hint_nc"))
-            cfg->hint_nc = atoi(val);
-        else if(!strcmp(key, "hint_nr"))
-            cfg->hint_nr = atoi(val);
+        else if(!strcmp(key, "hint_width"))
+            cfg->hint_width = atoi(val);
+        else if(!strcmp(key, "hint_height"))
+            cfg->hint_height = atoi(val);
         else if(!strcmp(key, "hint_up"))
             cfg->hint_up = strdup(val);
         else if(!strcmp(key, "hint_left"))
@@ -136,6 +131,8 @@ struct cfg* parse_cfg(const char *fname) {
             cfg->hint_fgcol = strdup(val);
         else if(!strcmp(key, "hint_characters"))
             cfg->hint_characters = strdup(val);
+        else if(!strcmp(key, "hint_opacity"))
+            cfg->hint_opacity = atoi(val);
         else if(!strcmp(key, "discrete_left"))
             cfg->discrete_left = strdup(val);
         else if(!strcmp(key, "discrete_down"))

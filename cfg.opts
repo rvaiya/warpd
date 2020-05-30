@@ -3,10 +3,8 @@ grid_activation_key      string  "M-x"                   "Activates grid mode an
 discrete_activation_key  string  "M-c"                   "Activate discrete movement mode (manual cursor movement)."
 
 movement_increment       int     20                      "The movement increment used for grid and discrete mode."
-close_key                string  "Escape"                "Prematurely terminate the movement session."
 buttons                  string  "m,comma,period"        "The number of columns in the grid."
-trigger_mods             string  "M-C"                    "A set of modifiers which, when used in conjunction with the grid keys, immediately activates the grid and moves to the corresponding quadrant. E.G if set to `M-A` then `M-A-u` (where `M` is the windows key) will immediately warp to the first quadrant when pressed."
-double_click_timeout     int     300                     "The length of time (in ms) before warp automatically deactivates after the last click. 0 disables automatic deactivation entirely."
+double_click_timeout     int     300                     "The length of time (in ms) before warp automatically deactivates after the last click. 0 disables automatic deactivation entirely. This option only applies to button 1 (left click)."
 
 grid_nr                  int     2                       "The number of rows in the grid."
 grid_nc                  int     2                       "The number of columns in the grid."
@@ -22,8 +20,8 @@ grid_mouse_col           string  "#00ff00"               "The color of the mouse
 grid_pointer_size        int     20                      "The size of the grid pointer."
 grid_line_width          int     5                       "The size of grid lines."
 
-hint_nc                  int     20                      "The number of columns in hint mode."
-hint_nr                  int     20                      "The number of rows in hint mode."
+hint_width               int     40                      "The height (in pixels) of a hint."
+hint_height              int     30                      "The width (in pixels) of a hint."
 hint_up                  string  "k"                     "Moves the cursor up by movement_increment once a label has been selected in hint mode."
 hint_left                string  "h"                     "Moves the cursor left by movement_increment once a label has been selected in hint mode."
 hint_down                string  "j"                     "Moves the cursor down by movement_increment once a label has been selected in hint mode."
@@ -32,6 +30,7 @@ hint_right               string  "l"                     "Moves the cursor right
 hint_bgcol               string  "#00ff00"               "The background hint color."
 hint_fgcol               string  "#000000"               "The foreground hint color."
 hint_characters          string  "asdfghjkl;'zxcvbm,./"  "The set of hint characters used by hint mode."
+hint_opacity             int     100                     "Hint transparency (requires a compositor)."
 
 discrete_left            string  "h"                     "Move the cursor left in discrete mode."
 discrete_down            string  "j"                     "Move the cursor down in discrete mode."

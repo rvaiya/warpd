@@ -20,31 +20,26 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef _H_GRID_
-#define _H_GRID_
+#ifndef _HINT_DRW_H_
+#define _HINT_DRW_H_
 
-#define MAX_COLS 100
-#define MAX_ROWS 100
+#define MAX_HINTS 1024
 
-#include <stdint.h>
-
-struct grid_keys {
-	uint16_t up;
-	uint16_t right;
-	uint16_t left;
-	uint16_t down;
-
-	uint16_t grid[MAX_ROWS*MAX_COLS];
+struct hint
+{
+	int x;
+	int y;
+	int w;
+	int h;
+	char label[10];
 };
 
-uint16_t grid_warp(int startrow, int startcol);
-void init_grid(Display *_dpy,
-	       int _nr,
-	       int _nc,
-	       int _line_width,
-	       int _cursor_width,
-	       int _movement_increment,
-	       const char *gridcol,
-	       const char *mousecol,
-	       struct grid_keys *_keys);
+void init_hint_drw(Display *dpy,
+		   struct hint *hints,
+		   size_t n,
+		   int opacity,
+		   const char *bgcol,
+		   const char *fgcol);
+
+void hint_drw_filter(size_t *indices, size_t n);
 #endif

@@ -171,8 +171,6 @@ for name, _, val, desc in opts:
     optstr += '**%s**: %s (default: %s).\n\n' % (name, desc, val)
 
 print("Generating README.md")
-open('README.md', 'w').write(
-    open('README.md.t', 'r').read().replace('{opts}', optstr))
 print("man.md")
 open('man.md', 'w').write(
     open('man.md.t', 'r').read().replace('{opts}', optstr))

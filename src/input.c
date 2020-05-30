@@ -29,6 +29,7 @@
 #include <X11/keysym.h>
 #include <X11/extensions/XTest.h>
 #include <X11/extensions/XInput2.h>
+#include "input.h"
 
 /*
  * Use Xinput instead of standard X grabs to avoid interference with X toolkits
@@ -51,11 +52,11 @@ static int nkbds;
 static int *kbds;
 
 static int xiop;
+static int active_mods = 0;
 
 static void init_keyboards()
 {
 	int i, n;
-	XIEventMask mask;
 
 	XIDeviceInfo* devs = XIQueryDevice(dpy, XIAllDevices, &n);
 	kbds = calloc(n, sizeof(int));
@@ -86,7 +87,7 @@ static void clear_keys()
 	XFlush(dpy);
 }
 
-static void grab_keyboard()
+void input_grab_keyboard()
 {
 	XIEventMask mask;
 
@@ -243,8 +244,6 @@ static void grab(uint16_t seq)
 	}
 }
 
-//Waits for one of the provided key sequences to be pressed and 
-//returns the activation sequence after grabbing the keyboard.
 uint16_t input_wait_for_key(uint16_t *keys, size_t n)
 {
 	size_t i;
@@ -267,7 +266,6 @@ uint16_t input_wait_for_key(uint16_t *keys, size_t n)
 
 			for (i = 0; i < n; i++) {
 				if((((ev->mods.effective & ~Mod2Mask) << 8) | ev->detail) == keys[i]) {
-					grab_keyboard();
 					XFreeEventData(dpy, cookie);
 					return keys[i];
 				}
@@ -276,6 +274,67 @@ uint16_t input_wait_for_key(uint16_t *keys, size_t n)
 
 		XFreeEventData(dpy, cookie);
 	}
+}
+
+static int ismod(uint16_t code)
+{
+	const KeySym syms[] = {
+		XK_Shift_L,
+		XK_Shift_R,
+		XK_Control_L,
+		XK_Control_R,
+		XK_Super_L,
+		XK_Super_R,
+		XK_Alt_L,
+		XK_Super_R,
+	};
+
+	static int init = 0;
+	static KeyCode mods[sizeof syms / sizeof syms[0]];
+
+	if(!init) {
+		size_t i;
+		for (i = 0; i < sizeof syms / sizeof syms[0]; i++) {
+			mods[i] = XKeysymToKeycode(dpy, syms[i]);
+		}
+		init = 1;
+	};
+
+	size_t i;
+	for (i = 0; i < sizeof mods / sizeof mods[0]; i++) {
+		if(mods[i] == code)
+			return 1;
+	}
+
+	return 0;
+}
+
+void input_click(int btn) 
+{
+	input_ungrab_keyboard();
+	if(Mod1Mask & active_mods)
+		XTestFakeKeyEvent(dpy, XKeysymToKeycode(dpy, XK_Alt_L), 1, CurrentTime);
+	if(ShiftMask & active_mods)
+		XTestFakeKeyEvent(dpy, XKeysymToKeycode(dpy, XK_Shift_L), 1, CurrentTime);
+	if(Mod4Mask & active_mods)
+		XTestFakeKeyEvent(dpy, XKeysymToKeycode(dpy, XK_Super_L), 1, CurrentTime);
+	if(ControlMask & active_mods)
+		XTestFakeKeyEvent(dpy, XKeysymToKeycode(dpy, XK_Control_L), 1, CurrentTime);
+
+	XTestFakeButtonEvent(dpy, btn, True, CurrentTime);
+	XTestFakeButtonEvent(dpy, btn, False, CurrentTime);
+
+	if(Mod1Mask & active_mods)
+		XTestFakeKeyEvent(dpy, XKeysymToKeycode(dpy, XK_Alt_L), 0, CurrentTime);
+	if(ShiftMask & active_mods)
+		XTestFakeKeyEvent(dpy, XKeysymToKeycode(dpy, XK_Shift_L), 0, CurrentTime);
+	if(Mod4Mask & active_mods)
+		XTestFakeKeyEvent(dpy, XKeysymToKeycode(dpy, XK_Super_L), 0, CurrentTime);
+	if(ControlMask & active_mods)
+		XTestFakeKeyEvent(dpy, XKeysymToKeycode(dpy, XK_Control_L), 0, CurrentTime);
+
+	XSync(dpy, False);
+	input_grab_keyboard();
 }
 
 uint16_t input_next_key(int timeout)
@@ -294,7 +353,7 @@ uint16_t input_next_key(int timeout)
 		       timeout ? &(struct timeval){0, timeout*1000} : NULL);
 
 		if(!XPending(dpy))
-			return 0;
+			return TIMEOUT_KEYSEQ;
 
 		while(XPending(dpy)) {
 			XEvent ev;
@@ -308,7 +367,9 @@ uint16_t input_next_key(int timeout)
 
 			if (cookie->evtype == XI_KeyPress) {
 				XIDeviceEvent *ev = (XIDeviceEvent*)(cookie->data);
-				return (((ev->mods.effective & ~Mod2Mask) << 8) | ev->detail);
+				active_mods = ev->mods.effective;
+				if(!ismod(ev->detail))
+					return (((ev->mods.effective & ~Mod2Mask) << 8) | ev->detail);
 			}
 
 			XFreeEventData(dpy, cookie);
