@@ -29,7 +29,9 @@
 #include <X11/keysym.h>
 #include <X11/extensions/XTest.h>
 #include <X11/extensions/XInput2.h>
+#include <assert.h>
 #include "input.h"
+#include "dbg.h"
 
 /*
  * Use Xinput instead of standard X grabs to avoid interference with X toolkits
@@ -48,25 +50,44 @@
  */
 
 static Display *dpy;
-static int nkbds;
-static int *kbds;
+static size_t nkbds;
+static int kbds[256];
 
 static int xiop;
 static int active_mods = 0;
 
-static void init_keyboards()
+static void rescan_devices()
 {
 	int i, n;
 
 	XIDeviceInfo* devs = XIQueryDevice(dpy, XIAllDevices, &n);
-	kbds = calloc(n, sizeof(int));
+
+	nkbds = 0;
 
 	for (i = 0; i < n; i++) {
-		if (devs[i].use == XISlaveKeyboard)
+		if (devs[i].use == XISlaveKeyboard ||
+		    devs[i].use == XIFloatingSlave)
 			kbds[nkbds++] = devs[i].deviceid;
 	}
 
 	XIFreeDeviceInfo(devs);
+}
+
+static void init_keyboards()
+{
+	XIEventMask evmask;
+
+	evmask.deviceid = XIAllDevices;
+	evmask.mask_len = XIMaskLen(XI_LASTEVENT);
+	evmask.mask = calloc(evmask.mask_len, sizeof(char));
+
+	XISetMask(evmask.mask, XI_HierarchyChanged);
+	XISelectEvents(dpy, DefaultRootWindow(dpy), &evmask, 1);
+
+	free(evmask.mask);
+	XFlush(dpy);
+
+	rescan_devices();
 }
 
 static void clear_keys()
@@ -89,6 +110,7 @@ static void clear_keys()
 
 void input_grab_keyboard()
 {
+	size_t i;
 	XIEventMask mask;
 
 	mask.deviceid = XIAllDevices;
@@ -98,7 +120,7 @@ void input_grab_keyboard()
 	XISetMask(mask.mask, XI_KeyRelease);
 
 	clear_keys();
-	for (int i = 0; i < nkbds; i++) {
+	for (i = 0; i < nkbds; i++) {
 		if(XIGrabDevice(dpy, kbds[i],
 				DefaultRootWindow(dpy),
 				CurrentTime,
@@ -206,7 +228,7 @@ void init_input(Display *_dpy)
 
 void input_ungrab_keyboard()
 {
-	int i;
+	size_t i;
 
 	for (i = 0; i < nkbds; i++)
 		XIUngrabDevice(dpy, kbds[i], CurrentTime);
@@ -217,6 +239,7 @@ void input_ungrab_keyboard()
 
 static void grab(uint16_t seq)
 {
+	size_t i;
 	int mods = seq >> 8;
 	KeyCode code = seq & 0x00FF;
 	XIEventMask mask;
@@ -226,7 +249,7 @@ static void grab(uint16_t seq)
 	mask.mask = calloc(mask.mask_len, sizeof(char));
 	XISetMask (mask.mask, XI_KeyRelease);
 
-	for (int i = 0; i < nkbds; i++) {
+	for (i = 0; i < nkbds; i++) {
 		if(XIGrabKeycode(dpy,
 				 kbds[i],
 				 code,
@@ -258,8 +281,15 @@ uint16_t input_wait_for_key(uint16_t *keys, size_t n)
 		    cookie->extension != xiop ||
 		    !XGetEventData(dpy, cookie))
 			continue;
+		if(cookie->evtype == XI_HierarchyChanged) {
+			XIHierarchyEvent *ev = (XIHierarchyEvent*)cookie->data;
 
-		if (cookie->evtype == XI_KeyPress) {
+			if(ev->flags & (XIDeviceEnabled | XIDeviceDisabled)) {
+				rescan_devices();
+				for (i = 0; i < n; i++)
+					grab(keys[i]);
+			}
+		} else if (cookie->evtype == XI_KeyPress) {
 			size_t i;
 			XIDeviceEvent *ev = (XIDeviceEvent*)(cookie->data);
 
