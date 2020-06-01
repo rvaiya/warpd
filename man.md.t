@@ -55,7 +55,7 @@ E.G
 
 ## Hint Mode (M-z)
 
-This is an experimental mode which populates the screen with a list of labels and
+This is an mode which populates the screen with a list of labels and
 allows the user to immediately warp the pointer to a given location by pressing
 the corresponding key sequence. It is similar to functionality provided by
 browser plugins like Vimperator but works outside of the browser and
@@ -75,6 +75,40 @@ By tweaking `hints_nc` and `hints_nr` it should be possible to make most screen
 locations accessible with 2-4 key strokes. After a bit of practice this becomes
 second nature and is (in the author's opinion) superior to the grid method for
 quickly pinpointing text and UI elements.
+
+## Discrete Mode (M-c)
+
+This is an auxiliary movement mode designed for short distance pointer
+manipulation. It is the end stage of hint mode and grid mode (if button2 is
+pressed) and is particularly useful for manipulating things like popup menus
+and selecting text using the drag functionality (see **Dragging**). The default
+behaviour is vi-like. Pressing the mapped directional keys (default hjkl) moves
+the cursor by a fixed increment but the pointer can also be warped to the edges
+of the screen using the home, middle, and last mappings (see **Config
+Options**). Finally a numeric multiplier can be supplied to the directional
+keys as an input prefix in order to affect movement in the corresponding
+direction (e.g 10j moves 10 units down). 
+
+# Dragging
+
+Simulating a drag operation can be done by activating one of the movement
+modes, moving to the desired starting location and pressing the drag activation
+key (default v). At this point the same mode will be reopened to facilitate
+destination selection. Warp will then simulate dragging the source to the
+destination along the shortest linear path. The end result provides a concise
+and reasonably flexible mechanism for simulating common mouse operations.
+Paired with discrete mode, the feature can be useful for highlighting text,
+while dragging and dropping a file between windows might better be acomplished
+by using the feature in conjunction with grid or hint mode. 
+
+## Notes
+
+Activating discrete mode and pressing v can provide a familiar environment to a
+*vi* user but it is important to remember that pointer manipulation is
+application agnostic and consequently ignorant of the text on the screen. All
+movement is necessarily based on *movement_increment*. consequently drag + hint
+mode can be a superior method for surgically selecting text (though it may at
+first be less intuitive).
 
 # Config Options
 

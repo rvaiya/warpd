@@ -30,9 +30,15 @@ struct discrete_keys {
 	uint16_t down;
 	uint16_t left;
 	uint16_t right;
+
+	uint16_t home;
+	uint16_t middle;
+	uint16_t last;
+	uint16_t beginning;
+	uint16_t end;
 };
 
-uint16_t discrete_warp(int timeout);
+uint16_t discrete_warp();
 void init_discrete(Display *_dpy,
 		  const int _increment,
 		  struct discrete_keys *_keys,

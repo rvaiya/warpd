@@ -147,7 +147,6 @@ const char* input_keyseq_to_string(uint16_t seq)
 
 uint16_t input_parse_keyseq(const char* key) 
 {
-	KeySym sym;
 	if(!key || key[0] == 0) return 0;
 
 	uint8_t code = 0;
@@ -176,7 +175,7 @@ uint16_t input_parse_keyseq(const char* key)
 	}
 
 	if(key[0]) {
-		sym = XStringToKeysym(key);
+		KeySym sym = XStringToKeysym(key);
 
 		if(sym == NoSymbol) {
 			fprintf(stderr, "Could not find keysym for %s\n", key);

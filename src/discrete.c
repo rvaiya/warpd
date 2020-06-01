@@ -54,6 +54,24 @@ static void rel_warp(int x, int y)
 	XFlush(dpy);
 }
 
+static void abs_warp(int x, int y) 
+{
+	XWindowAttributes info;
+	Window chld, root;
+	int cx, cy, _;
+	unsigned int _u;
+
+	/* Obtain absolute pointer coordinates */
+	XQueryPointer(dpy, DefaultRootWindow(dpy), &root, &chld, &cx, &cy, &_, &_, &_u);
+	XGetWindowAttributes(dpy, DefaultRootWindow(dpy), &info);
+
+	x = x == -1 ? cx : (x * info.width) / 100;
+	y = y == -1 ? cy : (y * info.height) / 100;
+
+	XWarpPointer(dpy, 0, DefaultRootWindow(dpy), 0, 0, 0, 0, x, y);
+	XFlush(dpy);
+}
+
 static int hex_to_rgb(const char *str, uint8_t *r, uint8_t *g, uint8_t *b) 
 {
 #define X2B(c) ((c >= '0' && c <= '9') ? (c & 0xF) : (((c | 0x20) - 'a') + 10))
@@ -119,24 +137,70 @@ static Window create_win(const char *col, int x, int y, int w, int h)
 	return win;
 }
 
-uint16_t discrete_warp(int timeout)
+static int tonum(uint16_t keyseq)
+{
+	size_t i;
+	static uint16_t nums[10] = {0};
+
+	if(!nums[0]) {
+		nums[0] = input_parse_keyseq("0");
+		nums[1] = input_parse_keyseq("1");
+		nums[2] = input_parse_keyseq("2");
+		nums[3] = input_parse_keyseq("3");
+		nums[4] = input_parse_keyseq("4");
+		nums[5] = input_parse_keyseq("5");
+		nums[6] = input_parse_keyseq("6");
+		nums[7] = input_parse_keyseq("7");
+		nums[8] = input_parse_keyseq("8");
+		nums[9] = input_parse_keyseq("9");
+	}
+
+	for (i = 0; i < 10; i++) {
+		if(keyseq == nums[i]) return i;
+	}
+
+	return -1;
+}
+
+uint16_t discrete_warp()
 {
 	draw();
 
+	int opnum = 0;
 	while(1) {
 		uint16_t keyseq;
+		int num;
 
-		keyseq = input_next_key(timeout);
+		keyseq = input_next_key(0);
 
-		if(keyseq == keys->up)
-			rel_warp(0, -increment);
-		else if(keyseq == keys->down)
-			rel_warp(0, increment);
-		else if(keyseq == keys->left)
-			rel_warp(-increment, 0);
-		else if(keyseq == keys->right)
-			rel_warp(increment, 0);
-		else {
+		if(keyseq == keys->home)
+			abs_warp(-1, 0);
+		else if(keyseq == keys->last)
+			abs_warp(-1, 100);
+		else if(keyseq == keys->middle)
+			abs_warp(-1, 50);
+		else if(keyseq == keys->beginning)
+			abs_warp(0, -1);
+		else if(keyseq == keys->end)
+			abs_warp(100, -1);
+		else if(keyseq == keys->up) {
+			rel_warp(0, -increment*(opnum ? opnum : 1));
+			opnum = 0;
+		} else if(keyseq == keys->down) {
+			rel_warp(0, increment*(opnum ? opnum : 1));
+			opnum = 0;
+		} else if(keyseq == keys->left) {
+			rel_warp(-increment*(opnum ? opnum : 1), 0);
+			opnum = 0;
+		} else if(keyseq == keys->right) {
+			rel_warp(increment*(opnum ? opnum : 1), 0);
+			opnum = 0;
+		} else if ((num=tonum(keyseq)) != -1) {
+			if(num == 0 && opnum == 0)
+				rel_warp(-10000, 0);
+			else
+				opnum = opnum*10 + num;
+		} else {
 			hide();
 			return keyseq;
 		}

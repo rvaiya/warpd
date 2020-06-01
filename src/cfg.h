@@ -10,6 +10,7 @@ struct cfg {
     int movement_increment;
     char* buttons;
     int double_click_timeout;
+    char* drag_key;
     int grid_nr;
     int grid_nc;
     char* grid_up;
@@ -37,6 +38,11 @@ struct cfg {
     char* discrete_right;
     char* discrete_indicator_color;
     int discrete_indicator_size;
+    char* discrete_home;
+    char* discrete_middle;
+    char* discrete_last;
+    char* discrete_beginning;
+    char* discrete_end;
 };
 
 struct cfg* parse_cfg(const char *fname);

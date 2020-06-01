@@ -38,7 +38,6 @@
 #include "cfg.h"
 #include "dbg.h"
 #include "input.h"
-#include "keynames.h"
 
 #define MAX_BTNS 8
 
@@ -48,6 +47,8 @@ static int opt_daemonize = 0;
 static const char usage[] = 
 "warp [-l] [-h] [-v] \n\n"
 "See the manpage for more details and usage examples.\n";
+static struct cfg *cfg;
+static uint16_t drag_key = 0;
 
 static uint16_t get_keyseq(const char *s) 
 {
@@ -55,7 +56,7 @@ static uint16_t get_keyseq(const char *s)
 
 	seq = input_parse_keyseq(s);
 	if(!seq) {
-		fprintf(stderr, "ERROR: \"%s\" is not a valid key key sequence\n", s);
+		fprintf(stderr, "ERROR: \"%s\" is not a valid key sequence\n", s);
 		exit(-1);
 	}
 
@@ -109,8 +110,10 @@ static void proc_args(char **argv, int argc)
 		switch(opt) {
 			size_t i;
 		case 'l':
-			for(i = 0; i < sizeof(keynames)/sizeof(keynames[0]); i++)
-				printf("%s\n", keynames[i]);
+			for(i = 0; i < 256; i++) {
+				const char *s = XKeysymToString(XKeycodeToKeysym(dpy, i, 0));
+				if(s) printf("%s\n", s);
+			}
 			exit(0);
 			break;
 		case 'd':
@@ -151,9 +154,34 @@ static void check_lock_file()
 	}
 }
 
-int main(int argc, char **argv) {
+uint16_t query_intent(uint16_t keyseq)
+{
+	static uint16_t discrete_activation_key = 0;
+	static uint16_t hint_activation_key;
+	static uint16_t grid_activation_key;
+
+	if(!discrete_activation_key) {
+		discrete_activation_key = get_keyseq(cfg->discrete_activation_key);
+		hint_activation_key = get_keyseq(cfg->hint_activation_key);
+		grid_activation_key = get_keyseq(cfg->grid_activation_key);
+	}
+
+	if(grid_activation_key == keyseq)
+		return query_intent(grid_warp(-1,-1));
+	else if(hint_activation_key == keyseq) {
+		if((keyseq=hint_warp()))
+			return query_intent(keyseq);
+		else
+			return query_intent(discrete_warp(0));
+	} else if(discrete_activation_key == keyseq)
+		return query_intent(discrete_warp(0));
+
+	return keyseq;
+}
+
+int main(int argc, char **argv) 
+{
 	char path[PATH_MAX];
-	struct cfg *cfg;
 
 	struct hint_keys hint_keys;
 	struct grid_keys grid_keys;
@@ -186,17 +214,23 @@ int main(int argc, char **argv) {
 	};
 
 	discrete_keys = (struct discrete_keys){
-		up:     get_keyseq(cfg->discrete_up),
-		down:   get_keyseq(cfg->discrete_down),
-		left:   get_keyseq(cfg->discrete_left),
-		right:  get_keyseq(cfg->discrete_right),
+		up:        get_keyseq(cfg->discrete_up),
+		down:      get_keyseq(cfg->discrete_down),
+		left:      get_keyseq(cfg->discrete_left),
+		right:     get_keyseq(cfg->discrete_right),
+
+		home:      get_keyseq(cfg->discrete_home),
+		middle:    get_keyseq(cfg->discrete_middle),
+		last:      get_keyseq(cfg->discrete_last),
+		beginning: get_keyseq(cfg->discrete_beginning),
+		end:       get_keyseq(cfg->discrete_end),
 	};
 
 	grid_keys = (struct grid_keys){
-		up:         get_keyseq(cfg->grid_up),
-		down:       get_keyseq(cfg->grid_down),
-		left:       get_keyseq(cfg->grid_left),
-		right:      get_keyseq(cfg->grid_right),
+		up:    get_keyseq(cfg->grid_up),
+		down:  get_keyseq(cfg->grid_down),
+		left:  get_keyseq(cfg->grid_left),
+		right: get_keyseq(cfg->grid_right),
 	};
 
 	parse_keylist(cfg->buttons,
@@ -210,6 +244,7 @@ int main(int argc, char **argv) {
 	discrete_activation_key = get_keyseq(cfg->discrete_activation_key);
 	hint_activation_key = get_keyseq(cfg->hint_activation_key);
 	grid_activation_key = get_keyseq(cfg->grid_activation_key);
+	drag_key = get_keyseq(cfg->drag_key);
 
 	if(opt_daemonize) daemonize();
 
@@ -244,45 +279,41 @@ int main(int argc, char **argv) {
 			hint_activation_key,
 			discrete_activation_key,
 		};
-		uint16_t keyseq;
-		uint16_t exitkey;
+		uint16_t activation_key;
+		uint16_t intent_key;
 
-		keyseq = input_wait_for_key(grab_keys, sizeof grab_keys/sizeof grab_keys[0]);
-start:
+		activation_key = input_wait_for_key(grab_keys, sizeof grab_keys/sizeof grab_keys[0]);
+
 		input_grab_keyboard();
 
-		if(grid_activation_key == keyseq)
-			exitkey = grid_warp(-1,-1);
-		else if(hint_activation_key == keyseq) {
-			exitkey = hint_warp();
-		} else
-			exitkey = discrete_warp(0);
+		intent_key = query_intent(activation_key);
+
+		if(intent_key == drag_key) {
+			XTestFakeButtonEvent(dpy, 1, True, CurrentTime);
+			query_intent(activation_key);
+			XTestFakeButtonEvent(dpy, 1, False, CurrentTime);
+			input_ungrab_keyboard();
+			continue;
+		}
 
 		while(1) {
-			int timeout = 0;
 			size_t i;
-
-			if(exitkey == hint_activation_key ||
-			   exitkey == grid_activation_key ||
-			   exitkey == discrete_activation_key) {
-				keyseq = exitkey;
-				goto start;
-			}
-
-			for (i = 0; i < MAX_BTNS; i++)
-				if(buttons[i] && (exitkey & 0xFF) == buttons[i]) {
+			for (i = 0; i < MAX_BTNS; i++) {
+				if(buttons[i] == (intent_key & 0xFF)) {
 					input_click(i+1);
 					break;
 				}
+			}
+			if(i == MAX_BTNS) break;
 
-			if(i == 0)
-				timeout = cfg->double_click_timeout;
-			else if(exitkey && i == MAX_BTNS) 
+			if(i == 0) {
+				while(input_next_key(cfg->double_click_timeout) == buttons[0]) {
+					input_click(1);
+				}
 				break;
+			}
 
-			exitkey = discrete_warp(timeout);
-			if(exitkey == TIMEOUT_KEYSEQ)
-				break;
+			intent_key = query_intent(discrete_activation_key);
 		}
 
 		input_ungrab_keyboard();
