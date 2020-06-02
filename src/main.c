@@ -283,6 +283,7 @@ int main(int argc, char **argv)
 		uint16_t intent_key;
 
 		activation_key = input_wait_for_key(grab_keys, sizeof grab_keys/sizeof grab_keys[0]);
+		dbg("Processing activation key: %s", input_keyseq_to_string(activation_key));
 
 		input_grab_keyboard();
 

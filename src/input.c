@@ -249,17 +249,19 @@ static void grab(uint16_t seq)
 	mask.mask = calloc(mask.mask_len, sizeof(char));
 	XISetMask (mask.mask, XI_KeyRelease);
 
+	dbg("Grabbing %s", input_keyseq_to_string(seq));
 	for (i = 0; i < nkbds; i++) {
-		if(XIGrabKeycode(dpy,
-				 kbds[i],
-				 code,
+		if(XIGrabKeycode(dpy, kbds[i], code,
 				 DefaultRootWindow(dpy),
 				 GrabModeAsync,
 				 GrabModeAsync,
-				 False,
-				 &mask,
-				 1,
-				 (XIGrabModifiers[]){{mods, 0}})) {
+				 False, &mask, 1, (XIGrabModifiers[]){{mods, 0}}) ||
+
+		   XIGrabKeycode(dpy, kbds[i], code,
+				 DefaultRootWindow(dpy),
+				 GrabModeAsync,
+				 GrabModeAsync,
+				 False, &mask, 1, (XIGrabModifiers[]){{mods | Mod2Mask, 0}})) {
 			fprintf(stderr, "FATAL: Failed to grab %s!\n", input_keyseq_to_string(seq));
 			exit(-1);
 		}
@@ -292,9 +294,11 @@ uint16_t input_wait_for_key(uint16_t *keys, size_t n)
 		} else if (cookie->evtype == XI_KeyPress) {
 			size_t i;
 			XIDeviceEvent *ev = (XIDeviceEvent*)(cookie->data);
+			const uint16_t keyseq = (((ev->mods.effective & ~Mod2Mask) << 8) | ev->detail);
 
+			dbg("Processing key %s", input_keyseq_to_string(keyseq));
 			for (i = 0; i < n; i++) {
-				if((((ev->mods.effective & ~Mod2Mask) << 8) | ev->detail) == keys[i]) {
+				if(keyseq == keys[i]) {
 					XFreeEventData(dpy, cookie);
 					return keys[i];
 				}
