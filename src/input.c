@@ -66,8 +66,10 @@ static void rescan_devices()
 
 	for (i = 0; i < n; i++) {
 		if (devs[i].use == XISlaveKeyboard ||
-		    devs[i].use == XIFloatingSlave)
+		    devs[i].use == XIFloatingSlave) {
+			dbg("detected keyboard: %s (%d)", devs[i].name, devs[i].deviceid);
 			kbds[nkbds++] = devs[i].deviceid;
+		}
 	}
 
 	XIFreeDeviceInfo(devs);

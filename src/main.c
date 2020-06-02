@@ -233,6 +233,7 @@ int main(int argc, char **argv)
 		right: get_keyseq(cfg->grid_right),
 	};
 
+	dbg("Built from commit: "COMMIT"\n");
 	parse_keylist(cfg->buttons,
 		      buttons,
 		      sizeof buttons / sizeof buttons[0]);
