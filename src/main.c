@@ -275,16 +275,16 @@ int main(int argc, char **argv)
 		      cfg->discrete_indicator_size);
 
 	while(1) {
-		uint16_t grab_keys[] = {
+		uint16_t grabbed_keys[] = {
 			grid_activation_key,
 			hint_activation_key,
-			discrete_activation_key,
+			discrete_activation_key
 		};
+
 		uint16_t activation_key;
 		uint16_t intent_key;
 
-		activation_key = input_wait_for_key(grab_keys, sizeof grab_keys/sizeof grab_keys[0]);
-		dbg("Processing activation key: %s", input_keyseq_to_string(activation_key));
+		activation_key = input_wait_for_key(grabbed_keys, sizeof grabbed_keys / sizeof grabbed_keys[0]);
 
 		input_grab_keyboard();
 

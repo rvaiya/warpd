@@ -127,7 +127,6 @@ static Window create_win(const char *col)
 				 });
 
 
-	XMapWindow(dpy, w);
 	return w;
 }
 

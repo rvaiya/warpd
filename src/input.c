@@ -30,8 +30,8 @@
 #include <X11/extensions/XTest.h>
 #include <X11/extensions/XInput2.h>
 #include <assert.h>
-#include "input.h"
 #include "dbg.h"
+#include "input.h"
 
 /*
  * Use Xinput instead of standard X grabs to avoid interference with X toolkits
@@ -47,14 +47,28 @@
  * implement a custom event loop, but the current API is cleaner and sufficient
  * for the intended use case.
 
- */
+*/
 
 static Display *dpy;
 static size_t nkbds;
 static int kbds[256];
 
-static int xiop;
 static int active_mods = 0;
+
+static struct {
+	KeySym sym;
+	uint16_t mask;
+	KeyCode code;
+} mods[] = {
+	{ XK_Shift_L, ShiftMask, 0},
+	{ XK_Shift_R, ShiftMask, 0},
+	{ XK_Control_L, ControlMask, 0},
+	{ XK_Control_R, ControlMask, 0},
+	{ XK_Super_R, Mod4Mask, 0},
+	{ XK_Super_L, Mod4Mask, 0},
+	{ XK_Alt_L, Mod1Mask, 0},
+	{ XK_Alt_R, Mod1Mask, 0},
+};
 
 static void rescan_devices()
 {
@@ -75,29 +89,25 @@ static void rescan_devices()
 	XIFreeDeviceInfo(devs);
 }
 
-static void init_keyboards()
+static uint16_t get_mod_mask(uint16_t code)
 {
-	XIEventMask evmask;
+	size_t i;
 
-	evmask.deviceid = XIAllDevices;
-	evmask.mask_len = XIMaskLen(XI_LASTEVENT);
-	evmask.mask = calloc(evmask.mask_len, sizeof(char));
+	for (i = 0; i < sizeof mods / sizeof mods[0]; i++) {
+		if(mods[i].code == code)
+			return (mods[i].mask << 8);
+	}
 
-	XISetMask(evmask.mask, XI_HierarchyChanged);
-	XISelectEvents(dpy, DefaultRootWindow(dpy), &evmask, 1);
-
-	free(evmask.mask);
-	XFlush(dpy);
-
-	rescan_devices();
+	return 0;
 }
 
 static void clear_keys()
 {
-	char keymap[32];
 	size_t i;
+	char keymap[32];
 
 	XQueryKeymap(dpy, keymap);
+
 	for (i = 0; i < sizeof keymap; i++) {
 		int j;
 		for (j = 0;j<8;j++) {
@@ -107,13 +117,44 @@ static void clear_keys()
 			}
 		}
 	}
+
 	XFlush(dpy);
+	active_mods = 0;
+}
+
+uint16_t input_wait_for_key(uint16_t *keys, size_t n)
+{
+	size_t i;
+
+	for (i = 0; i < n; i++) {
+		// Ensure X doesn't process the key without modifiers. We don't
+		// actually care about this event.
+		XGrabKey(dpy,
+			 keys[i] & 0xFF,
+			 keys[i] >> 8,
+			 DefaultRootWindow(dpy),
+			 False,
+			 0, 0);
+	}
+
+	while(1) {
+		uint16_t key = input_next_key();
+		XUngrabKeyboard(dpy, CurrentTime);
+
+		for (i = 0; i < n; i++) {
+			if(key == keys[i])
+				return key;
+		}
+	}
+
 }
 
 void input_grab_keyboard()
 {
 	size_t i;
 	XIEventMask mask;
+
+	dbg("Ungrabbing keyboard");
 
 	mask.deviceid = XIAllDevices;
 	mask.mask_len = XIMaskLen(XI_LASTEVENT);
@@ -137,7 +178,6 @@ void input_grab_keyboard()
 
 	XFlush(dpy);
 }
-
 
 const char* input_keyseq_to_string(uint16_t seq)
 {
@@ -217,21 +257,34 @@ uint16_t input_parse_keyseq(const char* key)
 
 void init_input(Display *_dpy)
 {
+	size_t i;
 	dpy = _dpy;
-	int ev, err;
 
-	if (!XQueryExtension(dpy, "XInputExtension", &xiop, &ev, &err)) {
-		fprintf(stderr, "FATAL: X Input extension not available.\n");
-		exit(-1);
-	}
+	for (i = 0; i < sizeof mods / sizeof mods[0]; i++)
+		mods[i].code = XKeysymToKeycode(dpy, mods[i].sym);
 
-	init_keyboards();
+	XIEventMask evmask;
+
+	evmask.deviceid = XIAllDevices;
+	evmask.mask_len = XIMaskLen(XI_LASTEVENT);
+	evmask.mask = calloc(evmask.mask_len, sizeof(char));
+
+	XISetMask(evmask.mask, XI_HierarchyChanged);
+	XISetMask(evmask.mask, XI_KeyPress);
+	XISetMask(evmask.mask, XI_KeyRelease);
+	XISelectEvents(dpy, DefaultRootWindow(dpy), &evmask, 1);
+
+	free(evmask.mask);
+	XFlush(dpy);
+
+	rescan_devices();
 }
 
 void input_ungrab_keyboard()
 {
 	size_t i;
 
+	dbg("Ungrabbing keyboard");
 	for (i = 0; i < nkbds; i++)
 		XIUngrabDevice(dpy, kbds[i], CurrentTime);
 
@@ -239,133 +292,29 @@ void input_ungrab_keyboard()
 	clear_keys();
 }
 
-static void grab(uint16_t seq)
-{
-	size_t i;
-	int mods = seq >> 8;
-	KeyCode code = seq & 0x00FF;
-	XIEventMask mask;
-
-	mask.deviceid = XIAllMasterDevices;
-	mask.mask_len = XIMaskLen(XI_LASTEVENT);
-	mask.mask = calloc(mask.mask_len, sizeof(char));
-	XISetMask (mask.mask, XI_KeyRelease);
-
-	dbg("Grabbing %s", input_keyseq_to_string(seq));
-	for (i = 0; i < nkbds; i++) {
-		if(XIGrabKeycode(dpy, kbds[i], code,
-				 DefaultRootWindow(dpy),
-				 GrabModeAsync,
-				 GrabModeAsync,
-				 False, &mask, 1, (XIGrabModifiers[]){{mods, 0}}) ||
-
-		   XIGrabKeycode(dpy, kbds[i], code,
-				 DefaultRootWindow(dpy),
-				 GrabModeAsync,
-				 GrabModeAsync,
-				 False, &mask, 1, (XIGrabModifiers[]){{mods | Mod2Mask, 0}})) {
-			fprintf(stderr, "FATAL: Failed to grab %s!\n", input_keyseq_to_string(seq));
-			exit(-1);
-		}
-	}
-}
-
-uint16_t input_wait_for_key(uint16_t *keys, size_t n)
-{
-	size_t i;
-	for (i = 0; i < n; i++)
-		grab(keys[i]);
-
-	while(1) {
-		XEvent ev;
-		XNextEvent(dpy, &ev);
-		XGenericEventCookie *cookie = &ev.xcookie;
-
-		if (cookie->type != GenericEvent ||
-		    cookie->extension != xiop ||
-		    !XGetEventData(dpy, cookie))
-			continue;
-		if(cookie->evtype == XI_HierarchyChanged) {
-			XIHierarchyEvent *ev = (XIHierarchyEvent*)cookie->data;
-
-			if(ev->flags & (XIDeviceEnabled | XIDeviceDisabled)) {
-				rescan_devices();
-				for (i = 0; i < n; i++)
-					grab(keys[i]);
-			}
-		} else if (cookie->evtype == XI_KeyPress) {
-			size_t i;
-			XIDeviceEvent *ev = (XIDeviceEvent*)(cookie->data);
-			const uint16_t keyseq = (((ev->mods.effective & ~Mod2Mask) << 8) | ev->detail);
-
-			dbg("Processing key %s", input_keyseq_to_string(keyseq));
-			for (i = 0; i < n; i++) {
-				if(keyseq == keys[i]) {
-					XFreeEventData(dpy, cookie);
-					return keys[i];
-				}
-			}
-		} 
-
-		XFreeEventData(dpy, cookie);
-	}
-}
-
-static int ismod(uint16_t code)
-{
-	const KeySym syms[] = {
-		XK_Shift_L,
-		XK_Shift_R,
-		XK_Control_L,
-		XK_Control_R,
-		XK_Super_L,
-		XK_Super_R,
-		XK_Alt_L,
-		XK_Super_R,
-	};
-
-	static int init = 0;
-	static KeyCode mods[sizeof syms / sizeof syms[0]];
-
-	if(!init) {
-		size_t i;
-		for (i = 0; i < sizeof syms / sizeof syms[0]; i++) {
-			mods[i] = XKeysymToKeycode(dpy, syms[i]);
-		}
-		init = 1;
-	};
-
-	size_t i;
-	for (i = 0; i < sizeof mods / sizeof mods[0]; i++) {
-		if(mods[i] == code)
-			return 1;
-	}
-
-	return 0;
-}
-
 void input_click(int btn) 
 {
+	uint16_t mods = (active_mods >> 8);
 	input_ungrab_keyboard();
-	if(Mod1Mask & active_mods)
+	if(Mod1Mask & mods)
 		XTestFakeKeyEvent(dpy, XKeysymToKeycode(dpy, XK_Alt_L), 1, CurrentTime);
-	if(ShiftMask & active_mods)
+	if(ShiftMask & mods)
 		XTestFakeKeyEvent(dpy, XKeysymToKeycode(dpy, XK_Shift_L), 1, CurrentTime);
-	if(Mod4Mask & active_mods)
+	if(Mod4Mask & mods)
 		XTestFakeKeyEvent(dpy, XKeysymToKeycode(dpy, XK_Super_L), 1, CurrentTime);
-	if(ControlMask & active_mods)
+	if(ControlMask & mods)
 		XTestFakeKeyEvent(dpy, XKeysymToKeycode(dpy, XK_Control_L), 1, CurrentTime);
 
 	XTestFakeButtonEvent(dpy, btn, True, CurrentTime);
 	XTestFakeButtonEvent(dpy, btn, False, CurrentTime);
 
-	if(Mod1Mask & active_mods)
+	if(Mod1Mask & mods)
 		XTestFakeKeyEvent(dpy, XKeysymToKeycode(dpy, XK_Alt_L), 0, CurrentTime);
-	if(ShiftMask & active_mods)
+	if(ShiftMask & mods)
 		XTestFakeKeyEvent(dpy, XKeysymToKeycode(dpy, XK_Shift_L), 0, CurrentTime);
-	if(Mod4Mask & active_mods)
+	if(Mod4Mask & mods)
 		XTestFakeKeyEvent(dpy, XKeysymToKeycode(dpy, XK_Super_L), 0, CurrentTime);
-	if(ControlMask & active_mods)
+	if(ControlMask & mods)
 		XTestFakeKeyEvent(dpy, XKeysymToKeycode(dpy, XK_Control_L), 0, CurrentTime);
 
 	XSync(dpy, False);
@@ -374,7 +323,18 @@ void input_click(int btn)
 
 uint16_t input_next_key(int timeout)
 {
+	static int xiop = 0;
 	int xfd = XConnectionNumber(dpy);
+
+	if(!xiop) {
+		int ev, err;
+
+		if (!XQueryExtension(dpy, "XInputExtension", &xiop, &ev, &err)) {
+			fprintf(stderr, "FATAL: X Input extension not available.\n");
+			exit(-1);
+		}
+	}
+
 	while(1) {
 		fd_set fds;
 
@@ -400,14 +360,35 @@ uint16_t input_next_key(int timeout)
 			    !XGetEventData(dpy, cookie))
 				continue;
 
-			if (cookie->evtype == XI_KeyPress) {
-				XIDeviceEvent *ev = (XIDeviceEvent*)(cookie->data);
-				active_mods = ev->mods.effective;
-				if(!ismod(ev->detail))
-					return (((ev->mods.effective & ~Mod2Mask) << 8) | ev->detail);
+			switch(cookie->evtype) {
+			XIDeviceEvent *dev;
+			XIHierarchyEvent *hev;
+			uint16_t mask;
+
+			case XI_HierarchyChanged:
+				hev = (XIHierarchyEvent*)cookie->data;
+
+				if(hev->flags & (XIDeviceEnabled | XIDeviceDisabled))
+					rescan_devices();
+				break;
+			case XI_KeyPress:
+				dev = (XIDeviceEvent*)(cookie->data);
+				mask = get_mod_mask(dev->detail); 
+
+				if(mask)
+					active_mods |= mask;
+				else
+					return active_mods | dev->detail;
+
+				break;
+			case XI_KeyRelease:
+				dev = (XIDeviceEvent*)(cookie->data);
+
+				active_mods &= ~get_mod_mask(dev->detail);
+				break;
 			}
 
 			XFreeEventData(dpy, cookie);
-		}
+		} 
 	}
 }
