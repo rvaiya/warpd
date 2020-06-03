@@ -135,6 +135,13 @@ uint16_t input_wait_for_key(uint16_t *keys, size_t n)
 			 DefaultRootWindow(dpy),
 			 False,
 			 0, 0);
+
+		XGrabKey(dpy,
+			 keys[i] & 0xFF,
+			 (keys[i] >> 8) | Mod2Mask,
+			 DefaultRootWindow(dpy),
+			 False,
+			 0, 0);
 	}
 
 	while(1) {

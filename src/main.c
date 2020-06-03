@@ -306,7 +306,7 @@ int main(int argc, char **argv)
 					break;
 				}
 			}
-			if(i == MAX_BTNS) break;
+			if(i == MAX_BTNS || i == 1) break;
 
 			if(i == 0) {
 				while(input_next_key(cfg->double_click_timeout) == buttons[0]) {
