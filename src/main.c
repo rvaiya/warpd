@@ -343,6 +343,7 @@ start:
 
 		switch(btn) {
 		case 1:
+			set_cursor_visibility(1);
 			input_click(1);
 			while(input_next_key(cfg->double_click_timeout) == buttons[0]) {
 				input_click(1);
