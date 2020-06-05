@@ -175,7 +175,7 @@ static int tonum(uint16_t keyseq)
 	return -1;
 }
 
-uint16_t discrete_warp()
+uint16_t discrete_warp(uint16_t start_key)
 {
 	draw();
 	int opnum = 0;
@@ -183,7 +183,11 @@ uint16_t discrete_warp()
 		uint16_t keyseq;
 		int num;
 
-		keyseq = input_next_key(0);
+		if(start_key) {
+			keyseq = start_key;
+			start_key = 0;
+		} else
+			keyseq = input_next_key(0);
 
 		if(keyseq == keys->home)
 			abs_warp(-1, 0);

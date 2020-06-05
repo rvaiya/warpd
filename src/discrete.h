@@ -43,7 +43,7 @@ struct discrete_keys {
 	uint16_t exit[MAX_EXIT_KEYS];
 };
 
-uint16_t discrete_warp();
+uint16_t discrete_warp(uint16_t start_key);
 void init_discrete(Display *_dpy,
 		  const int _increment,
 		  struct discrete_keys *_keys,

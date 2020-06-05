@@ -172,9 +172,9 @@ uint16_t query_intent(uint16_t keyseq)
 		if((keyseq=hint_warp()))
 			return query_intent(keyseq);
 		else
-			return query_intent(discrete_warp());
+			return query_intent(discrete_warp(0));
 	} else if(discrete_activation_key == keyseq)
-		return query_intent(discrete_warp());
+		return query_intent(discrete_warp(0));
 
 	return keyseq;
 }
@@ -365,8 +365,10 @@ int main(int argc, char **argv)
 			input_click(3);
 			break;
 		case 4:
+			discrete_warp(discrete_keys.scroll_up);
+			break;
 		case 5:
-			discrete_warp();
+			discrete_warp(discrete_keys.scroll_down);
 			break;
 		}
 
