@@ -39,7 +39,7 @@ struct cfg* parse_cfg(const char *fname) {
     cfg->grid_activation_key = "M-x";
     cfg->discrete_activation_key = "M-c";
     cfg->movement_increment = 20;
-    cfg->buttons = "m,comma,period";
+    cfg->buttons = "m,comma,period,x,c";
     cfg->exit = "Escape";
     cfg->double_click_timeout = 300;
     cfg->drag_key = "v";
@@ -75,6 +75,11 @@ struct cfg* parse_cfg(const char *fname) {
     cfg->discrete_last = "S-l";
     cfg->discrete_beginning = "S-6";
     cfg->discrete_end = "S-4";
+    cfg->scroll_fling_timeout = 150;
+    cfg->scroll_fling_velocity = 40;
+    cfg->scroll_fling_acceleration = 10;
+    cfg->scroll_velocity = 10;
+    cfg->scroll_acceleration = 30;
 
     FILE *fp = fopen(fname, "r");
     if(!fp) return cfg; //Return defaults if no config file xists..
@@ -166,6 +171,16 @@ struct cfg* parse_cfg(const char *fname) {
             cfg->discrete_beginning = strdup(val);
         else if(!strcmp(key, "discrete_end"))
             cfg->discrete_end = strdup(val);
+        else if(!strcmp(key, "scroll_fling_timeout"))
+            cfg->scroll_fling_timeout = atoi(val);
+        else if(!strcmp(key, "scroll_fling_velocity"))
+            cfg->scroll_fling_velocity = atoi(val);
+        else if(!strcmp(key, "scroll_fling_acceleration"))
+            cfg->scroll_fling_acceleration = atoi(val);
+        else if(!strcmp(key, "scroll_velocity"))
+            cfg->scroll_velocity = atoi(val);
+        else if(!strcmp(key, "scroll_acceleration"))
+            cfg->scroll_acceleration = atoi(val);
 
         free(line);
         line = NULL;

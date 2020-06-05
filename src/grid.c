@@ -252,7 +252,7 @@ uint16_t grid_warp(int startrow, int startcol)
 
 	dbg("Entering main grid loop.");
 	while(1) {
-		uint16_t keyseq = input_next_key(0);
+		uint16_t keyseq = input_next_key(0, 1);
 
 		if(keys->up == keyseq)
 			rel_warp(0, -movement_increment);

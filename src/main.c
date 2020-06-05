@@ -313,7 +313,12 @@ int main(int argc, char **argv)
 		      cfg->movement_increment,
 		      &discrete_keys,
 		      cfg->discrete_color,
-		      cfg->discrete_size);
+		      cfg->discrete_size,
+		      cfg->scroll_fling_timeout,
+		      cfg->scroll_velocity,
+		      cfg->scroll_acceleration,
+		      cfg->scroll_fling_velocity,
+		      cfg->scroll_fling_acceleration);
 
 	while(1) {
 		uint16_t grabbed_keys[] = {
@@ -335,8 +340,12 @@ int main(int argc, char **argv)
 
 		if(intent_key == drag_key) {
 			XTestFakeButtonEvent(dpy, 1, True, CurrentTime);
+
 			query_intent(activation_key);
+
 			XTestFakeButtonEvent(dpy, 1, False, CurrentTime);
+
+			XFlush(dpy);
 			input_ungrab_keyboard();
 			continue;
 		}
@@ -354,7 +363,7 @@ int main(int argc, char **argv)
 		case 1:
 			set_cursor_visibility(1);
 			input_click(1);
-			while(input_next_key(cfg->double_click_timeout) == buttons[0]) {
+			while(input_next_key(cfg->double_click_timeout, 0) == buttons[0]) {
 				input_click(1);
 			}
 			break;

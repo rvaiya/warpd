@@ -23,7 +23,7 @@
 #ifndef _HINT_DRW_H_
 #define _HINT_DRW_H_
 
-#define MAX_HINTS 1024
+#define MAX_HINTS 2048
 
 struct hint
 {

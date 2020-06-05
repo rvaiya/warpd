@@ -44,6 +44,11 @@ struct cfg {
     char* discrete_last;
     char* discrete_beginning;
     char* discrete_end;
+    int scroll_fling_timeout;
+    int scroll_fling_velocity;
+    int scroll_fling_acceleration;
+    int scroll_velocity;
+    int scroll_acceleration;
 };
 
 struct cfg* parse_cfg(const char *fname);

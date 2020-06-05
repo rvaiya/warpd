@@ -90,6 +90,16 @@ Paired with discrete mode, the feature can be useful for highlighting text,
 while dragging and dropping a file between windows might better be accomplished
 by using the feature in conjunction with grid or hint mode. 
 
+# Scrolling
+
+Inertial scroll can be activated by double tapping the desired scroll key
+(buttons 4/5). This is the analog of 'flinging' the cursor on most trackpads.
+Once inertial scroll has been activated (by double tapping) an impulse can be
+imparted to the scrolling cursor by tapping the same key. This feature is
+particularly useful for navigating a lot of content (e.g long web pages) but
+can effectively be disabled by setting `scroll_fling_timeout` to 1 if desired
+(see Config Options).
+
 # Config Options
 
 The following configuration options can be placed in ~/.warprc to modify the behaviour of the program. Each option must be specified
@@ -124,10 +134,10 @@ buttons: z,x,c
 The following command might be used to generate a hint file that replicates the default behaviour of warp.
 
 ```
-printf "abcdefghijklmnopqrsxtuvwxyz"| \
+printf "abcdefghijklmnopqrstuvwxyz"| \
 awk -vFS='' '{for(j=1;j<=NF;j++) \
 		for(i =1;i<=NF;i++) \
-			print $i" "$j}' > ~/.warprc_hints
+			print $i$j}' > ~/.warprc_hints
 ```
 
 # Notes

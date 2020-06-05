@@ -24,12 +24,14 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <X11/Xlib.h>
+#include <sys/time.h>
 #include <ctype.h>
+#include <X11/Xlib.h>
 #include <X11/keysym.h>
 #include <X11/extensions/XTest.h>
 #include <X11/extensions/XInput2.h>
 #include <assert.h>
+
 #include "dbg.h"
 #include "input.h"
 
@@ -48,12 +50,6 @@
  * for the intended use case.
 
 */
-
-#define EV_XEV 1
-#define EV_DEVICE_CHANGE 2
-#define EV_KEYPRESS 3
-#define EV_KEYRELEASE 4
-#define EV_MOD 5
 
 static Display *dpy;
 static size_t nkbds;
@@ -151,7 +147,7 @@ uint16_t input_wait_for_key(uint16_t *keys, size_t n)
 	}
 
 	while(1) {
-		uint16_t key = input_next_key(0);
+		uint16_t key = input_next_key(0, 0);
 		XUngrabKeyboard(dpy, CurrentTime);
 
 		for (i = 0; i < n; i++) {
@@ -373,11 +369,13 @@ static int process_xev(XEvent *ev, uint16_t *keyseq)
 		if(mask)
 			active_mods |= mask;
 		else {
+			int type;
 			if(keyseq)
 				*keyseq = active_mods | dev->detail;
 
+			type = (dev->flags & XIKeyRepeat) ? EV_KEYREPEAT : EV_KEYPRESS;
 			XFreeEventData(dpy, cookie);
-			return EV_KEYPRESS;
+			return type;
 		}
 
 		XFreeEventData(dpy, cookie);
@@ -426,28 +424,55 @@ static XEvent *get_xev(int timeout)
 
 }
 
-uint16_t input_next_keyup(int timeout)
+int input_next_ev(int timeout, uint16_t *keyseq)
 {
-	uint16_t keyseq;
-	XEvent *ev;
+	XEvent *ev = get_xev(timeout);
+	if(!ev) 
+		return EV_TIMEOUT;
 
-	while((ev = get_xev(timeout))) {
-		if(process_xev(ev, &keyseq) == EV_KEYRELEASE)
-			return keyseq;
+	return process_xev(ev, keyseq);
+}
+
+uint16_t input_next_key(int timeout, int include_repeats)
+{
+	struct timeval start, end;
+	gettimeofday(&start, NULL);
+
+	int elapsed = 0;
+	while(1) {
+		uint16_t key;
+		XEvent *ev;
+
+		ev = get_xev(timeout - elapsed);
+		if(!ev) return TIMEOUT_KEYSEQ;
+
+		switch(process_xev(ev, &key)) {
+		case EV_KEYREPEAT:
+			if(include_repeats)
+				return key;
+			break;
+		case EV_KEYPRESS:
+			return key;
+			break;
+		}
+
+		if(timeout) {
+			gettimeofday(&end, NULL);
+			elapsed = (end.tv_sec-start.tv_sec)*1000 + (end.tv_usec-start.tv_usec)/1000;
+			if(elapsed >= timeout)
+				break;
+		}
 	}
 
 	return TIMEOUT_KEYSEQ;
 }
 
-uint16_t input_next_key(int timeout)
+void input_get_cursor_position(int *x, int *y)
 {
-	uint16_t keyseq;
-	XEvent *ev;
+	Window chld, root;
+	int _;
+	unsigned int _u;
 
-	while((ev=get_xev(timeout))) {
-		if(process_xev(ev, &keyseq) == EV_KEYPRESS)
-			return keyseq;
-	}
-
-	return TIMEOUT_KEYSEQ;
+	/* Obtain absolute pointer coordinates */
+	XQueryPointer(dpy, DefaultRootWindow(dpy), &root, &chld, x, y, &_, &_, &_u);
 }

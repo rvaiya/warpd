@@ -120,6 +120,7 @@ static size_t generate(const char *hint_characters,
 	size_t i, j;
 	size_t n = strlen(hint_characters);
 
+	assert(n*n < MAX_HINTS);
 	for (i = 0; i < n; i++)
 		for (j = 0; j < n; j++) {
 			hints[i*n+j].label[0] = hint_characters[i];
@@ -184,7 +185,7 @@ uint16_t hint_warp()
 	while(1) {
 		size_t n;
 		struct hint *target = NULL;
-		const int keyseq = input_next_key(0);
+		const int keyseq = input_next_key(0, 0);
 
 		if(keyseq == backspace) {
 			if(buf[0] != '\0')

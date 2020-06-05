@@ -25,10 +25,17 @@
 
 #define TIMEOUT_KEYSEQ (1<<7)
 
+#define EV_XEV 1
+#define EV_DEVICE_CHANGE 2
+#define EV_KEYPRESS 3
+#define EV_KEYRELEASE 4
+#define EV_KEYREPEAT 5
+#define EV_MOD 6
+#define EV_TIMEOUT 7
+
 void init_input(Display *_dpy);
 
 uint16_t input_wait_for_key(uint16_t *keys, size_t n);
-uint16_t input_next_key();
 
 const char* input_keyseq_to_string(uint16_t seq);
 uint16_t input_parse_keyseq(const char* key);
@@ -37,5 +44,7 @@ void input_click(int btn);
 void input_grab_keyboard();
 void input_ungrab_keyboard();
 
-uint16_t input_next_keyup(int timeout);
+uint16_t input_next_key(int timeout, int include_repeats);
+int input_next_ev(int timeout, uint16_t *keyseq);
+void input_get_cursor_position(int *x, int *y);
 #endif

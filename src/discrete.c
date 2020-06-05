@@ -22,6 +22,8 @@
 
 #include <X11/Xlib.h>
 #include <X11/keysym.h>
+#include <X11/extensions/XTest.h>
+#include <X11/extensions/shape.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -36,6 +38,12 @@ static struct discrete_keys *keys;
 static int increment;
 static int indicator_sz;
 
+static float scroll_fling_timeout;
+static float scroll_acceleration;
+static float scroll_velocity;
+static float scroll_fling_velocity;
+static float scroll_fling_acceleration;
+
 static void hide()
 {
 	XUnmapWindow(dpy, indicator);
@@ -44,18 +52,10 @@ static void hide()
 
 static void draw()
 {
-	Window chld, root;
-	int cx, cy, _;
-	unsigned int _u;
+	int x, y;
 
-	XQueryPointer(dpy,
-		DefaultRootWindow(dpy),
-		&root,
-		&chld,
-		&cx, &cy,
-		&_, &_, &_u);
-
-	XMoveWindow(dpy, indicator, cx - indicator_sz/2, cy - indicator_sz/2);
+	input_get_cursor_position(&x, &y);
+	XMoveWindow(dpy, indicator, x+1, y+1);
 	XMapRaised(dpy, indicator);
 	XFlush(dpy);
 }
@@ -132,19 +132,19 @@ static Window create_win(const char *col, int x, int y, int w, int h)
 	hex_to_rgb(col, &r, &g, &b);
 
 	Window win = XCreateWindow(dpy,
-					  DefaultRootWindow(dpy),
-					  x, y, w, h,
-					  0,
-					  DefaultDepth(dpy, DefaultScreen(dpy)),
-					  InputOutput,
-					  DefaultVisual(dpy, DefaultScreen(dpy)),
-					  CWOverrideRedirect | CWBackPixel | CWBackingPixel | CWEventMask,
-					  &(XSetWindowAttributes){
-					  .backing_pixel = color(r,g,b),
-					  .background_pixel = color(r,g,b),
-					  .override_redirect = 1,
-					  .event_mask = ExposureMask,
-					  });
+				   DefaultRootWindow(dpy),
+				   x, y, w, h,
+				   0,
+				   DefaultDepth(dpy, DefaultScreen(dpy)),
+				   InputOutput,
+				   DefaultVisual(dpy, DefaultScreen(dpy)),
+				   CWOverrideRedirect | CWBackPixel | CWBackingPixel | CWEventMask,
+				   &(XSetWindowAttributes){
+				   .backing_pixel = color(r,g,b),
+				   .background_pixel = color(r,g,b),
+				   .override_redirect = 1,
+				   .event_mask = ExposureMask,
+				   });
 
 
 	return win;
@@ -175,10 +175,58 @@ static int tonum(uint16_t keyseq)
 	return -1;
 }
 
+static int scroll(const int btn, float *v, float a, uint16_t *key, int timeout)
+{
+	//Non zero to provide the illusion of continuous scrolling
+	const float stop_threshold = 8; 
+	const float vf = 1000;
+
+	int total_time = 0; //in ms
+	float t = 0; //in ms
+	int d = 0;
+	float v0 = (*v <= stop_threshold) ? (stop_threshold + 1) : *v;
+
+	while(1) {
+		const int nd = (int)(v0*(t/1000) + .5 * a * (t/1000) * (t/1000));
+		*v = (v0+(a * (t/1000)));
+
+		if(a && *v >= vf) {
+			t = 0;
+			a = 0;
+			d = 0;
+			v0 = vf;
+			continue;
+		}
+
+		int type = input_next_ev(1, key);
+		if(type != EV_TIMEOUT && type != EV_KEYREPEAT)
+			return type;
+
+		if(*v <= stop_threshold) return -1;
+
+		for (int i = 0; i < (nd-d); i++) {
+			XTestFakeButtonEvent(dpy, btn, True, CurrentTime);
+			XTestFakeButtonEvent(dpy, btn, False, CurrentTime);
+			XFlush(dpy);
+		}
+
+		d = nd;
+		t++;
+		total_time++;
+
+		if(timeout && total_time >= timeout)
+			return EV_TIMEOUT;
+	}
+}
+
 uint16_t discrete_warp(uint16_t start_key)
 {
-	draw();
 	int opnum = 0;
+	float v;
+
+	rel_warp(-indicator_sz/2, -indicator_sz/2);
+	draw();
+
 	while(1) {
 		uint16_t keyseq;
 		int num;
@@ -187,7 +235,7 @@ uint16_t discrete_warp(uint16_t start_key)
 			keyseq = start_key;
 			start_key = 0;
 		} else
-			keyseq = input_next_key(0);
+			keyseq = input_next_key(0, 1);
 
 		if(keyseq == keys->home)
 			abs_warp(-1, 0);
@@ -217,39 +265,60 @@ uint16_t discrete_warp(uint16_t start_key)
 			else
 				opnum = opnum*10 + num;
 		} else if(keyseq == keys->scroll_up || keyseq == keys->scroll_down) {
-			const int v0 = 10; //scroll events per second
-			const int a = 30;
+			int delta;
+			uint16_t key;
+			int btn = keyseq == keys->scroll_up ? 5 : 4;
 
-			int t = 0; //in ms
-			int v = v0;
-			int last_click = 0;
-			const int btn = (keyseq == keys->scroll_up) ? 4 : 5;
+			float v = scroll_velocity;
+			float a = scroll_acceleration;
 
-			//Hack to ensure scroll events are sent to the correct window without having to unmap
-			//the indicator.
-			rel_warp(0, -indicator_sz);
+			int exit = 0;
+			int flung = 0;
 
-			XTestFakeButtonEvent(dpy, btn, True, CurrentTime);
-			XTestFakeButtonEvent(dpy, btn, False, CurrentTime);
+			while(!exit) {
+				int ev = scroll(btn, &v, a, &key, 0);
 
-			while(1) {
-				if(input_next_keyup(1) != TIMEOUT_KEYSEQ)
+				switch(ev) {
+				case EV_KEYPRESS:
+					if(key != keyseq) {
+						rel_warp(indicator_sz/2, indicator_sz/2);
+						return discrete_warp(key);
+					}
+					else if(flung && key == keyseq)
+						v += scroll_fling_velocity;
 					break;
-
-				t += 1;
-				if((t - last_click)*v > 1000) {
-					XTestFakeButtonEvent(dpy, btn, True, CurrentTime);
-					XTestFakeButtonEvent(dpy, btn, False, CurrentTime);
-					last_click = t;
+				case EV_KEYRELEASE:
+					if(key == keyseq) {
+						if(flung) {
+							a = -scroll_fling_acceleration;
+						} else {
+							switch(input_next_ev(scroll_fling_timeout, &key)) {
+							case EV_KEYPRESS:
+								if(key == keyseq) {
+									v += scroll_fling_velocity;
+									a = a;
+									flung = 1;
+								} else {
+									rel_warp(indicator_sz/2, indicator_sz/2);
+									return discrete_warp(key);
+								}
+								break;
+							default:
+								exit = 1;
+							}
+						}
+						break;
+					}
+				case -1: //Stopped
+					exit = 1;
+					break;
 				}
-				v = (a*t)/1000 + v0;
 			}
-
-			rel_warp(0, indicator_sz);
 		} else {
 			size_t i;
 			for (i = 0; i < sizeof keys->exit / sizeof keys->exit[0]; i++) {
 				if(keys->exit[i] == keyseq) {
+					rel_warp(indicator_sz/2, indicator_sz/2);
 					hide();
 					return keyseq;
 				}
@@ -261,22 +330,34 @@ uint16_t discrete_warp(uint16_t start_key)
 }
 
 void init_discrete(Display *_dpy,
-		  const int _increment,
-		  struct discrete_keys *_keys,
-		  const char *indicator_color,
-		  size_t _indicator_sz)
+		   const int _increment,
+		   struct discrete_keys *_keys,
+		   const char *indicator_color,
+		   size_t _indicator_sz,
+		   float _scroll_fling_timeout,
+		   float _scroll_velocity,
+		   float _scroll_acceleration,
+		   float _scroll_fling_velocity,
+		   float _scroll_fling_acceleration)
+
 {
 	keys = _keys;
 	dpy = _dpy;
 	increment = _increment;
 	indicator_sz = _indicator_sz;
 
+	indicator_sz = _indicator_sz;
+	scroll_fling_timeout = _scroll_fling_timeout;
+	scroll_acceleration = _scroll_acceleration;
+	scroll_velocity = _scroll_velocity;
+	scroll_fling_velocity = _scroll_fling_velocity;
+	scroll_fling_acceleration = _scroll_fling_acceleration;
+
 	XWindowAttributes info;
 	XGetWindowAttributes(dpy, DefaultRootWindow(dpy), &info);
 
 
-	if(indicator == None)
-		indicator = create_win(indicator_color,
-				       info.width - indicator_sz - 20, 20,
-				       indicator_sz, indicator_sz);
+	indicator = create_win(indicator_color,
+			       info.width - indicator_sz - 20, 20,
+			       indicator_sz, indicator_sz);
 }
