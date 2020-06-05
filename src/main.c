@@ -172,9 +172,9 @@ uint16_t query_intent(uint16_t keyseq)
 		if((keyseq=hint_warp()))
 			return query_intent(keyseq);
 		else
-			return query_intent(discrete_warp(0));
+			return query_intent(discrete_warp());
 	} else if(discrete_activation_key == keyseq)
-		return query_intent(discrete_warp(0));
+		return query_intent(discrete_warp());
 
 	return keyseq;
 }
@@ -199,7 +199,7 @@ static void set_cursor_visibility(int visible)
 
 int main(int argc, char **argv) 
 {
-	size_t i;
+	size_t i, n;
 	char path[PATH_MAX];
 
 	struct hint_keys hint_keys;
@@ -262,19 +262,28 @@ int main(int argc, char **argv)
 		      grid_keys.grid,
 		      sizeof grid_keys.grid / sizeof grid_keys.grid[0]);
 
+	discrete_keys.scroll_up = buttons[3];
+	discrete_keys.scroll_down = buttons[4];
+
 	discrete_activation_key = get_keyseq(cfg->discrete_activation_key);
 	hint_activation_key = get_keyseq(cfg->hint_activation_key);
 	grid_activation_key = get_keyseq(cfg->grid_activation_key);
 	drag_key = get_keyseq(cfg->drag_key);
 
-	for (i = 0; i < sizeof buttons / sizeof buttons[0]; i++)
-		exit_keys[i] = buttons[i]; 
+	n = 0;
+	for (i = 0; i < sizeof buttons / sizeof buttons[0]; i++) {
+		exit_keys[n++] = buttons[i]; 
+		exit_keys[n++] = buttons[i] | (Mod1Mask << 8);
+		exit_keys[n++] = buttons[i] | (Mod4Mask << 8);
+		exit_keys[n++] = buttons[i] | (ShiftMask << 8);
+		exit_keys[n++] = buttons[i] | (ControlMask << 8);
+	}
 
-	exit_keys[i++] = get_keyseq(cfg->exit);
-	exit_keys[i++] = discrete_activation_key;
-	exit_keys[i++] = hint_activation_key;
-	exit_keys[i++] = grid_activation_key;
-	exit_keys[i++] = drag_key;
+	exit_keys[n++] = get_keyseq(cfg->exit);
+	exit_keys[n++] = discrete_activation_key;
+	exit_keys[n++] = hint_activation_key;
+	exit_keys[n++] = grid_activation_key;
+	exit_keys[n++] = drag_key;
 
 	memcpy(discrete_keys.exit, exit_keys, sizeof discrete_keys.exit);
 	memcpy(grid_keys.exit, exit_keys, sizeof grid_keys.exit);
@@ -319,7 +328,7 @@ int main(int argc, char **argv)
 		set_cursor_visibility(1);
 		activation_key = input_wait_for_key(grabbed_keys, sizeof grabbed_keys / sizeof grabbed_keys[0]);
 		set_cursor_visibility(0);
-start:
+
 		input_grab_keyboard();
 
 		intent_key = query_intent(activation_key);
@@ -357,34 +366,7 @@ start:
 			break;
 		case 4:
 		case 5:
-			{
-				const int v0 = 10; //scroll events per second
-				const int a = 30;
-
-				int t = 0; //in ms
-				int v = v0;
-				int last_click = 0;
-
-				XTestFakeButtonEvent(dpy, btn, True, CurrentTime);
-				XTestFakeButtonEvent(dpy, btn, False, CurrentTime);
-
-				while(1) {
-					if(input_next_keyup(1) != TIMEOUT_KEYSEQ)
-						break;
-
-					t += 1;
-					if((t - last_click)*v > 1000) {
-						XTestFakeButtonEvent(dpy, btn, True, CurrentTime);
-						XTestFakeButtonEvent(dpy, btn, False, CurrentTime);
-						last_click = t;
-					}
-					v = (a*t)/1000 + v0;
-				}
-
-				activation_key = discrete_activation_key;
-				goto start;
-			}
-
+			discrete_warp();
 			break;
 		}
 

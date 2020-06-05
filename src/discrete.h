@@ -38,6 +38,8 @@ struct discrete_keys {
 	uint16_t beginning;
 	uint16_t end;
 
+	uint16_t scroll_down;
+	uint16_t scroll_up;
 	uint16_t exit[MAX_EXIT_KEYS];
 };
 

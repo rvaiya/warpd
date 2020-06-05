@@ -212,6 +212,36 @@ uint16_t discrete_warp()
 				rel_warp(-10000, 0);
 			else
 				opnum = opnum*10 + num;
+		} else if(keyseq == keys->scroll_up || keyseq == keys->scroll_down) {
+			const int v0 = 10; //scroll events per second
+			const int a = 30;
+
+			int t = 0; //in ms
+			int v = v0;
+			int last_click = 0;
+			const int btn = (keyseq == keys->scroll_up) ? 4 : 5;
+
+			//Hack to ensure scroll events are sent to the correct window without having to unmap
+			//the indicator.
+			rel_warp(0, -indicator_sz);
+
+			XTestFakeButtonEvent(dpy, btn, True, CurrentTime);
+			XTestFakeButtonEvent(dpy, btn, False, CurrentTime);
+
+			while(1) {
+				if(input_next_keyup(1) != TIMEOUT_KEYSEQ)
+					break;
+
+				t += 1;
+				if((t - last_click)*v > 1000) {
+					XTestFakeButtonEvent(dpy, btn, True, CurrentTime);
+					XTestFakeButtonEvent(dpy, btn, False, CurrentTime);
+					last_click = t;
+				}
+				v = (a*t)/1000 + v0;
+			}
+
+			rel_warp(0, indicator_sz);
 		} else {
 			size_t i;
 			for (i = 0; i < sizeof keys->exit / sizeof keys->exit[0]; i++) {
