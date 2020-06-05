@@ -34,6 +34,7 @@ static Display *dpy;
 static Window indicator = None;
 static struct discrete_keys *keys;
 static int increment;
+static int indicator_sz;
 
 static void hide()
 {
@@ -43,6 +44,18 @@ static void hide()
 
 static void draw()
 {
+	Window chld, root;
+	int cx, cy, _;
+	unsigned int _u;
+
+	XQueryPointer(dpy,
+		DefaultRootWindow(dpy),
+		&root,
+		&chld,
+		&cx, &cy,
+		&_, &_, &_u);
+
+	XMoveWindow(dpy, indicator, cx - indicator_sz/2, cy - indicator_sz/2);
 	XMapRaised(dpy, indicator);
 	XFlush(dpy);
 }
@@ -165,7 +178,6 @@ static int tonum(uint16_t keyseq)
 uint16_t discrete_warp()
 {
 	draw();
-
 	int opnum = 0;
 	while(1) {
 		uint16_t keyseq;
@@ -201,9 +213,16 @@ uint16_t discrete_warp()
 			else
 				opnum = opnum*10 + num;
 		} else {
-			hide();
-			return keyseq;
+			size_t i;
+			for (i = 0; i < sizeof keys->exit / sizeof keys->exit[0]; i++) {
+				if(keys->exit[i] == keyseq) {
+					hide();
+					return keyseq;
+				}
+			}
 		}
+
+		draw();
 	}
 }
 
@@ -211,11 +230,12 @@ void init_discrete(Display *_dpy,
 		  const int _increment,
 		  struct discrete_keys *_keys,
 		  const char *indicator_color,
-		  size_t indicator_sz)
+		  size_t _indicator_sz)
 {
 	keys = _keys;
 	dpy = _dpy;
 	increment = _increment;
+	indicator_sz = _indicator_sz;
 
 	XWindowAttributes info;
 	XGetWindowAttributes(dpy, DefaultRootWindow(dpy), &info);

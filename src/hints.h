@@ -24,6 +24,7 @@
 #define __H_HINTS_
 
 #include <stdint.h>
+#include "common.h"
 	
 struct hint_keys {
 	uint16_t up;

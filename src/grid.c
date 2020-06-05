@@ -48,24 +48,6 @@ static int movement_increment;
 
 static Display *dpy;
 
-//XFixes* functions are not idempotent (calling them more than
-//once crashes the client, so we need this wrapper function).
-
-static void set_cursor_visibility(int visible) 
-{
-	static int state = 1;
-
-	if(visible == state) return;
-
-	if(visible)
-		XFixesShowCursor(dpy, DefaultRootWindow(dpy));
-	else
-		XFixesHideCursor(dpy, DefaultRootWindow(dpy));
-
-	XFlush(dpy);
-	state = visible;
-}
-
 static int hex_to_rgb(const char *str, uint8_t *r, uint8_t *g, uint8_t *b) 
 {
 #define X2B(c) ((c >= '0' && c <= '9') ? (c & 0xF) : (((c | 0x20) - 'a') + 10))
@@ -147,13 +129,10 @@ static void redraw()
 			XUnmapWindow(dpy, gridwins[i]);
 
 		mapped = 0;
-		set_cursor_visibility(1);
 		XFlush(dpy);
 
 		return;
 	}
-
-	set_cursor_visibility(0);
 
 	XMoveWindow(dpy, mw, cx-(cursor_width/2), cy-(cursor_width/2));
 	XResizeWindow(dpy, mw, cursor_width, cursor_width);
@@ -284,24 +263,23 @@ uint16_t grid_warp(int startrow, int startcol)
 		else if(keys->right == keyseq)
 			rel_warp(movement_increment, 0);
 		else {
-			int found = 0;
-
 			for (int i = 0; i < nr; i++)
 				for (int j = 0; j < nc; j++)
 					if(keys->grid[i*nc+j] == keyseq) {
 						focus_sector(i, j);
 						redraw();
-						found = 1;
 					}
 
-			if(!found) {
-				hidden = 1;
-				redraw();
+			for (int i = 0; i < sizeof keys->exit / sizeof keys->exit[0]; i++) {
+				if(keys->exit[i] == keyseq) {
+					hidden = 1;
+					redraw();
 
-				XWarpPointer(dpy, 0, DefaultRootWindow(dpy), 0, 0, 0, 0, cx, cy);
-				XFlush(dpy);
+					XWarpPointer(dpy, 0, DefaultRootWindow(dpy), 0, 0, 0, 0, cx, cy);
+					XFlush(dpy);
 
-				return  keyseq;
+					return keyseq;
+				}
 			}
 		}
 	}

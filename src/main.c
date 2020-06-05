@@ -179,8 +179,27 @@ uint16_t query_intent(uint16_t keyseq)
 	return keyseq;
 }
 
+//XFixes* functions are not idempotent (calling them more than
+//once crashes the client, so we need this wrapper function).
+
+static void set_cursor_visibility(int visible) 
+{
+	static int state = 1;
+
+	if(visible == state) return;
+
+	if(visible)
+		XFixesShowCursor(dpy, DefaultRootWindow(dpy));
+	else
+		XFixesHideCursor(dpy, DefaultRootWindow(dpy));
+
+	XFlush(dpy);
+	state = visible;
+}
+
 int main(int argc, char **argv) 
 {
+	size_t i;
 	char path[PATH_MAX];
 
 	struct hint_keys hint_keys;
@@ -188,6 +207,7 @@ int main(int argc, char **argv)
 	struct discrete_keys discrete_keys;
 
 	uint16_t buttons[MAX_BTNS];
+	uint16_t exit_keys[MAX_EXIT_KEYS] = {0};
 
 	uint16_t discrete_activation_key;
 	uint16_t hint_activation_key;
@@ -247,6 +267,18 @@ int main(int argc, char **argv)
 	grid_activation_key = get_keyseq(cfg->grid_activation_key);
 	drag_key = get_keyseq(cfg->drag_key);
 
+	for (i = 0; i < sizeof buttons / sizeof buttons[0]; i++)
+		exit_keys[i] = buttons[i]; 
+
+	exit_keys[i++] = get_keyseq(cfg->exit);
+	exit_keys[i++] = discrete_activation_key;
+	exit_keys[i++] = hint_activation_key;
+	exit_keys[i++] = grid_activation_key;
+	exit_keys[i++] = drag_key;
+
+	memcpy(discrete_keys.exit, exit_keys, sizeof discrete_keys.exit);
+	memcpy(grid_keys.exit, exit_keys, sizeof grid_keys.exit);
+
 	if(opt_daemonize) daemonize();
 
 	init_hint(dpy,
@@ -271,8 +303,8 @@ int main(int argc, char **argv)
 	init_discrete(dpy,
 		      cfg->movement_increment,
 		      &discrete_keys,
-		      cfg->discrete_indicator_color,
-		      cfg->discrete_indicator_size);
+		      cfg->discrete_color,
+		      cfg->discrete_size);
 
 	while(1) {
 		uint16_t grabbed_keys[] = {
@@ -284,8 +316,10 @@ int main(int argc, char **argv)
 		uint16_t activation_key;
 		uint16_t intent_key;
 
+		set_cursor_visibility(1);
 		activation_key = input_wait_for_key(grabbed_keys, sizeof grabbed_keys / sizeof grabbed_keys[0]);
-
+		set_cursor_visibility(0);
+start:
 		input_grab_keyboard();
 
 		intent_key = query_intent(activation_key);
@@ -298,24 +332,59 @@ int main(int argc, char **argv)
 			continue;
 		}
 
-		while(1) {
-			size_t i;
-			for (i = 0; i < MAX_BTNS; i++) {
-				if(buttons[i] == (intent_key & 0xFF)) {
-					input_click(i+1);
-					break;
-				}
-			}
-			if(i == MAX_BTNS || i == 1) break;
-
-			if(i == 0) {
-				while(input_next_key(cfg->double_click_timeout) == buttons[0]) {
-					input_click(1);
-				}
+		size_t btn = 0;
+		while(btn < MAX_BTNS) {
+			if(buttons[btn] == (intent_key & 0xFF)) {
+				btn++;
 				break;
 			}
+			btn++;
+		}
 
-			intent_key = query_intent(discrete_activation_key);
+		switch(btn) {
+		case 1:
+			input_click(1);
+			while(input_next_key(cfg->double_click_timeout) == buttons[0]) {
+				input_click(1);
+			}
+			break;
+		case 2:
+			input_click(2);
+			break;
+		case 3:
+			input_click(3);
+			break;
+		case 4:
+		case 5:
+			{
+				const int v0 = 10; //scroll events per second
+				const int a = 30;
+
+				int t = 0; //in ms
+				int v = v0;
+				int last_click = 0;
+
+				XTestFakeButtonEvent(dpy, btn, True, CurrentTime);
+				XTestFakeButtonEvent(dpy, btn, False, CurrentTime);
+
+				while(1) {
+					if(input_next_keyup(1) != TIMEOUT_KEYSEQ)
+						break;
+
+					t += 1;
+					if((t - last_click)*v > 1000) {
+						XTestFakeButtonEvent(dpy, btn, True, CurrentTime);
+						XTestFakeButtonEvent(dpy, btn, False, CurrentTime);
+						last_click = t;
+					}
+					v = (a*t)/1000 + v0;
+				}
+
+				activation_key = discrete_activation_key;
+				goto start;
+			}
+
+			break;
 		}
 
 		input_ungrab_keyboard();

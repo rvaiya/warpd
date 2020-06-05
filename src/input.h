@@ -27,12 +27,15 @@
 
 void init_input(Display *_dpy);
 
-void input_ungrab_keyboard();
 uint16_t input_wait_for_key(uint16_t *keys, size_t n);
 uint16_t input_next_key();
 
 const char* input_keyseq_to_string(uint16_t seq);
 uint16_t input_parse_keyseq(const char* key);
+
 void input_click(int btn);
 void input_grab_keyboard();
+void input_ungrab_keyboard();
+
+uint16_t input_next_keyup(int timeout);
 #endif

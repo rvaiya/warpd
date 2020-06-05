@@ -27,6 +27,7 @@
 #define MAX_ROWS 100
 
 #include <stdint.h>
+#include "common.h"
 
 struct grid_keys {
 	uint16_t up;
@@ -35,6 +36,7 @@ struct grid_keys {
 	uint16_t down;
 
 	uint16_t grid[MAX_ROWS*MAX_COLS];
+	uint16_t exit[MAX_EXIT_KEYS];
 };
 
 uint16_t grid_warp(int startrow, int startcol);

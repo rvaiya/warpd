@@ -40,6 +40,7 @@ struct cfg* parse_cfg(const char *fname) {
     cfg->discrete_activation_key = "M-c";
     cfg->movement_increment = 20;
     cfg->buttons = "m,comma,period";
+    cfg->exit = "Escape";
     cfg->double_click_timeout = 300;
     cfg->drag_key = "v";
     cfg->grid_nr = 2;
@@ -67,8 +68,8 @@ struct cfg* parse_cfg(const char *fname) {
     cfg->discrete_down = "j";
     cfg->discrete_up = "k";
     cfg->discrete_right = "l";
-    cfg->discrete_indicator_color = "#00ff00";
-    cfg->discrete_indicator_size = 30;
+    cfg->discrete_color = "#00ff00";
+    cfg->discrete_size = 20;
     cfg->discrete_home = "S-h";
     cfg->discrete_middle = "S-m";
     cfg->discrete_last = "S-l";
@@ -95,6 +96,8 @@ struct cfg* parse_cfg(const char *fname) {
             cfg->movement_increment = atoi(val);
         else if(!strcmp(key, "buttons"))
             cfg->buttons = strdup(val);
+        else if(!strcmp(key, "exit"))
+            cfg->exit = strdup(val);
         else if(!strcmp(key, "double_click_timeout"))
             cfg->double_click_timeout = atoi(val);
         else if(!strcmp(key, "drag_key"))
@@ -149,10 +152,10 @@ struct cfg* parse_cfg(const char *fname) {
             cfg->discrete_up = strdup(val);
         else if(!strcmp(key, "discrete_right"))
             cfg->discrete_right = strdup(val);
-        else if(!strcmp(key, "discrete_indicator_color"))
-            cfg->discrete_indicator_color = strdup(val);
-        else if(!strcmp(key, "discrete_indicator_size"))
-            cfg->discrete_indicator_size = atoi(val);
+        else if(!strcmp(key, "discrete_color"))
+            cfg->discrete_color = strdup(val);
+        else if(!strcmp(key, "discrete_size"))
+            cfg->discrete_size = atoi(val);
         else if(!strcmp(key, "discrete_home"))
             cfg->discrete_home = strdup(val);
         else if(!strcmp(key, "discrete_middle"))

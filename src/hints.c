@@ -55,52 +55,115 @@ static const char *normalize(const char *s)
 		return s;
 }
 
-static size_t generate(Display *dpy,
-			     const char *hint_characters,
-			     int w,
-			     int h,
-			     struct hint hints[MAX_HINTS]) 
+static void generate_positions(struct hint *hints, size_t n, int w, int h) 
 {
-	size_t i, j;
 	XWindowAttributes info;
+	size_t i, nr, nc;
+
+	if(!n) {
+		fprintf(stderr, "FATAL: Cannot generate hints from empty hint set (try populating or removing ~/.warprc_hints\n");
+		exit(-1);
+	}
+	for (nc = 0; (nc*nc) < n; nc++);
+	nr = nc;
+
 	XGetWindowAttributes(dpy, DefaultRootWindow(dpy), &info);
 
-	const size_t nr = strlen(hint_characters);
-	const size_t nc = strlen(hint_characters);
+	const float colw = info.width / nc;
+	const float rowh = info.height / nr;
 
-	const int rowh = info.height / nc;
-	const int colw = info.width / nr;
-
-	assert(nr * nc < MAX_HINTS);
-
-	for (i = 0; i < nr; i++)
-		for (j = 0; j < nc; j++) {
-			int idx = i*nc+j;
-
-			hints[idx].label[0] = hint_characters[i];
-			hints[idx].label[1] = hint_characters[j];
-			hints[idx].label[2] = '\0';
-
-			hints[idx].x = colw * j + (colw - w)/2;
-			hints[idx].y = rowh * i + (rowh - h)/2;
-			hints[idx].w = w;
-			hints[idx].h = h;
-		}
-
-	return nc * nr;
+	for (i = 0; i < n; i++) {
+		hints[i].x = ((i % nc) * colw) + ((colw-w)/2);
+		hints[i].y = ((i / nc) * rowh) + ((rowh-h)/2);
+		hints[i].w = w;
+		hints[i].h = h;
+	}
 }
 
-static int filter(const char *s, struct hint **target)
+static size_t read_hints(const char *path,
+			 struct hint *hints,
+			 int w, int h) 
+{
+	size_t l = 0, i = 0;
+	ssize_t len = 0;
+	char *line = NULL;
+	FILE *fh = fopen(path, "r");
+	if(!fh) {
+		perror("fopen");
+		exit(-1);
+	}
+
+	while((len=getline(&line, &l, fh)) != -1) {
+		line[len-1] = '\0';
+
+		assert(i < MAX_HINTS);
+		assert(len < sizeof hints[0].label);
+
+		strcpy(hints[i++].label, line);
+		free(line);
+
+		line = NULL;
+		l = 0;
+	}
+
+
+	generate_positions(hints, i, w, h);
+	return i;
+}
+
+
+static size_t generate(const char *hint_characters,
+		       int w,
+		       int h,
+		       struct hint hints[MAX_HINTS]) 
+{
+	size_t i, j;
+	size_t n = strlen(hint_characters);
+
+	for (i = 0; i < n; i++)
+		for (j = 0; j < n; j++) {
+			hints[i*n+j].label[0] = hint_characters[i];
+			hints[i*n+j].label[1] = hint_characters[j];
+			hints[i*n+j].label[2] = '\0';
+		}
+
+	generate_positions(hints, n*n, w, h);
+	return n*n;
+}
+
+static int lbl_cmp(const char *s, const char *prefix)
+{
+		while(*prefix && *s) {
+			if(*s == ' ') { 
+				s++;
+				continue;
+			}
+
+			if(*prefix != *s)
+				return -1;
+
+			prefix++;
+			s++;
+		}
+
+		return 0;
+}
+
+static int filter(const char *prefix, struct hint **target)
 {
 	size_t i;
 	size_t n = 0;
 	static size_t indices[MAX_HINTS];
 
+	if(!prefix) {
+		hint_drw_filter(NULL, 0);
+		return nhints;
+	}
+
 	if(target) *target = NULL;
 
 	for (i = 0; i < nhints; i++) {
-		if(s && strstr(hints[i].label, s) == hints[i].label)
-			indices[n++] = i;
+		if(!lbl_cmp(hints[i].label, prefix)) indices[n++] = i;
 	}
 
 	hint_drw_filter(indices, n);
@@ -157,6 +220,15 @@ void init_hint(Display *_dpy,
 {
 	dpy = _dpy;
 	keys = _keys;
-	nhints = generate(dpy, hint_characters, width, height, hints);
+
+	char path[PATH_MAX];
+	sprintf(path, "%s/%s", getenv("HOME"), ".warprc_hints");
+
+	if(!access(path, F_OK)) {
+		dbg("Found .warprc_hints, attempting to generate hints from it...");
+		nhints = read_hints(path, hints, width, height) ;
+	} else
+		nhints = generate(hint_characters, width, height, hints);
+
 	init_hint_drw(dpy, hints, nhints, opacity, bgcol, fgcol);
 }

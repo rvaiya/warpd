@@ -9,6 +9,7 @@ struct cfg {
     char* discrete_activation_key;
     int movement_increment;
     char* buttons;
+    char* exit;
     int double_click_timeout;
     char* drag_key;
     int grid_nr;
@@ -36,8 +37,8 @@ struct cfg {
     char* discrete_down;
     char* discrete_up;
     char* discrete_right;
-    char* discrete_indicator_color;
-    int discrete_indicator_size;
+    char* discrete_color;
+    int discrete_size;
     char* discrete_home;
     char* discrete_middle;
     char* discrete_last;

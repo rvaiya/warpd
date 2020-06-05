@@ -24,6 +24,7 @@
 #define _H_DISCRETE_
 
 #include <stdint.h>
+#include "common.h"
 
 struct discrete_keys {
 	uint16_t up;
@@ -36,6 +37,8 @@ struct discrete_keys {
 	uint16_t last;
 	uint16_t beginning;
 	uint16_t end;
+
+	uint16_t exit[MAX_EXIT_KEYS];
 };
 
 uint16_t discrete_warp();

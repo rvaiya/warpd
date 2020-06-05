@@ -49,6 +49,12 @@
 
 */
 
+#define EV_XEV 1
+#define EV_DEVICE_CHANGE 2
+#define EV_KEYPRESS 3
+#define EV_KEYRELEASE 4
+#define EV_MOD 5
+
 static Display *dpy;
 static size_t nkbds;
 static int kbds[256];
@@ -145,7 +151,7 @@ uint16_t input_wait_for_key(uint16_t *keys, size_t n)
 	}
 
 	while(1) {
-		uint16_t key = input_next_key();
+		uint16_t key = input_next_key(0);
 		XUngrabKeyboard(dpy, CurrentTime);
 
 		for (i = 0; i < n; i++) {
@@ -324,15 +330,15 @@ void input_click(int btn)
 	if(ControlMask & mods)
 		XTestFakeKeyEvent(dpy, XKeysymToKeycode(dpy, XK_Control_L), 0, CurrentTime);
 
-	XSync(dpy, False);
 	input_grab_keyboard();
+	XFlush(dpy);
 }
 
-uint16_t input_next_key(int timeout)
+static int process_xev(XEvent *ev, uint16_t *keyseq)
 {
-	static int xiop = 0;
-	int xfd = XConnectionNumber(dpy);
+	XGenericEventCookie *cookie = &ev->xcookie;
 
+	static int xiop = 0;
 	if(!xiop) {
 		int ev, err;
 
@@ -342,60 +348,106 @@ uint16_t input_next_key(int timeout)
 		}
 	}
 
-	while(1) {
-		fd_set fds;
+	if (cookie->type != GenericEvent ||
+	    cookie->extension != xiop ||
+	    !XGetEventData(dpy, cookie))
+		return EV_XEV;
 
-		FD_ZERO(&fds);
-		FD_SET(xfd, &fds);
+	switch(cookie->evtype) {
+		XIDeviceEvent *dev;
+		XIHierarchyEvent *hev;
+		uint16_t mask;
 
-		select(xfd+1,
-		       &fds,
-		       NULL,
-		       NULL,
-		       timeout ? &(struct timeval){0, timeout*1000} : NULL);
+	case XI_HierarchyChanged:
+		hev = (XIHierarchyEvent*)cookie->data;
 
-		if(!XPending(dpy))
-			return TIMEOUT_KEYSEQ;
+		if(hev->flags & (XIDeviceEnabled | XIDeviceDisabled))
+			rescan_devices();
 
-		while(XPending(dpy)) {
-			XEvent ev;
-			XNextEvent(dpy, &ev);
-			XGenericEventCookie *cookie = &ev.xcookie;
+		XFreeEventData(dpy, cookie);
+		return EV_DEVICE_CHANGE;
+	case XI_KeyPress:
+		dev = (XIDeviceEvent*)(cookie->data);
+		mask = get_mod_mask(dev->detail); 
 
-			if (cookie->type != GenericEvent ||
-			    cookie->extension != xiop ||
-			    !XGetEventData(dpy, cookie))
-				continue;
-
-			switch(cookie->evtype) {
-			XIDeviceEvent *dev;
-			XIHierarchyEvent *hev;
-			uint16_t mask;
-
-			case XI_HierarchyChanged:
-				hev = (XIHierarchyEvent*)cookie->data;
-
-				if(hev->flags & (XIDeviceEnabled | XIDeviceDisabled))
-					rescan_devices();
-				break;
-			case XI_KeyPress:
-				dev = (XIDeviceEvent*)(cookie->data);
-				mask = get_mod_mask(dev->detail); 
-
-				if(mask)
-					active_mods |= mask;
-				else
-					return active_mods | dev->detail;
-
-				break;
-			case XI_KeyRelease:
-				dev = (XIDeviceEvent*)(cookie->data);
-
-				active_mods &= ~get_mod_mask(dev->detail);
-				break;
-			}
+		if(mask)
+			active_mods |= mask;
+		else {
+			if(keyseq)
+				*keyseq = active_mods | dev->detail;
 
 			XFreeEventData(dpy, cookie);
-		} 
+			return EV_KEYPRESS;
+		}
+
+		XFreeEventData(dpy, cookie);
+		return EV_MOD;
+	case XI_KeyRelease:
+		dev = (XIDeviceEvent*)(cookie->data);
+
+		active_mods &= ~get_mod_mask(dev->detail);
+		if(keyseq)
+			*keyseq = active_mods | dev->detail;
+
+		XFreeEventData(dpy, cookie);
+		return EV_KEYRELEASE;
 	}
+
+	fprintf(stderr, "FATAL: Unrecognized xinput event\n");
+	exit(-1);
+}
+
+static XEvent *get_xev(int timeout)
+{
+	static int xfd = 0;
+	static XEvent ev;
+	fd_set fds;
+
+	if(!xfd) xfd = XConnectionNumber(dpy);
+
+	if(XPending(dpy)) {
+		XNextEvent(dpy, &ev);
+		return &ev;
+	}
+
+	FD_ZERO(&fds);
+	FD_SET(xfd, &fds);
+	select(xfd+1,
+	       &fds,
+	       NULL,
+	       NULL,
+	       timeout ? &(struct timeval){0, timeout*1000} : NULL);
+
+	if(XPending(dpy)) {
+		XNextEvent(dpy, &ev);
+		return &ev;
+	} else
+		return NULL;
+
+}
+
+uint16_t input_next_keyup(int timeout)
+{
+	uint16_t keyseq;
+	XEvent *ev;
+
+	while((ev = get_xev(timeout))) {
+		if(process_xev(ev, &keyseq) == EV_KEYRELEASE)
+			return keyseq;
+	}
+
+	return TIMEOUT_KEYSEQ;
+}
+
+uint16_t input_next_key(int timeout)
+{
+	uint16_t keyseq;
+	XEvent *ev;
+
+	while((ev=get_xev(timeout))) {
+		if(process_xev(ev, &keyseq) == EV_KEYPRESS)
+			return keyseq;
+	}
+
+	return TIMEOUT_KEYSEQ;
 }
