@@ -195,6 +195,8 @@ on its own line and have the format
 
 **scroll_fling_acceleration**: Fling acceleration. (default: 10).
 
+**scroll_fling_deceleration**: Fling deceleration. (default: 30).
+
 **scroll_velocity**: Scroll velocity. (default: 10).
 
 **scroll_acceleration**: Scroll acceleration. (default: 30).

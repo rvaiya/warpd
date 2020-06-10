@@ -318,7 +318,8 @@ int main(int argc, char **argv)
 		      cfg->scroll_velocity,
 		      cfg->scroll_acceleration,
 		      cfg->scroll_fling_velocity,
-		      cfg->scroll_fling_acceleration);
+		      cfg->scroll_fling_acceleration,
+		      cfg->scroll_fling_deceleration);
 
 	while(1) {
 		uint16_t grabbed_keys[] = {

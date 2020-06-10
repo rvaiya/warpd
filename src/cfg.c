@@ -78,6 +78,7 @@ struct cfg* parse_cfg(const char *fname) {
     cfg->scroll_fling_timeout = 150;
     cfg->scroll_fling_velocity = 40;
     cfg->scroll_fling_acceleration = 10;
+    cfg->scroll_fling_deceleration = 30;
     cfg->scroll_velocity = 10;
     cfg->scroll_acceleration = 30;
 
@@ -177,6 +178,8 @@ struct cfg* parse_cfg(const char *fname) {
             cfg->scroll_fling_velocity = atoi(val);
         else if(!strcmp(key, "scroll_fling_acceleration"))
             cfg->scroll_fling_acceleration = atoi(val);
+        else if(!strcmp(key, "scroll_fling_deceleration"))
+            cfg->scroll_fling_deceleration = atoi(val);
         else if(!strcmp(key, "scroll_velocity"))
             cfg->scroll_velocity = atoi(val);
         else if(!strcmp(key, "scroll_acceleration"))

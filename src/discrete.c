@@ -43,6 +43,7 @@ static float scroll_acceleration;
 static float scroll_velocity;
 static float scroll_fling_velocity;
 static float scroll_fling_acceleration;
+static float scroll_fling_deceleration;
 
 static void hide()
 {
@@ -290,7 +291,7 @@ uint16_t discrete_warp(uint16_t start_key)
 				case EV_KEYRELEASE:
 					if(key == keyseq) {
 						if(flung) {
-							a = -scroll_fling_acceleration;
+							a = -scroll_fling_deceleration;
 						} else {
 							switch(input_next_ev(scroll_fling_timeout, &key)) {
 							case EV_KEYPRESS:
@@ -338,7 +339,8 @@ void init_discrete(Display *_dpy,
 		   float _scroll_velocity,
 		   float _scroll_acceleration,
 		   float _scroll_fling_velocity,
-		   float _scroll_fling_acceleration)
+		   float _scroll_fling_acceleration,
+		   float _scroll_fling_deceleration)
 
 {
 	keys = _keys;
@@ -352,6 +354,7 @@ void init_discrete(Display *_dpy,
 	scroll_velocity = _scroll_velocity;
 	scroll_fling_velocity = _scroll_fling_velocity;
 	scroll_fling_acceleration = _scroll_fling_acceleration;
+	scroll_fling_deceleration = _scroll_fling_deceleration;
 
 	XWindowAttributes info;
 	XGetWindowAttributes(dpy, DefaultRootWindow(dpy), &info);

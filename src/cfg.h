@@ -47,6 +47,7 @@ struct cfg {
     int scroll_fling_timeout;
     int scroll_fling_velocity;
     int scroll_fling_acceleration;
+    int scroll_fling_deceleration;
     int scroll_velocity;
     int scroll_acceleration;
 };

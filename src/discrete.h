@@ -54,5 +54,6 @@ void init_discrete(Display *_dpy,
 		   float _scroll_velocity,
 		   float _scroll_acceleration,
 		   float _scroll_fling_velocity,
+		   float _scroll_fling_deceleration,
 		   float _scroll_fling_acceleration);
 #endif

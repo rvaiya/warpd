@@ -50,5 +50,6 @@ discrete_end              string  "S-4"                   "Moves the cursor to t
 scroll_fling_timeout      int      150                    "Double tap timeout used to determine fling intention."
 scroll_fling_velocity     int      40                     "Initial fling velocity."
 scroll_fling_acceleration int      10                     "Fling acceleration."
+scroll_fling_deceleration int      30                     "Fling deceleration."
 scroll_velocity           int      10                     "Scroll velocity."
 scroll_acceleration       int      30                     "Scroll acceleration."

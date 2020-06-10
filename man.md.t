@@ -24,9 +24,7 @@ modes are *grid mode* and *hint mode* which are used for long distance cursor
 manipulation. In addition to grid and hint mode there also exists a dedicated
 mode for short distance pointer manipulation called *discrete mode* which
 has vi-like keybindings and also serves as the end point of hint mode
-(to facilitate more precise control.
-
-**Config Options**).
+(to facilitate more precise control).
 
 
 ## Grid Mode (M-x)
@@ -93,7 +91,7 @@ by using the feature in conjunction with grid or hint mode.
 # Scrolling
 
 Inertial scroll can be activated by double tapping the desired scroll key
-(buttons 4/5). This is the analog of 'flinging' the cursor on most trackpads.
+(buttons 4/5). This is the analogue of 'flinging' the cursor on most trackpads.
 Once inertial scroll has been activated (by double tapping) an impulse can be
 imparted to the scrolling cursor by tapping the same key. This feature is
 particularly useful for navigating a lot of content (e.g long web pages) but
