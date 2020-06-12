@@ -42,10 +42,10 @@
 #define MAX_BTNS 8
 
 static Display *dpy;
-static int opt_daemonize = 0;
+static int opt_foreground = 0;
 
 static const char usage[] = 
-"warp [-l] [-h] [-v] \n\n"
+"warpd [-l] [-h] [-v] \n\n"
 "See the manpage for more details and usage examples.\n";
 static struct cfg *cfg;
 static uint16_t drag_key = 0;
@@ -92,13 +92,24 @@ static int parse_keylist(const char *s, uint16_t *keycodes, int sz)
 
 static void daemonize() 
 {
+	const char *path;
+
 	if(!fork())
 		setsid();
 	else
 		exit(0);
 
+	if((path=getenv("WARP_DEBUG_FILE"))) {
+		if(!freopen(path, "w", stderr)) {
+			perror("freopen");
+			exit(-1);
+		}
+		init_dbg();
+	} else
+		freopen("/dev/null", "w", stderr);
+
+
 	printf("Daemon started\n");
-	freopen("/dev/null", "w", stderr);
 	freopen("/dev/null", "w", stdout);
 }
 
@@ -106,7 +117,7 @@ static void proc_args(char **argv, int argc)
 {
 	int opt;
 
-	while((opt = getopt(argc, argv, "dlv")) != -1) {
+	while((opt = getopt(argc, argv, "flv")) != -1) {
 		switch(opt) {
 			size_t i;
 		case 'l':
@@ -116,8 +127,8 @@ static void proc_args(char **argv, int argc)
 			}
 			exit(0);
 			break;
-		case 'd':
-			opt_daemonize++;
+		case 'f':
+			opt_foreground++;
 			break;
 		case 'v':
 			fprintf(stderr, "Compiled from git commit: "COMMIT"\n");
@@ -141,7 +152,7 @@ static void check_lock_file()
 		exit(1);
 	}
 
-	sprintf(lock_file, "%s/warp.lock.%s", rundir, getenv("DISPLAY"));
+	sprintf(lock_file, "%s/warpd.lock.%s", rundir, getenv("DISPLAY"));
 
 	if((fd = open(lock_file, O_CREAT | O_TRUNC, 0600)) < 0) {
 		perror("open");
@@ -149,7 +160,7 @@ static void check_lock_file()
 	}
 
 	if(flock(fd, LOCK_EX | LOCK_NB)) {
-		fprintf(stderr, "ERROR: warp already appears to be running.\n");
+		fprintf(stderr, "ERROR: warpd already appears to be running.\n");
 		exit(1);
 	}
 }
@@ -222,10 +233,14 @@ int main(int argc, char **argv)
 	proc_args(argv, argc);
 	check_lock_file();
 
+	if(opt_foreground) 
+		init_dbg();
+	else 
+		daemonize();
+
 	sprintf(path, "%s/.warprc", getenv("HOME"));
 	cfg = parse_cfg(path);
 	init_input(dpy);
-
 	hint_keys = (struct hint_keys){
 		up:     get_keyseq(cfg->hint_up),
 		down:   get_keyseq(cfg->hint_down),
@@ -288,12 +303,10 @@ int main(int argc, char **argv)
 	memcpy(discrete_keys.exit, exit_keys, sizeof discrete_keys.exit);
 	memcpy(grid_keys.exit, exit_keys, sizeof grid_keys.exit);
 
-	if(opt_daemonize) daemonize();
-
 	init_hint(dpy,
 		  cfg->hint_characters,
-		  cfg->hint_bgcol,
-		  cfg->hint_fgcol,
+		  cfg->hint_bgcolor,
+		  cfg->hint_fgcolor,
 		  cfg->hint_width,
 		  cfg->hint_height,
 		  cfg->hint_opacity,
@@ -305,8 +318,8 @@ int main(int argc, char **argv)
 		  cfg->grid_line_width,
 		  cfg->grid_pointer_size,
 		  cfg->movement_increment,
-		  cfg->grid_col,
-		  cfg->grid_mouse_col,
+		  cfg->grid_color,
+		  cfg->grid_mouse_color,
 		  &grid_keys);
 
 	init_discrete(dpy,
@@ -331,10 +344,13 @@ int main(int argc, char **argv)
 		uint16_t activation_key;
 		uint16_t intent_key;
 
+		dbg("Waiting for activation key");
+
 		set_cursor_visibility(1);
 		activation_key = input_wait_for_key(grabbed_keys, sizeof grabbed_keys / sizeof grabbed_keys[0]);
 		set_cursor_visibility(0);
 
+		dbg("Grabbing keyboard.");
 		input_grab_keyboard();
 
 		intent_key = query_intent(activation_key);

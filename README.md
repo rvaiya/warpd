@@ -28,7 +28,7 @@ sudo apt-get install libxi-dev libxinerama-dev libxft-dev libxfixes-dev libxtst-
 
 # Quickstart
 
-1. Run `warp -d` 
+1. Run `warpd` 
 
 ## Grid Mode
 2. Press M-x (meta is the command key) to activate the warping process.
@@ -41,7 +41,7 @@ sudo apt-get install libxi-dev libxinerama-dev libxft-dev libxfixes-dev libxtst-
    - Use the discrete movement keys (default hjkl) to adjust the cursor if necessary
 4. Press m to left click, comma to middle click or period to right click.
 
-5. Run `man warp` :P.
+5. Run `man warpd` :P.
 6. Edit `~/.warprc` to taste. (options listed in the man page)
 
 A more comprehensive description can be found in the man page (along with a list of options).
@@ -50,7 +50,7 @@ A more comprehensive description can be found in the man page (along with a list
 
 - No multi monitor support (it may still work by treating the entire display as one giant screen, I haven't tried this). If you use this program and desire this feature feel free to harass me via email or file an issue.
 
-- ~~Warp wont activate if the keyboard has already been grabbed by another program (including many popup menus). Using a minimalistic window manager is recommended :P.~~ See [Issue #3](https://github.com/rvaiya/warp/issues/3#issuecomment-628936249) for details.
+- ~~Warp wont activate if the keyboard has already been grabbed by another program (including many popup menus). Using a minimalistic window manager is recommended :P.~~ See [Issue #3](https://github.com/rvaiya/warpd/issues/3#issuecomment-628936249) for details.
 
 - This was a small one off c file that ballooned into a small project, I did not originally plan to publish it. Consequently the code is ugly/will eat your face. You have been warned.
 

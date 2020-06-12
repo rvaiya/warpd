@@ -7,11 +7,11 @@ A small X program which facilitates warping the pointer using the keyboard.
 
 # Usage
 
-warp [-d] [-l] [-v]
+warpd [-f] [-l] [-v]
 
 # Args
 
- **-d**: Run warp in the background.
+ **-f**: Run warpd in the foreground (i.e do not daemonize).Mainly useful for debugging.
 
  **-l**: Prints a list of valid keys which can be used as config values.
 
@@ -52,7 +52,7 @@ E.G
 ## Hint Mode (M-z)
 
 This is an mode which populates the screen with a list of labels and allows the
-user to immediately warp the pointer to a given location by pressing the
+user to immediately warpd the pointer to a given location by pressing the
 corresponding key sequence. It is similar to functionality provided by browser
 plugins like Vimperator but works outside of the browser and indiscriminately
 covers the entire screen. 
@@ -81,7 +81,7 @@ down).
 Simulating a drag operation can be done by activating one of the movement
 modes, moving to the desired starting location and pressing the drag activation
 key (default v). At this point the same mode will be reopened to facilitate
-destination selection. warp will then simulate dragging the source to the
+destination selection. warpd will then simulate dragging the source to the
 destination along the shortest linear path. The end result provides a concise
 and reasonably flexible mechanism for simulating common mouse operations.
 Paired with discrete mode, the feature can be useful for highlighting text,
@@ -118,7 +118,7 @@ In addition to *hint_characters* hints can be explicitly specified in `~/.warprc
 
 ## Grid Modification
 
-The following ~/.warprc causes warp to use a 3 by 3 grid instead of the default 2 by 2 grid with u,i,o corresponding to the columns in the top row and n,m,comma corresponding to the columns in the bottom row. The left, middle and right buttons can be clicked by pressing z, x, and c respectively.
+The following ~/.warprc causes warpd to use a 3 by 3 grid instead of the default 2 by 2 grid with u,i,o corresponding to the columns in the top row and n,m,comma corresponding to the columns in the bottom row. The left, middle and right buttons can be clicked by pressing z, x, and c respectively.
 
 ```
 grid_nr: 3
@@ -129,7 +129,7 @@ buttons: z,x,c
 
 ## Hint Specification
 
-The following command might be used to generate a hint file that replicates the default behaviour of warp.
+The following command might be used to generate a hint file that replicates the default behaviour of warpd.
 
 ```
 printf "abcdefghijklmnopqrstuvwxyz"| \
@@ -164,4 +164,4 @@ first be less intuitive).
 
 - No multi monitor support (it may still work by treating the entire display as one giant screen, I haven't tried this). If you use this program and desire this feature feel free to harass me via email or file an issue on github.
 
-- Programs which use Xinput to directly manipulate input devices may misbehave. See [Issue #3](https://github.com/rvaiya/warp/issues/3#issuecomment-628936249) for details.
+- Programs which use Xinput to directly manipulate input devices may misbehave. See [Issue #3](https://github.com/rvaiya/warpd/issues/3#issuecomment-628936249) for details.

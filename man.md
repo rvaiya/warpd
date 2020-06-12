@@ -7,11 +7,11 @@ A small X program which facilitates warping the pointer using the keyboard.
 
 # Usage
 
-warp [-d] [-l] [-v]
+warpd [-f] [-l] [-v]
 
 # Args
 
- **-d**: Run warp in the background.
+ **-f**: Run warpd in the foreground (i.e do not daemonize).Mainly useful for debugging.
 
  **-l**: Prints a list of valid keys which can be used as config values.
 
@@ -24,9 +24,7 @@ modes are *grid mode* and *hint mode* which are used for long distance cursor
 manipulation. In addition to grid and hint mode there also exists a dedicated
 mode for short distance pointer manipulation called *discrete mode* which
 has vi-like keybindings and also serves as the end point of hint mode
-(to facilitate more precise control.
-
-**Config Options**).
+(to facilitate more precise control).
 
 
 ## Grid Mode (M-x)
@@ -54,7 +52,7 @@ E.G
 ## Hint Mode (M-z)
 
 This is an mode which populates the screen with a list of labels and allows the
-user to immediately warp the pointer to a given location by pressing the
+user to immediately warpd the pointer to a given location by pressing the
 corresponding key sequence. It is similar to functionality provided by browser
 plugins like Vimperator but works outside of the browser and indiscriminately
 covers the entire screen. 
@@ -83,7 +81,7 @@ down).
 Simulating a drag operation can be done by activating one of the movement
 modes, moving to the desired starting location and pressing the drag activation
 key (default v). At this point the same mode will be reopened to facilitate
-destination selection. warp will then simulate dragging the source to the
+destination selection. warpd will then simulate dragging the source to the
 destination along the shortest linear path. The end result provides a concise
 and reasonably flexible mechanism for simulating common mouse operations.
 Paired with discrete mode, the feature can be useful for highlighting text,
@@ -93,7 +91,7 @@ by using the feature in conjunction with grid or hint mode.
 # Scrolling
 
 Inertial scroll can be activated by double tapping the desired scroll key
-(buttons 4/5). This is the analog of 'flinging' the cursor on most trackpads.
+(buttons 4/5). This is the analogue of 'flinging' the cursor on most trackpads.
 Once inertial scroll has been activated (by double tapping) an impulse can be
 imparted to the scrolling cursor by tapping the same key. This feature is
 particularly useful for navigating a lot of content (e.g long web pages) but
@@ -139,9 +137,9 @@ on its own line and have the format
 
 **grid_keys**: A sequence of comma delimited keybindings which are ordered bookwise with respect to grid position. (default: u,i,j,k).
 
-**grid_col**: The color of the grid. (default: #ff0000).
+**grid_color**: The color of the grid. (default: #ff0000).
 
-**grid_mouse_col**: The color of the mouse indicator. (default: #00ff00).
+**grid_mouse_color**: The color of the mouse indicator. (default: #00ff00).
 
 **grid_pointer_size**: The size of the grid pointer. (default: 20).
 
@@ -159,9 +157,9 @@ on its own line and have the format
 
 **hint_right**: Moves the cursor right by movement_increment once a label has been selected in hint mode. (default: l).
 
-**hint_bgcol**: The background hint color. (default: #00ff00).
+**hint_bgcolor**: The background hint color. (default: #00ff00).
 
-**hint_fgcol**: The foreground hint color. (default: #000000).
+**hint_fgcolor**: The foreground hint color. (default: #000000).
 
 **hint_characters**: The set of hint characters used by hint mode. (default: asdfghjkl;'zxcvbm,./).
 
@@ -212,7 +210,7 @@ In addition to *hint_characters* hints can be explicitly specified in `~/.warprc
 
 ## Grid Modification
 
-The following ~/.warprc causes warp to use a 3 by 3 grid instead of the default 2 by 2 grid with u,i,o corresponding to the columns in the top row and n,m,comma corresponding to the columns in the bottom row. The left, middle and right buttons can be clicked by pressing z, x, and c respectively.
+The following ~/.warprc causes warpd to use a 3 by 3 grid instead of the default 2 by 2 grid with u,i,o corresponding to the columns in the top row and n,m,comma corresponding to the columns in the bottom row. The left, middle and right buttons can be clicked by pressing z, x, and c respectively.
 
 ```
 grid_nr: 3
@@ -223,7 +221,7 @@ buttons: z,x,c
 
 ## Hint Specification
 
-The following command might be used to generate a hint file that replicates the default behaviour of warp.
+The following command might be used to generate a hint file that replicates the default behaviour of warpd.
 
 ```
 printf "abcdefghijklmnopqrstuvwxyz"| \
@@ -258,4 +256,4 @@ first be less intuitive).
 
 - No multi monitor support (it may still work by treating the entire display as one giant screen, I haven't tried this). If you use this program and desire this feature feel free to harass me via email or file an issue on github.
 
-- Programs which use Xinput to directly manipulate input devices may misbehave. See [Issue #3](https://github.com/rvaiya/warp/issues/3#issuecomment-628936249) for details.
+- Programs which use Xinput to directly manipulate input devices may misbehave. See [Issue #3](https://github.com/rvaiya/warpd/issues/3#issuecomment-628936249) for details.

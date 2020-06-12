@@ -50,8 +50,8 @@ struct cfg* parse_cfg(const char *fname) {
     cfg->grid_down = "s";
     cfg->grid_right = "d";
     cfg->grid_keys = "u,i,j,k";
-    cfg->grid_col = "#ff0000";
-    cfg->grid_mouse_col = "#00ff00";
+    cfg->grid_color = "#ff0000";
+    cfg->grid_mouse_color = "#00ff00";
     cfg->grid_pointer_size = 20;
     cfg->grid_line_width = 5;
     cfg->hint_width = 40;
@@ -60,8 +60,8 @@ struct cfg* parse_cfg(const char *fname) {
     cfg->hint_left = "h";
     cfg->hint_down = "j";
     cfg->hint_right = "l";
-    cfg->hint_bgcol = "#00ff00";
-    cfg->hint_fgcol = "#000000";
+    cfg->hint_bgcolor = "#00ff00";
+    cfg->hint_fgcolor = "#000000";
     cfg->hint_characters = "asdfghjkl;'zxcvbm,./";
     cfg->hint_opacity = 100;
     cfg->discrete_left = "h";
@@ -122,10 +122,10 @@ struct cfg* parse_cfg(const char *fname) {
             cfg->grid_right = strdup(val);
         else if(!strcmp(key, "grid_keys"))
             cfg->grid_keys = strdup(val);
-        else if(!strcmp(key, "grid_col"))
-            cfg->grid_col = strdup(val);
-        else if(!strcmp(key, "grid_mouse_col"))
-            cfg->grid_mouse_col = strdup(val);
+        else if(!strcmp(key, "grid_color"))
+            cfg->grid_color = strdup(val);
+        else if(!strcmp(key, "grid_mouse_color"))
+            cfg->grid_mouse_color = strdup(val);
         else if(!strcmp(key, "grid_pointer_size"))
             cfg->grid_pointer_size = atoi(val);
         else if(!strcmp(key, "grid_line_width"))
@@ -142,10 +142,10 @@ struct cfg* parse_cfg(const char *fname) {
             cfg->hint_down = strdup(val);
         else if(!strcmp(key, "hint_right"))
             cfg->hint_right = strdup(val);
-        else if(!strcmp(key, "hint_bgcol"))
-            cfg->hint_bgcol = strdup(val);
-        else if(!strcmp(key, "hint_fgcol"))
-            cfg->hint_fgcol = strdup(val);
+        else if(!strcmp(key, "hint_bgcolor"))
+            cfg->hint_bgcolor = strdup(val);
+        else if(!strcmp(key, "hint_fgcolor"))
+            cfg->hint_fgcolor = strdup(val);
         else if(!strcmp(key, "hint_characters"))
             cfg->hint_characters = strdup(val);
         else if(!strcmp(key, "hint_opacity"))

@@ -223,7 +223,6 @@ static int scroll(const int btn, float *v, float a, uint16_t *key, int timeout)
 uint16_t discrete_warp(uint16_t start_key)
 {
 	int opnum = 0;
-	float v;
 
 	rel_warp(-indicator_sz/2, -indicator_sz/2);
 	draw();
@@ -266,7 +265,6 @@ uint16_t discrete_warp(uint16_t start_key)
 			else
 				opnum = opnum*10 + num;
 		} else if(keyseq == keys->scroll_up || keyseq == keys->scroll_down) {
-			int delta;
 			uint16_t key;
 			int btn = keyseq == keys->scroll_up ? 5 : 4;
 
@@ -308,8 +306,8 @@ uint16_t discrete_warp(uint16_t start_key)
 								exit = 1;
 							}
 						}
-						break;
 					}
+					break;
 				case -1: //Stopped
 					exit = 1;
 					break;

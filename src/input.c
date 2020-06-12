@@ -185,7 +185,8 @@ void input_grab_keyboard()
 		}
 	}
 
-	XFlush(dpy);
+	XSync(dpy, False);
+	dbg("Done");
 }
 
 const char* input_keyseq_to_string(uint16_t seq)

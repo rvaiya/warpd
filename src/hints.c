@@ -182,6 +182,8 @@ uint16_t hint_warp()
 
 	buf[0] = '\0';
 	filter("", NULL);
+
+	dbg("Entering main hint loop");
 	while(1) {
 		size_t n;
 		struct hint *target = NULL;

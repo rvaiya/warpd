@@ -22,9 +22,10 @@
 
 #ifndef _DBG_H_
 #define _DBG_H_
-	#if DEBUG
-		#define dbg(fmt, ...) fprintf(stderr, "DEBUG: %s: "fmt"\n", __FUNCTION__, ##__VA_ARGS__)
-	#else
-		#define dbg(...)
-	#endif
+
+#include <stdarg.h>
+void init_dbg();
+void _dbg(const char *func, const char *fmt, ...);
+#define dbg(...) _dbg(__FUNCTION__, __VA_ARGS__)
+
 #endif

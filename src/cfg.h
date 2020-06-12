@@ -19,8 +19,8 @@ struct cfg {
     char* grid_down;
     char* grid_right;
     char* grid_keys;
-    char* grid_col;
-    char* grid_mouse_col;
+    char* grid_color;
+    char* grid_mouse_color;
     int grid_pointer_size;
     int grid_line_width;
     int hint_width;
@@ -29,8 +29,8 @@ struct cfg {
     char* hint_left;
     char* hint_down;
     char* hint_right;
-    char* hint_bgcol;
-    char* hint_fgcol;
+    char* hint_bgcolor;
+    char* hint_fgcolor;
     char* hint_characters;
     int hint_opacity;
     char* discrete_left;
