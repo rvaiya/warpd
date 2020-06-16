@@ -121,7 +121,6 @@ static void clear_keys()
 	}
 
 	XFlush(dpy);
-	active_mods = 0;
 }
 
 uint16_t input_wait_for_key(uint16_t *keys, size_t n)
@@ -384,7 +383,12 @@ static int process_xev(XEvent *ev, uint16_t *keyseq)
 	case XI_KeyRelease:
 		dev = (XIDeviceEvent*)(cookie->data);
 
-		active_mods &= ~get_mod_mask(dev->detail);
+		mask = get_mod_mask(dev->detail);
+		if(mask) {
+			active_mods &= ~mask;
+			return EV_MOD;
+		}
+
 		if(keyseq)
 			*keyseq = active_mods | dev->detail;
 
@@ -427,11 +431,16 @@ static XEvent *get_xev(int timeout)
 
 int input_next_ev(int timeout, uint16_t *keyseq)
 {
+	int type;
 	XEvent *ev = get_xev(timeout);
 	if(!ev) 
 		return EV_TIMEOUT;
 
-	return process_xev(ev, keyseq);
+	type = process_xev(ev, keyseq);
+	if(type == EV_MOD)
+		return input_next_ev(timeout, keyseq);
+	else
+		return type;
 }
 
 uint16_t input_next_key(int timeout, int include_repeats)

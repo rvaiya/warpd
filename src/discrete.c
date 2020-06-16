@@ -31,6 +31,7 @@
 #include <assert.h>
 #include "discrete.h"
 #include "input.h"
+#include "scroll.h"
 
 static Display *dpy;
 static Window indicator = None;
@@ -176,49 +177,6 @@ static int tonum(uint16_t keyseq)
 	return -1;
 }
 
-static int scroll(const int btn, float *v, float a, uint16_t *key, int timeout)
-{
-	//Non zero to provide the illusion of continuous scrolling
-	const float stop_threshold = 8; 
-	const float vf = 1000;
-
-	int total_time = 0; //in ms
-	float t = 0; //in ms
-	int d = 0;
-	float v0 = (*v <= stop_threshold) ? (stop_threshold + 1) : *v;
-
-	while(1) {
-		const int nd = (int)(v0*(t/1000) + .5 * a * (t/1000) * (t/1000));
-		*v = (v0+(a * (t/1000)));
-
-		if(a && *v >= vf) {
-			t = 0;
-			a = 0;
-			d = 0;
-			v0 = vf;
-			continue;
-		}
-
-		int type = input_next_ev(1, key);
-		if(type != EV_TIMEOUT && type != EV_KEYREPEAT)
-			return type;
-
-		if(*v <= stop_threshold) return -1;
-
-		for (int i = 0; i < (nd-d); i++) {
-			XTestFakeButtonEvent(dpy, btn, True, CurrentTime);
-			XTestFakeButtonEvent(dpy, btn, False, CurrentTime);
-			XFlush(dpy);
-		}
-
-		d = nd;
-		t++;
-		total_time++;
-
-		if(timeout && total_time >= timeout)
-			return EV_TIMEOUT;
-	}
-}
 
 uint16_t discrete_warp(uint16_t start_key)
 {
@@ -266,52 +224,20 @@ uint16_t discrete_warp(uint16_t start_key)
 				opnum = opnum*10 + num;
 		} else if(keyseq == keys->scroll_up || keyseq == keys->scroll_down) {
 			uint16_t key;
-			int btn = keyseq == keys->scroll_up ? 5 : 4;
+				
+			key = scroll(dpy,
+				     keyseq,
+				     keyseq == keys->scroll_up ? 5 : 4,
+				     scroll_velocity,
+				     scroll_acceleration,
+				     scroll_fling_velocity,
+				     scroll_fling_acceleration,
+				     scroll_fling_deceleration,
+				     scroll_fling_timeout);
 
-			float v = scroll_velocity;
-			float a = scroll_acceleration;
-
-			int exit = 0;
-			int flung = 0;
-
-			while(!exit) {
-				int ev = scroll(btn, &v, a, &key, 0);
-
-				switch(ev) {
-				case EV_KEYPRESS:
-					if(key != keyseq) {
-						rel_warp(indicator_sz/2, indicator_sz/2);
-						return discrete_warp(key);
-					}
-					else if(flung && key == keyseq)
-						v += scroll_fling_velocity;
-					break;
-				case EV_KEYRELEASE:
-					if(key == keyseq) {
-						if(flung) {
-							a = -scroll_fling_deceleration;
-						} else {
-							switch(input_next_ev(scroll_fling_timeout, &key)) {
-							case EV_KEYPRESS:
-								if(key == keyseq) {
-									v += scroll_fling_velocity;
-									a = a;
-									flung = 1;
-								} else {
-									rel_warp(indicator_sz/2, indicator_sz/2);
-									return discrete_warp(key);
-								}
-								break;
-							default:
-								exit = 1;
-							}
-						}
-					}
-					break;
-				case -1: //Stopped
-					exit = 1;
-					break;
-				}
+			if(key) {
+				rel_warp(indicator_sz/2, indicator_sz/2);
+				return discrete_warp(key);
 			}
 		} else {
 			size_t i;

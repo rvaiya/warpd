@@ -50,6 +50,8 @@ struct cfg {
     int scroll_fling_deceleration;
     int scroll_velocity;
     int scroll_acceleration;
+    char* scroll_down_key;
+    char* scroll_up_key;
 };
 
 struct cfg* parse_cfg(const char *fname);

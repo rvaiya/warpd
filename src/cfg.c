@@ -81,6 +81,8 @@ struct cfg* parse_cfg(const char *fname) {
     cfg->scroll_fling_deceleration = 30;
     cfg->scroll_velocity = 10;
     cfg->scroll_acceleration = 30;
+    cfg->scroll_down_key = "A-e";
+    cfg->scroll_up_key = "A-y";
 
     FILE *fp = fopen(fname, "r");
     if(!fp) return cfg; //Return defaults if no config file xists..
@@ -184,6 +186,10 @@ struct cfg* parse_cfg(const char *fname) {
             cfg->scroll_velocity = atoi(val);
         else if(!strcmp(key, "scroll_acceleration"))
             cfg->scroll_acceleration = atoi(val);
+        else if(!strcmp(key, "scroll_down_key"))
+            cfg->scroll_down_key = strdup(val);
+        else if(!strcmp(key, "scroll_up_key"))
+            cfg->scroll_up_key = strdup(val);
 
         free(line);
         line = NULL;

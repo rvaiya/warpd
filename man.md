@@ -199,6 +199,10 @@ on its own line and have the format
 
 **scroll_acceleration**: Scroll acceleration. (default: 30).
 
+**scroll_down_key**: Scroll down key. (default: A-e).
+
+**scroll_up_key**: Scroll up key. (default: A-y).
+
 
 
 # Hint Generation

@@ -38,6 +38,7 @@
 #include "cfg.h"
 #include "dbg.h"
 #include "input.h"
+#include "scroll.h"
 
 #define MAX_BTNS 8
 
@@ -223,6 +224,8 @@ int main(int argc, char **argv)
 	uint16_t discrete_activation_key;
 	uint16_t hint_activation_key;
 	uint16_t grid_activation_key;
+	uint16_t scroll_up_key;
+	uint16_t scroll_down_key;
 
 	if(!(dpy = XOpenDisplay(NULL))) {
 		fprintf(stderr,
@@ -283,6 +286,8 @@ int main(int argc, char **argv)
 	discrete_activation_key = get_keyseq(cfg->discrete_activation_key);
 	hint_activation_key = get_keyseq(cfg->hint_activation_key);
 	grid_activation_key = get_keyseq(cfg->grid_activation_key);
+	scroll_up_key = get_keyseq(cfg->scroll_up_key);
+	scroll_down_key = get_keyseq(cfg->scroll_down_key);
 	drag_key = get_keyseq(cfg->drag_key);
 
 	n = 0;
@@ -338,7 +343,9 @@ int main(int argc, char **argv)
 		uint16_t grabbed_keys[] = {
 			grid_activation_key,
 			hint_activation_key,
-			discrete_activation_key
+			discrete_activation_key,
+			scroll_up_key,
+			scroll_down_key,
 		};
 
 		uint16_t activation_key;
@@ -352,6 +359,21 @@ int main(int argc, char **argv)
 
 		dbg("Grabbing keyboard.");
 		input_grab_keyboard();
+
+		if(activation_key == scroll_up_key || activation_key == scroll_down_key) {
+			while(activation_key == scroll_up_key || activation_key == scroll_down_key) {
+				activation_key = scroll(dpy, activation_key, activation_key == scroll_down_key ? 5 : 4,
+							cfg->scroll_velocity,
+							cfg->scroll_acceleration,
+							cfg->scroll_fling_velocity,
+							cfg->scroll_fling_acceleration,
+							cfg->scroll_fling_deceleration,
+							cfg->scroll_fling_timeout);
+
+			}
+			input_ungrab_keyboard();
+			continue;
+		}
 
 		intent_key = query_intent(activation_key);
 
