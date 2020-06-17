@@ -162,7 +162,7 @@ void input_grab_keyboard()
 	size_t i;
 	XIEventMask mask;
 
-	dbg("Ungrabbing keyboard");
+	dbg("Grabbing keyboard");
 
 	mask.deviceid = XIAllDevices;
 	mask.mask_len = XIMaskLen(XI_LASTEVENT);
@@ -294,8 +294,11 @@ void input_ungrab_keyboard()
 	size_t i;
 
 	dbg("Ungrabbing keyboard");
-	for (i = 0; i < nkbds; i++)
+	for (i = 0; i < nkbds; i++) {
+		dbg("Ungrabbing %d", kbds[i]);
 		XIUngrabDevice(dpy, kbds[i], CurrentTime);
+		dbg("Done");
+	}
 
 	XFlush(dpy);
 	clear_keys();
