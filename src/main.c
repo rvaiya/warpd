@@ -371,55 +371,54 @@ int main(int argc, char **argv)
 							cfg->scroll_fling_timeout);
 
 			}
-			input_ungrab_keyboard();
-			continue;
-		}
 
-		intent_key = query_intent(activation_key);
+			input_ungrab_keyboard(0);
+		} else {
 
-		if(intent_key == drag_key) {
-			XTestFakeButtonEvent(dpy, 1, True, CurrentTime);
+			intent_key = query_intent(activation_key);
 
-			query_intent(activation_key);
+			if(intent_key == drag_key) {
+				XTestFakeButtonEvent(dpy, 1, True, CurrentTime);
 
-			XTestFakeButtonEvent(dpy, 1, False, CurrentTime);
+				query_intent(activation_key);
 
-			XFlush(dpy);
-			input_ungrab_keyboard();
-			continue;
-		}
+				XTestFakeButtonEvent(dpy, 1, False, CurrentTime);
 
-		size_t btn = 0;
-		while(btn < MAX_BTNS) {
-			if(buttons[btn] == (intent_key & 0xFF)) {
-				btn++;
-				break;
+				XFlush(dpy);
+				input_ungrab_keyboard(1);
+			} else {
+				size_t btn = 0;
+
+				while(btn < MAX_BTNS) {
+					if(buttons[btn] == (intent_key & 0xFF)) {
+						btn++;
+						break;
+					}
+					btn++;
+				}
+
+				switch(btn) {
+				case 1:
+					set_cursor_visibility(1);
+					input_click(1);
+					while(input_next_key(cfg->double_click_timeout, 0) == buttons[0]) {
+						input_click(1);
+					}
+					break;
+				case 4:
+					discrete_warp(discrete_keys.scroll_up);
+					break;
+				case 5:
+					discrete_warp(discrete_keys.scroll_down);
+					break;
+				case 2:
+				case 3:
+					input_click(btn);
+					break;
+				}
+
+				input_ungrab_keyboard(1);
 			}
-			btn++;
 		}
-
-		switch(btn) {
-		case 1:
-			set_cursor_visibility(1);
-			input_click(1);
-			while(input_next_key(cfg->double_click_timeout, 0) == buttons[0]) {
-				input_click(1);
-			}
-			break;
-		case 2:
-			input_click(2);
-			break;
-		case 3:
-			input_click(3);
-			break;
-		case 4:
-			discrete_warp(discrete_keys.scroll_up);
-			break;
-		case 5:
-			discrete_warp(discrete_keys.scroll_down);
-			break;
-		}
-
-		input_ungrab_keyboard();
 	}
 }

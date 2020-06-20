@@ -97,7 +97,7 @@ static size_t read_hints(const char *path,
 		line[len-1] = '\0';
 
 		assert(i < MAX_HINTS);
-		assert(len < sizeof hints[0].label);
+		assert(len < (ssize_t)sizeof hints[0].label);
 
 		strcpy(hints[i++].label, line);
 		free(line);

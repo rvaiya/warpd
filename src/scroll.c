@@ -93,7 +93,7 @@ uint16_t scroll(Display *dpy,
 					case EV_KEYPRESS:
 						if(key == start_key) {
 							v += fling_velocity;
-							a = a;
+							a = fling_acceleration;
 							flung = 1;
 						} else
 							return key;

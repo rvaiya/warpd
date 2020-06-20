@@ -42,7 +42,7 @@ uint16_t input_parse_keyseq(const char* key);
 
 void input_click(int btn);
 void input_grab_keyboard();
-void input_ungrab_keyboard();
+void input_ungrab_keyboard(int wait_for_keyboard);
 
 uint16_t input_next_key(int timeout, int include_repeats);
 int input_next_ev(int timeout, uint16_t *keyseq);
