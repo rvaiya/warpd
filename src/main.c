@@ -355,29 +355,30 @@ int main(int argc, char **argv)
 
 		set_cursor_visibility(1);
 		activation_key = input_wait_for_key(grabbed_keys, sizeof grabbed_keys / sizeof grabbed_keys[0]);
+start:
 		set_cursor_visibility(0);
-
-		dbg("Grabbing keyboard.");
+		dbg("Processing activation key %s.", input_keyseq_to_string(activation_key));
 		input_grab_keyboard();
 
 		if(activation_key == scroll_up_key || activation_key == scroll_down_key) {
-			while(activation_key == scroll_up_key || activation_key == scroll_down_key) {
-				activation_key = scroll(dpy, activation_key, activation_key == scroll_down_key ? 5 : 4,
-							cfg->scroll_velocity,
-							cfg->scroll_acceleration,
-							cfg->scroll_fling_velocity,
-							cfg->scroll_fling_acceleration,
-							cfg->scroll_fling_deceleration,
-							cfg->scroll_fling_timeout);
-
-			}
+			activation_key = scroll(dpy, activation_key, activation_key == scroll_down_key ? 5 : 4,
+						cfg->scroll_velocity,
+						cfg->scroll_acceleration,
+						cfg->scroll_fling_velocity,
+						cfg->scroll_fling_acceleration,
+						cfg->scroll_fling_deceleration,
+						cfg->scroll_fling_timeout);
 
 			input_ungrab_keyboard(0);
+			for (i = 0; i < sizeof grabbed_keys/sizeof grabbed_keys[0]; i++) {
+				if(activation_key == grabbed_keys[i])
+					goto start;
+			}
 		} else {
-
 			intent_key = query_intent(activation_key);
 
 			if(intent_key == drag_key) {
+
 				XTestFakeButtonEvent(dpy, 1, True, CurrentTime);
 
 				query_intent(activation_key);
@@ -385,6 +386,7 @@ int main(int argc, char **argv)
 				XTestFakeButtonEvent(dpy, 1, False, CurrentTime);
 
 				XFlush(dpy);
+
 				input_ungrab_keyboard(1);
 			} else {
 				size_t btn = 0;
