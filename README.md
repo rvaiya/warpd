@@ -6,16 +6,15 @@ A small X program which provides different mechanisms for manipulating the curso
 
 Requires libxi-dev libxinerama-dev, libxft-dev, libxfixes-dev, libxtst-dev, and libx11-dev on debian. You will need to install the equivalent packages containing the appropriate header files on your distribution.
 
-On Debian:
+### On Debian:
 
 ```
 sudo apt-get install libxi-dev libxinerama-dev libxft-dev libxfixes-dev libxtst-dev libx11-dev && make && sudo make install
 ```
 
-On Arch:
+### On Arch:
 
 You can use the aur package: [warpd-git](https://aur.archlinux.org/packages/warpd-git/), or just use your favorite aur helper like:
-
 ```
 yay -S warpd-git
 ```
@@ -34,6 +33,13 @@ yay -S warpd-git
 <img src="demo_warp.gif" height="400px"/>
 </p>
 
+## Discrete Mode
+
+<p align="center">
+<img src="demo_discrete.gif" height="200px"/>
+<img src="demo_discrete2.gif" height="200px"/>
+</p>
+
 # Quickstart
 
 1. Run `warpd` 
@@ -45,12 +51,18 @@ yay -S warpd-git
 
 ## Hint Mode
 2. Press M-z (meta is the command key) to generate a list of hints
-3. - Enter the key sequence associated with the desired target
-   - Use the discrete movement keys (default hjkl) to adjust the cursor if necessary
-4. Press m to left click, comma to middle click or period to right click.
+3.  Enter the key sequence associated with the desired target. It will then start discrete mode. Use the discrete movement keys (default hjkl) to adjust the cursor if necessary
+4. Press m to left click, comma to middle click or period to right click. You can also hit "v" (as visual mode in vi default keybindings) and the hints will show up again so you can select a text area or drag on the screen.
 
-5. Run `man warpd` :P.
-6. Edit `~/.warprc` to taste. (options listed in the man page)
+## Discrete Mode
+2. Press M-c (meta is the command key) to activate the discrete cursor control.
+3. Use the discrete movement keys (default hjkl) to adjust the cursor if necessary
+4. Press m to left click, comma to middle click or period to right click. You can also hit "v" (as visual mode in vi default keybindings) and start selecting text or dragging on the screen by using the movement keys.
+
+## Now fully get rid of your mouse!
+5. Hold Alt+e to scroll down and Alt+y to scroll up.
+6. Run `man warpd` :P.
+7. Edit `~/.warprc` to taste. You can change any of the keybindings, hints sizes and colors amoung other options (listed in the man page or you can take a quick look at [cfg.opts](cfg.opts)).
 
 A more comprehensive description can be found in the man page (along with a list of options).
 
