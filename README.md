@@ -12,6 +12,14 @@ On Debian:
 sudo apt-get install libxi-dev libxinerama-dev libxft-dev libxfixes-dev libxtst-dev libx11-dev && make && sudo make install
 ```
 
+On Arch:
+
+You can use the aur package: [warpd-git](https://aur.archlinux.org/packages/warpd-git/), or just use your favorite aur helper like:
+
+```
+yay -S warpd-git
+```
+
 # Demo
 
 ## Hint Mode
