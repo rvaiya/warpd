@@ -165,6 +165,14 @@ on its own line and have the format
 
 **hint_opacity**: Hint transparency (requires a compositor). (default: 100).
 
+**discrete_left_word**: Move the cursor left by word size in discrete mode. (default: b).
+
+**discrete_right_word**: Move the cursor right by word size in discrete mode. (default: w).
+
+**discrete_down_word**: Move the cursor down by word size in discrete mode. (default: S-j).
+
+**discrete_up_word**: Move the cursor up by word size in discrete mode. (default: S-k).
+
 **discrete_left**: Move the cursor left in discrete mode. (default: h).
 
 **discrete_down**: Move the cursor down in discrete mode. (default: j).
@@ -186,6 +194,8 @@ on its own line and have the format
 **discrete_beginning**: Moves the cursor to the leftmost corner of the screen in discrete mode. (default: S-6).
 
 **discrete_end**: Moves the cursor to the rightmost corner of the screen in discrete mode. (default: S-4).
+
+**discrete_word_size**: Size of the increment used by discrete_*_word. (default: 80).
 
 **scroll_fling_timeout**: Double tap timeout used to determine fling intention. (default: 150).
 

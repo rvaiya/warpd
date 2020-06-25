@@ -38,6 +38,7 @@ static Window indicator = None;
 static struct discrete_keys *keys;
 static int increment;
 static int indicator_sz;
+static int word_increment;
 
 static float scroll_fling_timeout;
 static float scroll_acceleration;
@@ -217,6 +218,18 @@ uint16_t discrete_warp(uint16_t start_key)
 		} else if(keyseq == keys->right) {
 			rel_warp(increment*(opnum ? opnum : 1), 0);
 			opnum = 0;
+		} else if(keyseq == keys->left_word) {
+			rel_warp(-word_increment*(opnum ? opnum : 1), 0);
+			opnum = 0;
+		} else if(keyseq == keys->right_word) {
+			rel_warp(word_increment*(opnum ? opnum : 1), 0);
+			opnum = 0;
+		} else if(keyseq == keys->up_word) {
+			rel_warp(0, -word_increment*(opnum ? opnum : 1));
+			opnum = 0;
+		} else if(keyseq == keys->down_word) {
+			rel_warp(0, word_increment*(opnum ? opnum : 1));
+			opnum = 0;
 		} else if ((num=tonum(keyseq)) != -1) {
 			if(num == 0 && opnum == 0)
 				rel_warp(-10000, 0);
@@ -256,6 +269,7 @@ uint16_t discrete_warp(uint16_t start_key)
 
 void init_discrete(Display *_dpy,
 		   const int _increment,
+		   const int _word_increment,
 		   struct discrete_keys *_keys,
 		   const char *indicator_color,
 		   size_t _indicator_sz,
@@ -270,6 +284,7 @@ void init_discrete(Display *_dpy,
 	keys = _keys;
 	dpy = _dpy;
 	increment = _increment;
+	word_increment = _word_increment;
 	indicator_sz = _indicator_sz;
 
 	indicator_sz = _indicator_sz;

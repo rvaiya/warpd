@@ -33,6 +33,10 @@ struct cfg {
     char* hint_fgcolor;
     char* hint_characters;
     int hint_opacity;
+    char* discrete_left_word;
+    char* discrete_right_word;
+    char* discrete_down_word;
+    char* discrete_up_word;
     char* discrete_left;
     char* discrete_down;
     char* discrete_up;
@@ -44,6 +48,7 @@ struct cfg {
     char* discrete_last;
     char* discrete_beginning;
     char* discrete_end;
+    int discrete_word_size;
     int scroll_fling_timeout;
     int scroll_fling_velocity;
     int scroll_fling_acceleration;

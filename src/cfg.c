@@ -64,6 +64,10 @@ struct cfg* parse_cfg(const char *fname) {
     cfg->hint_fgcolor = "#000000";
     cfg->hint_characters = "asdfghjkl;'zxcvbm,./";
     cfg->hint_opacity = 100;
+    cfg->discrete_left_word = "b";
+    cfg->discrete_right_word = "w";
+    cfg->discrete_down_word = "S-j";
+    cfg->discrete_up_word = "S-k";
     cfg->discrete_left = "h";
     cfg->discrete_down = "j";
     cfg->discrete_up = "k";
@@ -75,6 +79,7 @@ struct cfg* parse_cfg(const char *fname) {
     cfg->discrete_last = "S-l";
     cfg->discrete_beginning = "S-6";
     cfg->discrete_end = "S-4";
+    cfg->discrete_word_size = 80;
     cfg->scroll_fling_timeout = 150;
     cfg->scroll_fling_velocity = 40;
     cfg->scroll_fling_acceleration = 10;
@@ -152,6 +157,14 @@ struct cfg* parse_cfg(const char *fname) {
             cfg->hint_characters = strdup(val);
         else if(!strcmp(key, "hint_opacity"))
             cfg->hint_opacity = atoi(val);
+        else if(!strcmp(key, "discrete_left_word"))
+            cfg->discrete_left_word = strdup(val);
+        else if(!strcmp(key, "discrete_right_word"))
+            cfg->discrete_right_word = strdup(val);
+        else if(!strcmp(key, "discrete_down_word"))
+            cfg->discrete_down_word = strdup(val);
+        else if(!strcmp(key, "discrete_up_word"))
+            cfg->discrete_up_word = strdup(val);
         else if(!strcmp(key, "discrete_left"))
             cfg->discrete_left = strdup(val);
         else if(!strcmp(key, "discrete_down"))
@@ -174,6 +187,8 @@ struct cfg* parse_cfg(const char *fname) {
             cfg->discrete_beginning = strdup(val);
         else if(!strcmp(key, "discrete_end"))
             cfg->discrete_end = strdup(val);
+        else if(!strcmp(key, "discrete_word_size"))
+            cfg->discrete_word_size = atoi(val);
         else if(!strcmp(key, "scroll_fling_timeout"))
             cfg->scroll_fling_timeout = atoi(val);
         else if(!strcmp(key, "scroll_fling_velocity"))

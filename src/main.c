@@ -252,16 +252,21 @@ int main(int argc, char **argv)
 	};
 
 	discrete_keys = (struct discrete_keys){
-		up:        get_keyseq(cfg->discrete_up),
-		down:      get_keyseq(cfg->discrete_down),
-		left:      get_keyseq(cfg->discrete_left),
-		right:     get_keyseq(cfg->discrete_right),
+		up:          get_keyseq(cfg->discrete_up),
+		down:        get_keyseq(cfg->discrete_down),
+		left:        get_keyseq(cfg->discrete_left),
+		right:       get_keyseq(cfg->discrete_right),
 
-		home:      get_keyseq(cfg->discrete_home),
-		middle:    get_keyseq(cfg->discrete_middle),
-		last:      get_keyseq(cfg->discrete_last),
-		beginning: get_keyseq(cfg->discrete_beginning),
-		end:       get_keyseq(cfg->discrete_end),
+		right_word:  get_keyseq(cfg->discrete_right_word),
+		left_word:   get_keyseq(cfg->discrete_left_word),
+		up_word:     get_keyseq(cfg->discrete_up_word),
+		down_word:   get_keyseq(cfg->discrete_down_word),
+
+		home:        get_keyseq(cfg->discrete_home),
+		middle:      get_keyseq(cfg->discrete_middle),
+		last:        get_keyseq(cfg->discrete_last),
+		beginning:   get_keyseq(cfg->discrete_beginning),
+		end:         get_keyseq(cfg->discrete_end),
 	};
 
 	grid_keys = (struct grid_keys){
@@ -329,6 +334,7 @@ int main(int argc, char **argv)
 
 	init_discrete(dpy,
 		      cfg->movement_increment,
+		      cfg->discrete_word_size,
 		      &discrete_keys,
 		      cfg->discrete_color,
 		      cfg->discrete_size,

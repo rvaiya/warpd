@@ -17,8 +17,8 @@ grid_down                 string  "s"                     "Move the entire grid 
 grid_right                string  "d"                     "Move the entire grid right by a fixed interval."
 grid_keys                 string  "u,i,j,k"               "A sequence of comma delimited keybindings which are ordered bookwise with respect to grid position."
 
-grid_color                  string  "#ff0000"               "The color of the grid."
-grid_mouse_color            string  "#00ff00"               "The color of the mouse indicator."
+grid_color                string  "#ff0000"               "The color of the grid."
+grid_mouse_color          string  "#00ff00"               "The color of the mouse indicator."
 grid_pointer_size         int     20                      "The size of the grid pointer."
 grid_line_width           int     5                       "The size of grid lines."
 
@@ -29,10 +29,15 @@ hint_left                 string  "h"                     "Moves the cursor left
 hint_down                 string  "j"                     "Moves the cursor down by movement_increment once a label has been selected in hint mode."
 hint_right                string  "l"                     "Moves the cursor right by movement_increment once a label has been selected in hint mode."
 
-hint_bgcolor                string  "#00ff00"               "The background hint color."
-hint_fgcolor                string  "#000000"               "The foreground hint color."
+hint_bgcolor              string  "#00ff00"               "The background hint color."
+hint_fgcolor              string  "#000000"               "The foreground hint color."
 hint_characters           string  "asdfghjkl;'zxcvbm,./"  "The set of hint characters used by hint mode."
 hint_opacity              int     100                     "Hint transparency (requires a compositor)."
+
+discrete_left_word        string  "b"                     "Move the cursor left by word size in discrete mode."
+discrete_right_word       string  "w"                     "Move the cursor right by word size in discrete mode."
+discrete_down_word        string  "S-j"                   "Move the cursor down by word size in discrete mode."
+discrete_up_word          string  "S-k"                   "Move the cursor up by word size in discrete mode."
 
 discrete_left             string  "h"                     "Move the cursor left in discrete mode."
 discrete_down             string  "j"                     "Move the cursor down in discrete mode."
@@ -46,6 +51,7 @@ discrete_middle           string  "S-m"                   "Moves the cursor to t
 discrete_last             string  "S-l"                   "Moves the cursor to the bottom of the screen in discrete mode."
 discrete_beginning        string  "S-6"                   "Moves the cursor to the leftmost corner of the screen in discrete mode."
 discrete_end              string  "S-4"                   "Moves the cursor to the rightmost corner of the screen in discrete mode."
+discrete_word_size        int     80                      "Size of the increment used by discrete_*_word."
 
 scroll_fling_timeout      int      150                    "Double tap timeout used to determine fling intention."
 scroll_fling_velocity     int      40                     "Initial fling velocity."

@@ -32,6 +32,11 @@ struct discrete_keys {
 	uint16_t left;
 	uint16_t right;
 
+	uint16_t right_word;
+	uint16_t left_word;
+	uint16_t down_word;
+	uint16_t up_word;
+
 	uint16_t home;
 	uint16_t middle;
 	uint16_t last;
@@ -47,6 +52,7 @@ uint16_t discrete_warp(uint16_t start_key);
 
 void init_discrete(Display *_dpy,
 		   const int _increment,
+		   const int _word_increment,
 		   struct discrete_keys *_keys,
 		   const char *indicator_color,
 		   size_t _indicator_sz,
@@ -54,6 +60,6 @@ void init_discrete(Display *_dpy,
 		   float _scroll_velocity,
 		   float _scroll_acceleration,
 		   float _scroll_fling_velocity,
-		   float _scroll_fling_deceleration,
-		   float _scroll_fling_acceleration);
+		   float _scroll_fling_acceleration,
+		   float _scroll_fling_deceleration);
 #endif
