@@ -30,7 +30,7 @@ sudo apt-get install libxi-dev libxinerama-dev libxft-dev libxfixes-dev libxtst-
 
 <p align="center">
 <img src="demo_discrete.gif" height="400px"/>
-<img src="demo_discrete2.gif" height="400px"/>
+<img src="demo_discrete2.gif" height="400px" width="711px"/>
 </p>
 
 # Quickstart
