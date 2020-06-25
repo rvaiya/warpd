@@ -115,7 +115,7 @@ on its own line and have the format
 
 **movement_increment**: The movement increment used for grid and discrete mode. (default: 20).
 
-**buttons**: The number of columns in the grid. (default: m,comma,period,x,c).
+**buttons**: Keys corresponding to mouse buttons (4/5 == scroll down/scroll up). (default: m,comma,period,x,c).
 
 **exit**: The key used to prematurely terminate the current movement session. (default: Escape).
 

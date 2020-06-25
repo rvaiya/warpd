@@ -3,7 +3,7 @@ grid_activation_key       string  "M-x"                   "Activates grid mode a
 discrete_activation_key   string  "M-c"                   "Activate discrete movement mode (manual cursor movement)."
 
 movement_increment        int     20                      "The movement increment used for grid and discrete mode."
-buttons                   string  "m,comma,period,x,c"    "The number of columns in the grid."
+buttons                   string  "m,comma,period,x,c"    "Keys corresponding to mouse buttons (4/5 == scroll down/scroll up)."
 exit                      string  "Escape"                "The key used to prematurely terminate the current movement session."
 double_click_timeout      int     300                     "The length of time (in ms) before warp automatically deactivates after the last click. 0 disables automatic deactivation entirely. This option only applies to button 1 (left click)."
 drag_key                  string  "v"                     "Drag mode activation key."
