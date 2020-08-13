@@ -73,7 +73,7 @@ static struct {
 	{ XK_Alt_R, Mod1Mask, 0},
 };
 
-static int process_xev(XEvent *ev, uint16_t *keyseq);
+static int process_xev(XEvent *ev, uint16_t *keyseq, int ignore_keypresses);
 
 static void select_devices()
 {
@@ -145,7 +145,7 @@ static void clear_keys()
 	while(XPending(dpy)) {
 		XEvent ev;
 		XNextEvent(dpy, &ev);
-		process_xev(&ev, NULL);
+		process_xev(&ev, NULL, 0);
 	}
 
 	for (i = 0; i < 256; i++) {
@@ -167,7 +167,7 @@ static void sync_state()
 	while(XPending(dpy)) {
 		XEvent ev;
 		XNextEvent(dpy, &ev);
-		process_xev(&ev, NULL);
+		process_xev(&ev, NULL, 0);
 	}
 
 	//Process mods first to ensure modifier combinations are properly interpreted by X.
@@ -188,7 +188,7 @@ static void sync_state()
 	XSync(dpy, False);
 }
 
-static int process_xev(XEvent *ev, uint16_t *keyseq)
+static int process_xev(XEvent *ev, uint16_t *keyseq, int ignore_keypresses)
 {
 	XGenericEventCookie *cookie = &ev->xcookie;
 
@@ -226,21 +226,25 @@ static int process_xev(XEvent *ev, uint16_t *keyseq)
 		XFreeEventData(dpy, cookie);
 		return EV_DEVICE_CHANGE;
 	case XI_KeyPress:
-		dev = (XIDeviceEvent*)(cookie->data);
-		mask = get_mod_mask(dev->detail); 
+		//Necessary to avoid segfaults when switching VTs
 
-		key_state[dev->detail] = 1;
+		if(!ignore_keypresses) {
+			dev = (XIDeviceEvent*)(cookie->data);
+			mask = get_mod_mask(dev->detail); 
 
-		if(mask)
-			active_mods |= mask;
-		else {
-			int type;
-			if(keyseq)
-				*keyseq = active_mods | dev->detail;
+			key_state[dev->detail] = 1;
 
-			type = (dev->flags & XIKeyRepeat) ? EV_KEYREPEAT : EV_KEYPRESS;
-			XFreeEventData(dpy, cookie);
-			return type;
+			if(mask)
+				active_mods |= mask;
+			else {
+				int type;
+				if(keyseq)
+					*keyseq = active_mods | dev->detail;
+
+				type = (dev->flags & XIKeyRepeat) ? EV_KEYREPEAT : EV_KEYPRESS;
+				XFreeEventData(dpy, cookie);
+				return type;
+			}
 		}
 
 		XFreeEventData(dpy, cookie);
@@ -416,13 +420,21 @@ void input_ungrab_keyboard(int wait_for_keyboard)
 			XEvent *ev;
 			int n = 0;
 
-			for (i = 0; i < sizeof key_state; i++)
+			dbg("Waiting for: ");
+			for (i = 0; i < sizeof key_state; i++) {
+				if(key_state[i])
+					dbg("\tkeycode %d", i);
 				n += key_state[i];
+			}
 
 			if(!n) break;
 
 			ev = get_xev(0);
-			process_xev(ev, NULL);
+
+			//Don't wait for the release of new keypresses to avoid a race condition in which
+			//a VT switch is completed before we attempt to ungrab our Xinput devices.
+			//(see https://gitlab.freedesktop.org/xorg/lib/libxi/-/issues/11)
+			process_xev(ev, NULL, 1); 
 		}
 
 		dbg("Done");
@@ -473,7 +485,7 @@ int input_next_ev(int timeout, uint16_t *keyseq)
 	if(!ev) 
 		return EV_TIMEOUT;
 
-	type = process_xev(ev, keyseq);
+	type = process_xev(ev, keyseq, 0);
 	if(type == EV_MOD)
 		return input_next_ev(timeout, keyseq);
 	else
@@ -493,7 +505,7 @@ uint16_t input_next_key(int timeout, int include_repeats)
 		ev = get_xev(timeout - elapsed);
 		if(!ev) return TIMEOUT_KEYSEQ;
 
-		switch(process_xev(ev, &key)) {
+		switch(process_xev(ev, &key, 0)) {
 		case EV_KEYREPEAT:
 			if(include_repeats)
 				return key;
