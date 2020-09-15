@@ -429,9 +429,17 @@ void input_ungrab_keyboard(int wait_for_keyboard)
 	}
 
 	for (i = 0; i < nkbds; i++) {
-		dbg("Ungrabbing %d", kbds[i]);
-		XIUngrabDevice(dpy, kbds[i], CurrentTime);
-		dbg("Done");
+		int n;
+		XIDeviceInfo *info = XIQueryDevice(dpy, kbds[i], &n);
+		assert(n == 1);
+
+		//Attempting to ungrab a disabled xinput device causes X to crash.
+		//(see https://gitlab.freedesktop.org/xorg/lib/libxi/-/issues/11)
+		if(info->enabled) {
+			dbg("Ungrabbing %d\n", kbds[i]);
+			XIUngrabDevice(dpy, kbds[i], CurrentTime);
+			dbg("Done");
+		}
 	}
 
 	sync_state();
