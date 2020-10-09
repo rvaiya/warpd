@@ -84,7 +84,7 @@ uint16_t scroll(Display *dpy,
 				v += fling_velocity;
 			break;
 		case EV_KEYRELEASE:
-			if(key == start_key) {
+			if((key & 0xFF) == (start_key & 0xFF)) {
 				if(flung) {
 					a = -fling_deceleration;
 				} else {

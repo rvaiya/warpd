@@ -188,6 +188,16 @@ static void sync_state()
 	XSync(dpy, False);
 }
 
+uint16_t normalize_keycode(uint16_t code) {
+
+	/* Kludge to account for keysyms with multiple keycodes.
+	 * Alternatively we could do everything in keysyms but 
+	 * that complicates the code.
+	 */
+
+	return XKeysymToKeycode(dpy, XKeycodeToKeysym(dpy, code, 0));
+}
+
 static int process_xev(XEvent *ev, uint16_t *keyseq)
 {
 	XGenericEventCookie *cookie = &ev->xcookie;
@@ -213,6 +223,7 @@ static int process_xev(XEvent *ev, uint16_t *keyseq)
 		return EV_XEV;
 
 	switch(cookie->evtype) {
+		uint16_t code;
 		XIDeviceEvent *dev;
 		XIHierarchyEvent *hev;
 		uint16_t mask;
@@ -227,7 +238,8 @@ static int process_xev(XEvent *ev, uint16_t *keyseq)
 		return EV_DEVICE_CHANGE;
 	case XI_KeyPress:
 		dev = (XIDeviceEvent*)(cookie->data);
-		mask = get_mod_mask(dev->detail); 
+		code = normalize_keycode(dev->detail);
+		mask = get_mod_mask(code); 
 
 		key_state[dev->detail] = 1;
 
@@ -236,7 +248,7 @@ static int process_xev(XEvent *ev, uint16_t *keyseq)
 		else {
 			int type;
 			if(keyseq)
-				*keyseq = active_mods | dev->detail;
+				*keyseq = active_mods | normalize_keycode(dev->detail);
 
 			type = (dev->flags & XIKeyRepeat) ? EV_KEYREPEAT : EV_KEYPRESS;
 			XFreeEventData(dpy, cookie);
@@ -247,7 +259,8 @@ static int process_xev(XEvent *ev, uint16_t *keyseq)
 		return EV_MOD;
 	case XI_KeyRelease:
 		dev = (XIDeviceEvent*)(cookie->data);
-		mask = get_mod_mask(dev->detail);
+		code = normalize_keycode(dev->detail);
+		mask = get_mod_mask(code);
 
 		key_state[dev->detail] = 0;
 
@@ -257,7 +270,7 @@ static int process_xev(XEvent *ev, uint16_t *keyseq)
 		}
 
 		if(keyseq)
-			*keyseq = active_mods | dev->detail;
+			*keyseq = active_mods | normalize_keycode(code);
 
 		XFreeEventData(dpy, cookie);
 		return EV_KEYRELEASE;
@@ -429,9 +442,17 @@ void input_ungrab_keyboard(int wait_for_keyboard)
 	}
 
 	for (i = 0; i < nkbds; i++) {
-		dbg("Ungrabbing %d", kbds[i]);
-		XIUngrabDevice(dpy, kbds[i], CurrentTime);
-		dbg("Done");
+		int n;
+		XIDeviceInfo *info = XIQueryDevice(dpy, kbds[i], &n);
+		assert(n == 1);
+
+		//Attempting to ungrab a disabled xinput device causes X to crash.
+		//(see https://gitlab.freedesktop.org/xorg/lib/libxi/-/issues/11)
+		if(info->enabled) {
+			dbg("Ungrabbing %d\n", kbds[i]);
+			XIUngrabDevice(dpy, kbds[i], CurrentTime);
+			dbg("Done");
+		}
 	}
 
 	sync_state();

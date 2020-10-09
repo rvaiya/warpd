@@ -51,14 +51,14 @@ E.G
 
 ## Hint Mode (M-z)
 
-This is an mode which populates the screen with a list of labels and allows the
-user to immediately warpd the pointer to a given location by pressing the
+This mode populates the screen with a list of labels and allows the
+user to immediately warp the pointer to a given location by pressing the
 corresponding key sequence. It is similar to functionality provided by browser
 plugins like Vimperator but works outside of the browser and indiscriminately
 covers the entire screen. 
 
 By tweaking `hints_nc` and `hints_nr` it should be possible to make most screen
-locations accessible with 2-4 key strokes. After a bit of practice this becomes
+locations accessible with 2-4 key strokes. After a bit of practice the process becomes
 second nature and is (in the author's opinion) superior to the grid method for
 quickly pinpointing text and UI elements.
 
