@@ -36,7 +36,6 @@
 
 static size_t nhints = 0;
 static struct hint hints[MAX_HINTS];
-static struct hint_keys *keys;
 static Display *dpy;
 
 static const char *normalize(const char *s)
@@ -175,7 +174,7 @@ static int filter(const char *prefix, struct hint **target)
 	return n;
 }
 
-uint16_t hint_warp()
+uint16_t hint_mode()
 {
 	char buf[256];
 	const uint16_t backspace = input_parse_keyseq("BackSpace");
@@ -218,11 +217,9 @@ void init_hint(Display *_dpy,
 	       const char *fgcol,
 	       int width,
 	       int height,
-	       int opacity,
-	       struct hint_keys *_keys) 
+	       int opacity) 
 {
 	dpy = _dpy;
-	keys = _keys;
 
 	char path[PATH_MAX];
 	sprintf(path, "%s/%s", getenv("HOME"), ".warprc_hints");

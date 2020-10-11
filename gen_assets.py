@@ -87,6 +87,9 @@ struct cfg* parse_cfg(const char *fname) {
     while(getline(&line, &n, fp) != -1) {
         ln++;
         char *key, *val;
+
+        if(line[0] == '\n' || line[0] == '\0') continue;
+
         if(kvp(line, &key, &val)) {
             fprintf(stderr, "Invalid entry in %s at line %lu.\n", fname, ln);
             exit(1);

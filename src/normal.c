@@ -29,13 +29,13 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
-#include "discrete.h"
+#include "normal.h"
 #include "input.h"
 #include "scroll.h"
 
 static Display *dpy;
 static Window indicator = None;
-static struct discrete_keys *keys;
+static struct normal_keys *keys;
 static int increment;
 static int indicator_sz;
 static int word_increment;
@@ -179,11 +179,10 @@ static int tonum(uint16_t keyseq)
 }
 
 
-uint16_t discrete_warp(uint16_t start_key)
+uint16_t normal_mode(uint16_t start_key)
 {
 	int opnum = 0;
 
-	rel_warp(-indicator_sz/2, -indicator_sz/2);
 	draw();
 
 	while(1) {
@@ -235,6 +234,21 @@ uint16_t discrete_warp(uint16_t start_key)
 				rel_warp(-10000, 0);
 			else
 				opnum = opnum*10 + num;
+		} else if(keyseq == keys->scroll_left || keyseq == keys->scroll_right) {
+			uint16_t key;
+				
+			key = scroll(dpy,
+				     keyseq,
+				     keyseq == keys->scroll_left ? 6 : 7,
+				     scroll_velocity,
+				     scroll_acceleration,
+				     scroll_fling_velocity,
+				     scroll_fling_acceleration,
+				     scroll_fling_deceleration,
+				     scroll_fling_timeout);
+
+			if(key)
+				return normal_mode(key);
 		} else if(keyseq == keys->scroll_up || keyseq == keys->scroll_down) {
 			uint16_t key;
 				
@@ -248,15 +262,12 @@ uint16_t discrete_warp(uint16_t start_key)
 				     scroll_fling_deceleration,
 				     scroll_fling_timeout);
 
-			if(key) {
-				rel_warp(indicator_sz/2, indicator_sz/2);
-				return discrete_warp(key);
-			}
+			if(key)
+				return normal_mode(key);
 		} else {
 			size_t i;
 			for (i = 0; i < sizeof keys->exit / sizeof keys->exit[0]; i++) {
 				if(keys->exit[i] == keyseq) {
-					rel_warp(indicator_sz/2, indicator_sz/2);
 					hide();
 					return keyseq;
 				}
@@ -267,19 +278,18 @@ uint16_t discrete_warp(uint16_t start_key)
 	}
 }
 
-void init_discrete(Display *_dpy,
-		   const int _increment,
-		   const int _word_increment,
-		   struct discrete_keys *_keys,
-		   const char *indicator_color,
-		   size_t _indicator_sz,
-		   float _scroll_fling_timeout,
-		   float _scroll_velocity,
-		   float _scroll_acceleration,
-		   float _scroll_fling_velocity,
-		   float _scroll_fling_acceleration,
-		   float _scroll_fling_deceleration)
-
+void init_normal(Display *_dpy,
+		 const int _increment,
+		 const int _word_increment,
+		 struct normal_keys *_keys,
+		 const char *indicator_color,
+		 size_t _indicator_sz,
+		 float _scroll_fling_timeout,
+		 float _scroll_velocity,
+		 float _scroll_acceleration,
+		 float _scroll_fling_velocity,
+		 float _scroll_fling_acceleration,
+		 float _scroll_fling_deceleration)
 {
 	keys = _keys;
 	dpy = _dpy;

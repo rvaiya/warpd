@@ -26,21 +26,13 @@
 #include <stdint.h>
 #include "common.h"
 	
-struct hint_keys {
-	uint16_t up;
-	uint16_t right;
-	uint16_t left;
-	uint16_t down;
-};
-
 void init_hint(Display *_dpy,
 	       char *hint_characters,
 	       const char *bgcol,
 	       const char *fgcol,
 	       int width,
 	       int height,
-	       int opacity,
-	       struct hint_keys *_keys);
+	       int opacity);
 
-uint16_t hint_warp();
+uint16_t hint_mode();
 #endif
