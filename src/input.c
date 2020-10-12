@@ -31,6 +31,7 @@
 #include <X11/extensions/XTest.h>
 #include <X11/extensions/XInput2.h>
 #include <assert.h>
+#include <unistd.h>
 
 #include "dbg.h"
 #include "input.h"
@@ -38,7 +39,7 @@
 /*
  * Use Xinput instead of standard X grabs to avoid interference with X toolkits
  * and window managers. This isn't a silver bullet since such grabs are still
- * mutually exclusive and potentially present the same problems, but do so at a
+ * mutually exclusive and potentially present the same problems but do so at a
  * lower level and appear to be less commonly used. Note that master device
  * grabs and normal X grabs are still mutually exclusive which is why we
  * attempt to wrest control of the physical devices away from their
@@ -55,6 +56,7 @@ static Display *dpy;
 static size_t nkbds;
 static int kbds[256];
 char key_state[256] = {0};
+static int grabbed = 0;
 
 static int active_mods = 0;
 
@@ -337,6 +339,7 @@ void input_grab_keyboard(int wait_for_keyboard)
 
 	XSync(dpy, False);
 	clear_keys();
+	grabbed = 1;
 	dbg("Done");
 }
 
@@ -418,6 +421,8 @@ uint16_t input_parse_keyseq(const char* key)
 
 void input_ungrab_keyboard(int wait_for_keyboard)
 {
+	if(!grabbed) return;
+	int disabled = 1;
 	size_t i;
 
 	dbg("Ungrabbing keyboard");
@@ -441,21 +446,34 @@ void input_ungrab_keyboard(int wait_for_keyboard)
 		dbg("Done");
 	}
 
-	for (i = 0; i < nkbds; i++) {
-		int n;
-		XIDeviceInfo *info = XIQueryDevice(dpy, kbds[i], &n);
-		assert(n == 1);
+	//Wait until all devices can be successfully ungrabbed, otherwise X will crash
+	//(e.g if warpd is killed in another tty).
+	while(disabled) {
+		dbg("Attempting to perform ungrab on all grabbed devices.");
+		disabled = 0;
 
-		//Attempting to ungrab a disabled xinput device causes X to crash.
-		//(see https://gitlab.freedesktop.org/xorg/lib/libxi/-/issues/11)
-		if(info->enabled) {
-			dbg("Ungrabbing %d\n", kbds[i]);
-			XIUngrabDevice(dpy, kbds[i], CurrentTime);
-			dbg("Done");
+		for (i = 0; i < nkbds; i++) {
+			int n;
+			XIDeviceInfo *info = XIQueryDevice(dpy, kbds[i], &n);
+			assert(n == 1);
+
+			//Attempting to ungrab a disabled xinput device causes X to crash.
+			//(see https://gitlab.freedesktop.org/xorg/lib/libxi/-/issues/11)
+			if(info->enabled) {
+				dbg("Ungrabbing %d\n", kbds[i]);
+				XIUngrabDevice(dpy, kbds[i], CurrentTime);
+				dbg("Done");
+			} else
+				disabled = 1;
 		}
+
+		if(disabled) sleep(1);
 	}
 
+	dbg("ungrabbed all devices");
+
 	sync_state();
+	grabbed = 0;
 }
 
 void input_click(int btn) 
@@ -535,11 +553,23 @@ uint16_t input_next_key(int timeout, int include_repeats)
 	return TIMEOUT_KEYSEQ;
 }
 
+static const char *xerr_key = NULL;
+static int input_xerr(Display *dpy, XErrorEvent *ev)
+{
+	fprintf(stderr, "ERROR: Failed to grab %s (ensure another application hasn't mapped it)\n", xerr_key);
+	exit(1);
+	return 0;
+}
+
 uint16_t input_wait_for_key(uint16_t *keys, size_t n)
 {
 	size_t i;
 
+	XSetErrorHandler(input_xerr);
+
 	for (i = 0; i < n; i++) {
+		xerr_key = input_keyseq_to_string(keys[i]);
+
 		// Ensure X doesn't process the key without modifiers. We don't
 		// actually care about this event.
 		XGrabKey(dpy,
@@ -555,7 +585,11 @@ uint16_t input_wait_for_key(uint16_t *keys, size_t n)
 			 DefaultRootWindow(dpy),
 			 False,
 			 0, 0);
+
+		XSync(dpy, False);
 	}
+
+	XSetErrorHandler(NULL);
 
 	while(1) {
 		uint16_t key = input_next_key(0, 0);

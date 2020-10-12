@@ -3,7 +3,7 @@
 
 # Overview
 
-A small X program which facilitates warping the pointer using the keyboard.
+A keyboard driven mouse manipulation program for X.
 
 # Usage
 
@@ -11,7 +11,7 @@ warpd [-f] [-l] [-v]
 
 # Args
 
- **-f**: Run warpd in the foreground (i.e do not daemonize).Mainly useful for debugging.
+ **-f**: Run warpd in the foreground (i.e do not daemonize). Mainly useful for debugging.
 
  **-l**: Prints a list of valid keys which can be used as config values.
 
@@ -19,19 +19,45 @@ warpd [-f] [-l] [-v]
 
 # Overview
 
-Warp has several modes which can be used to control the keyboard. The two main
-modes are *grid mode* and *hint mode* which are used for long distance cursor
-manipulation. In addition to grid and hint mode there also exists a dedicated
-mode for short distance pointer manipulation called *discrete mode* which
-has vi-like keybindings and also serves as the end point of hint mode
-(to facilitate more precise control).
+Warp has several modes which can be used to manipulate the mouse. The
+default mode is called `normal mode` and allows you to move the mouse
+by discrete increments using configurable keybindings (vi based 
+by default). In addition to normal mode there exist two other
+modes for long distance warping called 'hint and grid mode'.
+
+## Normal Mode (default: `M-c`)
+
+This is the default mode (and the endpoint of both grid and normal mode unless
+the *oneshot* option is specified) which is designed for short distance pointer
+manipulation. It is particularly useful for manipulating popup menus and
+selecting text (see *Dragging*). The default behaviour is vi-like. Pressing
+the mapped directional keys (default hjkl) moves the cursor by a fixed
+increment but the pointer can also be warped to the edges of the screen using
+the home (H), middle (M), and last (L) mappings (see *Config Options*).
+Finally a numeric multiplier can be supplied to the directional keys as an
+input prefix in order to affect movement in the corresponding direction (e.g
+10j moves 10 units down). 
+
+## Hint Mode (default: M-x or simply 'x' within normal mode)
+
+This mode populates the screen with a list of labels and allows the
+user to immediately warp the pointer to a given location by pressing the
+corresponding key sequence. It is similar to functionality provided by browser
+plugins like Vimperator but works outside of the browser and indiscriminately
+covers the entire screen. Once a target has been selected `normal mode` is
+entered for further manipulation.
+
+By tweaking `hints_nc` and `hints_nr` it should be possible to make most screen
+locations accessible with 2-4 key strokes. After a bit of practice the process becomes
+second nature and is (in the author's opinion) superior to the grid method for
+quickly pinpointing text and UI elements.
 
 
-## Grid Mode (M-x)
+## Grid Mode (default: `M-z` or simply 'g' within normal mode)
 
 By default grid mode divides the screen into a 2x2 grid. Each time a key
 is pressed the grid shrinks to cover the targeted area. Once the pointer
-covers the target `m` can be pressed to simulate a mouse click.
+covers the the desired target a mouse button (e.g `m`) can be pressed.
 
 
 E.G
@@ -41,52 +67,20 @@ E.G
          |        |        |            |  u |  i |       |
          |   u    |   i    |            |----m----+       |
  M-x     |        |        |     u      |  j |  k |       |
------>   +-----------------+   ----->   +---------+       |
+----->   +--------m--------+   ----->   +---------+       |
          |        |        |            |                 |
          |   j    |   k    |            |                 |
          |        |        |            |                 |
          +--------+--------+            +--------+--------+
 ```
 
-
-## Hint Mode (M-z)
-
-This mode populates the screen with a list of labels and allows the
-user to immediately warp the pointer to a given location by pressing the
-corresponding key sequence. It is similar to functionality provided by browser
-plugins like Vimperator but works outside of the browser and indiscriminately
-covers the entire screen. 
-
-By tweaking `hints_nc` and `hints_nr` it should be possible to make most screen
-locations accessible with 2-4 key strokes. After a bit of practice the process becomes
-second nature and is (in the author's opinion) superior to the grid method for
-quickly pinpointing text and UI elements.
-
-
-## Discrete Mode (M-c)
-
-This is an auxiliary movement mode designed for short distance pointer
-manipulation. It is the end stage of hint mode mode and is particularly useful
-for manipulating things like popup menus and selecting text using the drag
-functionality (see **Dragging**). The default behaviour is vi-like. Pressing
-the mapped directional keys (default hjkl) moves the cursor by a fixed
-increment but the pointer can also be warped to the edges of the screen using
-the home, middle, and last mappings (see **Config Options**). Finally a numeric
-multiplier can be supplied to the directional keys as an input prefix in order
-to affect movement in the corresponding direction (e.g 10j moves 10 units
-down). 
-
 # Dragging
 
 Simulating a drag operation can be done by activating one of the movement
 modes, moving to the desired starting location and pressing the drag activation
-key (default v). At this point the same mode will be reopened to facilitate
-destination selection. warpd will then simulate dragging the source to the
-destination along the shortest linear path. The end result provides a concise
-and reasonably flexible mechanism for simulating common mouse operations.
-Paired with discrete mode, the feature can be useful for highlighting text,
-while dragging and dropping a file between windows might better be accomplished
-by using the feature in conjunction with grid or hint mode. 
+key (default v). At this point the normal mode will activate allowing the user
+to move the mouse before pressing the first mouse button to complete the
+process. The feature can be useful for highlighting text.
 
 # Scrolling
 
@@ -94,28 +88,29 @@ Inertial scroll can be activated by double tapping the desired scroll key
 (buttons 4/5). This is the analogue of 'flinging' the cursor on most trackpads.
 Once inertial scroll has been activated (by double tapping) an impulse can be
 imparted to the scrolling cursor by tapping the same key. This feature is
-particularly useful for navigating a lot of content (e.g long web pages) but
+particularly useful when navigating through a lot of content (e.g long web pages) but
 can effectively be disabled by setting `scroll_fling_timeout` to 1 if desired
 (see Config Options).
 
 # Config Options
 
-The following configuration options can be placed in ~/.warprc to modify the behaviour of the program. Each option must be specified
-on its own line and have the format 
+The following configuration options can be placed in ~/.warprc to modify the
+behaviour of the program. Each option must be specified on its own line and
+have the format:
 
 ```
 <option>: <value>
 ```
 
-**hint_activation_key**: Activates hint mode. (default: M-z).
+**hint_activation_key**: Activates hint mode. (default: M-x).
 
-**grid_activation_key**: Activates grid mode and allows for further manipulation of the pointer using the mapped keys. (default: M-x).
+**grid_activation_key**: Activates grid mode and allows for further manipulation of the pointer using the mapped keys. (default: M-z).
 
-**discrete_activation_key**: Activate discrete movement mode (manual cursor movement). (default: M-c).
+**normal_activation_key**: Activate normal movement mode (manual cursor movement). (default: M-c).
 
-**movement_increment**: The movement increment used for grid and discrete mode. (default: 20).
+**movement_increment**: The movement increment used for grid and normal mode. (default: 20).
 
-**buttons**: Keys corresponding to mouse buttons (4/5 == scroll down/scroll up). (default: m,comma,period,x,c).
+**buttons**: Keys corresponding to mouse buttons (4/5 == scroll down/scroll up while 6/7 correpond to scroll left/right). (default: m,comma,period,u,i,y,o).
 
 **exit**: The key used to prematurely terminate the current movement session. (default: Escape).
 
@@ -149,14 +144,6 @@ on its own line and have the format
 
 **hint_height**: The width (in pixels) of a hint. (default: 30).
 
-**hint_up**: Moves the cursor up by movement_increment once a label has been selected in hint mode. (default: k).
-
-**hint_left**: Moves the cursor left by movement_increment once a label has been selected in hint mode. (default: h).
-
-**hint_down**: Moves the cursor down by movement_increment once a label has been selected in hint mode. (default: j).
-
-**hint_right**: Moves the cursor right by movement_increment once a label has been selected in hint mode. (default: l).
-
 **hint_bgcolor**: The background hint color. (default: #00ff00).
 
 **hint_fgcolor**: The foreground hint color. (default: #000000).
@@ -165,37 +152,41 @@ on its own line and have the format
 
 **hint_opacity**: Hint transparency (requires a compositor). (default: 100).
 
-**discrete_left_word**: Move the cursor left by word size in discrete mode. (default: b).
+**normal_left_word**: Move the cursor left by word size in normal mode. (default: b).
 
-**discrete_right_word**: Move the cursor right by word size in discrete mode. (default: w).
+**normal_right_word**: Move the cursor right by word size in normal mode. (default: w).
 
-**discrete_down_word**: Move the cursor down by word size in discrete mode. (default: S-j).
+**normal_down_word**: Move the cursor down by word size in normal mode. (default: S-j).
 
-**discrete_up_word**: Move the cursor up by word size in discrete mode. (default: S-k).
+**normal_up_word**: Move the cursor up by word size in normal mode. (default: S-k).
 
-**discrete_left**: Move the cursor left in discrete mode. (default: h).
+**normal_left**: Move the cursor left in normal mode. (default: h).
 
-**discrete_down**: Move the cursor down in discrete mode. (default: j).
+**normal_down**: Move the cursor down in normal mode. (default: j).
 
-**discrete_up**: Move the cursor up in discrete mode. (default: k).
+**normal_up**: Move the cursor up in normal mode. (default: k).
 
-**discrete_right**: Move the cursor right in discrete mode. (default: l).
+**normal_right**: Move the cursor right in normal mode. (default: l).
 
-**discrete_color**: The color of the pointer in discrete mode. (default: #00ff00).
+**normal_color**: The color of the pointer in normal mode. (default: #00ff00).
 
-**discrete_size**: The height (in pixels) of the pointer n discrete mode. (default: 20).
+**normal_size**: The height (in pixels) of the pointer n normal mode. (default: 20).
 
-**discrete_home**: Moves the cursor to the top of the screen in discrete mode. (default: S-h).
+**normal_home**: Moves the cursor to the top of the screen in normal mode. (default: S-h).
 
-**discrete_middle**: Moves the cursor to the middle of the screen in discrete mode. (default: S-m).
+**normal_middle**: Moves the cursor to the middle of the screen in normal mode. (default: S-m).
 
-**discrete_last**: Moves the cursor to the bottom of the screen in discrete mode. (default: S-l).
+**normal_last**: Moves the cursor to the bottom of the screen in normal mode. (default: S-l).
 
-**discrete_beginning**: Moves the cursor to the leftmost corner of the screen in discrete mode. (default: S-6).
+**normal_beginning**: Moves the cursor to the leftmost corner of the screen in normal mode. (default: S-6).
 
-**discrete_end**: Moves the cursor to the rightmost corner of the screen in discrete mode. (default: S-4).
+**normal_end**: Moves the cursor to the rightmost corner of the screen in normal mode. (default: S-4).
 
-**discrete_word_size**: Size of the increment used by discrete_*_word. (default: 80).
+**normal_word_size**: Size of the increment used by normal*_word. (default: 80).
+
+**normal_hint_key**: Activate hint mode while in normal mode. (default: x).
+
+**normal_grid_key**: Activate grid mode while in normal mode. (default: g).
 
 **scroll_fling_timeout**: Double tap timeout used to determine fling intention. (default: 150).
 
@@ -209,22 +200,38 @@ on its own line and have the format
 
 **scroll_acceleration**: Scroll acceleration. (default: 30).
 
-**scroll_down_key**: Scroll down key. (default: A-e).
+**scroll_down_key**: Scroll down key. (default: A-j).
 
-**scroll_up_key**: Scroll up key. (default: A-y).
+**scroll_up_key**: Scroll up key. (default: A-k).
+
+**scroll_right_key**: Scroll right key. (default: A-l).
+
+**scroll_left_key**: Scroll left key. (default: A-h).
+
+**oneshot_mode**: If set to true immediately close warp after a button has been pressed. (default: false).
 
 
 
 # Hint Generation
 
-In addition to *hint_characters* hints can be explicitly specified in `~/.warprc_hints`, if this file exists it is automatically used as a hint source. Each line contains a hint which is used to populate the screen and may optionally contain spaces. Spaces are aesthetic and not used during matching. Note that unlike *hint_characters* (from which hints are generated) this file contains all of the hints that will be shown on the screen. If hints in this file are longer than two characters you will likely also want to alter *hint_width*.
+In addition to *hint_characters* hints can be explicitly specified in
+`~/.warprc_hints`, if this file exists it is automatically used as a hint
+source. Each line contains a hint which is used to populate the screen and may
+optionally contain spaces. Spaces are aesthetic and not used during matching.
+Note that unlike *hint_characters* (from which hints are generated) this file
+contains all of the hints that will be shown on the screen. If hints in this
+file are longer than two characters you will likely also want to alter
+*hint_width*.
 
 
 # Examples
 
 ## Grid Modification
 
-The following ~/.warprc causes warpd to use a 3 by 3 grid instead of the default 2 by 2 grid with u,i,o corresponding to the columns in the top row and n,m,comma corresponding to the columns in the bottom row. The left, middle and right buttons can be clicked by pressing z, x, and c respectively.
+The following ~/.warprc causes warpd to use a 3 by 3 grid instead of the
+default 2 by 2 grid with u,i,o corresponding to the columns in the top row and
+n,m,comma corresponding to the columns in the bottom row. The left, middle and
+right buttons can be clicked by pressing z, x, and c respectively.
 
 ```
 grid_nr: 3
@@ -252,9 +259,12 @@ Rather than saturating the screen with labels it is recommended that the user
 leave a few gaps and then use the movement keys (hjkl) to move to the final
 location. The rationale for this is as follows: 
 
-- **Efficiency**: A large number of labels necessitates the use of longer keysequences (since there are a finite number of two-key sequences) at which point the value of the label system is supplanted by manual mouse movement.
+- **Efficiency**: A large number of labels necessitates the use of longer
+  keysequences (since there are a finite number of two-key sequences) at which
+  point the value of the label system is supplanted by manual mouse movement.
 
-- **Usability**: Packing every inch of the screen with labels causes a loss of context by obscuring UI elements.
+- **Usability**: Packing every inch of the screen with labels causes a loss of
+  context by obscuring UI elements.
 
 ## On Dragging
 
@@ -265,9 +275,12 @@ movement is necessarily based on *movement_increment*. consequently drag + hint
 mode can be a superior method for surgically selecting text (though it may at
 first be less intuitive).
 
-
 # Limitations/Bugs
 
-- No multi monitor support (it may still work by treating the entire display as one giant screen, I haven't tried this). If you use this program and desire this feature feel free to harass me via email or file an issue on github.
+- No multi monitor support (it may still work by treating the entire display as
+  one giant screen, I haven't tried this). If you use this program and desire
+  this feature feel free to harass me via email or file an issue on github.
 
-- Programs which use Xinput to directly manipulate input devices may misbehave. See [Issue #3](https://github.com/rvaiya/warpd/issues/3#issuecomment-628936249) for details.
+- Programs which use Xinput to directly manipulate input devices may misbehave.
+  See [Issue #3](https://github.com/rvaiya/warpd/issues/3#issuecomment-628936249) 
+  for details.

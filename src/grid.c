@@ -244,7 +244,7 @@ static void reset()
 	hidden = 0;
 }
 
-uint16_t grid_warp(int startrow, int startcol)
+uint16_t grid_mode(int startrow, int startcol)
 {
 	reset();
 	focus_sector(startrow, startcol);
@@ -275,7 +275,7 @@ uint16_t grid_warp(int startrow, int startcol)
 					hidden = 1;
 					redraw();
 
-					XWarpPointer(dpy, 0, DefaultRootWindow(dpy), 0, 0, 0, 0, cx, cy);
+					XWarpPointer(dpy, 0, DefaultRootWindow(dpy), 0, 0, 0, 0, cx - cursor_width/2, cy - cursor_width/2);
 					XFlush(dpy);
 
 					return keyseq;

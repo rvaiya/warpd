@@ -1,6 +1,6 @@
 # Overview
 
-A small X program which provides different mechanisms for manipulating the cursor using the keyboard. The program was originally inspired by the mousekeys feature of Kaleidoscope, the firmware for the Keyboardio.
+A small X program which provides a modal keyboard driven interface for cursor manipulation. The program was originally inspired by the mousekeys feature of Kaleidoscope, the firmware for the Keyboardio.
 
 # Installation
 
@@ -26,7 +26,7 @@ sudo apt-get install libxi-dev libxinerama-dev libxft-dev libxfixes-dev libxtst-
 <img src="demo_warp.gif" height="400px"/>
 </p>
 
-## Discrete Mode
+## Normal Mode
 
 <p align="center">
 <img src="demo_discrete.gif" height="400px"/>
@@ -37,22 +37,24 @@ sudo apt-get install libxi-dev libxinerama-dev libxft-dev libxfixes-dev libxtst-
 
 1. Run `warpd` 
 
+## Hint Mode
+2. Press `M-x` to generate a list of hints
+3. Enter the key sequence associated with the desired target to warp the pointer to that location and enter normal mode.
+4. Use the normal mode movement keys to select the final desination (see Normal Mode). 
+
 ## Grid Mode
-2. Press `M-x` (meta is the command key) to activate the warping process.
+2. Press `M-z` (meta is the command key) to activate the warping process.
 3. Use `u`,`i`,`j`,`k` to repeatedly navigate to different quadrants.
 4. Press `m` to left click, `,` to middle click or `.` to right click. 
+5. See Normal Mode
 
-## Hint Mode
-2. Press `M-z` to generate a list of hints
-3. Enter the key sequence associated with the desired target to warp the pointer to that location and enter discrete mode.
-4. Use the discrete mode movement keys to select the final desination (see below). 
-
-## Discrete Mode
-2. Press `M-c` to activate discrete mode.
-3. Use the discrete movement keys (default `hjkl`) to adjust the cursor.
+## Normal Mode
+2. Press `M-c` to activate normal mode.
+3. Use the normal movement keys (default `hjkl`) to adjust the cursor.
 4. Press `m` to left click, `,` to middle click or `.` to right click. 
+5. Press `q` to quit.
 
-A drag movement can be simulated from any of the above modes by focusing on the source and then pressing the `drag_key` (default `v`) which will cause the same mode to be reactived for selection of the drag target.
+A drag movement can be simulated from any of the above modes by focusing on the source and then pressing the `drag_key` (default `v`) which will cause normal mode to be activated for selection of the drag target.
 
 A more comprehensive description can be found in the man page (along with a list of options).
 

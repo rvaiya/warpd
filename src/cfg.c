@@ -35,11 +35,11 @@ struct cfg* parse_cfg(const char *fname) {
     size_t n = 0, ln = 0;
     struct cfg *cfg = malloc(sizeof(struct cfg));
 
-    cfg->hint_activation_key = "M-z";
-    cfg->grid_activation_key = "M-x";
-    cfg->discrete_activation_key = "M-c";
+    cfg->hint_activation_key = "M-x";
+    cfg->grid_activation_key = "M-z";
+    cfg->normal_activation_key = "M-c";
     cfg->movement_increment = 20;
-    cfg->buttons = "m,comma,period,x,c";
+    cfg->buttons = "m,comma,period,u,i,y,o";
     cfg->exit = "Escape";
     cfg->double_click_timeout = 300;
     cfg->drag_key = "v";
@@ -56,44 +56,48 @@ struct cfg* parse_cfg(const char *fname) {
     cfg->grid_line_width = 5;
     cfg->hint_width = 40;
     cfg->hint_height = 30;
-    cfg->hint_up = "k";
-    cfg->hint_left = "h";
-    cfg->hint_down = "j";
-    cfg->hint_right = "l";
     cfg->hint_bgcolor = "#00ff00";
     cfg->hint_fgcolor = "#000000";
     cfg->hint_characters = "asdfghjkl;'zxcvbm,./";
     cfg->hint_opacity = 100;
-    cfg->discrete_left_word = "b";
-    cfg->discrete_right_word = "w";
-    cfg->discrete_down_word = "S-j";
-    cfg->discrete_up_word = "S-k";
-    cfg->discrete_left = "h";
-    cfg->discrete_down = "j";
-    cfg->discrete_up = "k";
-    cfg->discrete_right = "l";
-    cfg->discrete_color = "#00ff00";
-    cfg->discrete_size = 20;
-    cfg->discrete_home = "S-h";
-    cfg->discrete_middle = "S-m";
-    cfg->discrete_last = "S-l";
-    cfg->discrete_beginning = "S-6";
-    cfg->discrete_end = "S-4";
-    cfg->discrete_word_size = 80;
+    cfg->normal_left_word = "b";
+    cfg->normal_right_word = "w";
+    cfg->normal_down_word = "S-j";
+    cfg->normal_up_word = "S-k";
+    cfg->normal_left = "h";
+    cfg->normal_down = "j";
+    cfg->normal_up = "k";
+    cfg->normal_right = "l";
+    cfg->normal_color = "#00ff00";
+    cfg->normal_size = 20;
+    cfg->normal_home = "S-h";
+    cfg->normal_middle = "S-m";
+    cfg->normal_last = "S-l";
+    cfg->normal_beginning = "S-6";
+    cfg->normal_end = "S-4";
+    cfg->normal_word_size = 80;
+    cfg->normal_hint_key = "x";
+    cfg->normal_grid_key = "g";
     cfg->scroll_fling_timeout = 150;
     cfg->scroll_fling_velocity = 40;
     cfg->scroll_fling_acceleration = 10;
     cfg->scroll_fling_deceleration = 30;
     cfg->scroll_velocity = 10;
     cfg->scroll_acceleration = 30;
-    cfg->scroll_down_key = "A-e";
-    cfg->scroll_up_key = "A-y";
+    cfg->scroll_down_key = "A-j";
+    cfg->scroll_up_key = "A-k";
+    cfg->scroll_right_key = "A-l";
+    cfg->scroll_left_key = "A-h";
+    cfg->oneshot_mode = "false";
 
     FILE *fp = fopen(fname, "r");
     if(!fp) return cfg; //Return defaults if no config file xists..
     while(getline(&line, &n, fp) != -1) {
         ln++;
         char *key, *val;
+
+        if(line[0] == '\n' || line[0] == '\0') continue;
+
         if(kvp(line, &key, &val)) {
             fprintf(stderr, "Invalid entry in %s at line %lu.\n", fname, ln);
             exit(1);
@@ -103,8 +107,8 @@ struct cfg* parse_cfg(const char *fname) {
             cfg->hint_activation_key = strdup(val);
         else if(!strcmp(key, "grid_activation_key"))
             cfg->grid_activation_key = strdup(val);
-        else if(!strcmp(key, "discrete_activation_key"))
-            cfg->discrete_activation_key = strdup(val);
+        else if(!strcmp(key, "normal_activation_key"))
+            cfg->normal_activation_key = strdup(val);
         else if(!strcmp(key, "movement_increment"))
             cfg->movement_increment = atoi(val);
         else if(!strcmp(key, "buttons"))
@@ -141,14 +145,6 @@ struct cfg* parse_cfg(const char *fname) {
             cfg->hint_width = atoi(val);
         else if(!strcmp(key, "hint_height"))
             cfg->hint_height = atoi(val);
-        else if(!strcmp(key, "hint_up"))
-            cfg->hint_up = strdup(val);
-        else if(!strcmp(key, "hint_left"))
-            cfg->hint_left = strdup(val);
-        else if(!strcmp(key, "hint_down"))
-            cfg->hint_down = strdup(val);
-        else if(!strcmp(key, "hint_right"))
-            cfg->hint_right = strdup(val);
         else if(!strcmp(key, "hint_bgcolor"))
             cfg->hint_bgcolor = strdup(val);
         else if(!strcmp(key, "hint_fgcolor"))
@@ -157,38 +153,42 @@ struct cfg* parse_cfg(const char *fname) {
             cfg->hint_characters = strdup(val);
         else if(!strcmp(key, "hint_opacity"))
             cfg->hint_opacity = atoi(val);
-        else if(!strcmp(key, "discrete_left_word"))
-            cfg->discrete_left_word = strdup(val);
-        else if(!strcmp(key, "discrete_right_word"))
-            cfg->discrete_right_word = strdup(val);
-        else if(!strcmp(key, "discrete_down_word"))
-            cfg->discrete_down_word = strdup(val);
-        else if(!strcmp(key, "discrete_up_word"))
-            cfg->discrete_up_word = strdup(val);
-        else if(!strcmp(key, "discrete_left"))
-            cfg->discrete_left = strdup(val);
-        else if(!strcmp(key, "discrete_down"))
-            cfg->discrete_down = strdup(val);
-        else if(!strcmp(key, "discrete_up"))
-            cfg->discrete_up = strdup(val);
-        else if(!strcmp(key, "discrete_right"))
-            cfg->discrete_right = strdup(val);
-        else if(!strcmp(key, "discrete_color"))
-            cfg->discrete_color = strdup(val);
-        else if(!strcmp(key, "discrete_size"))
-            cfg->discrete_size = atoi(val);
-        else if(!strcmp(key, "discrete_home"))
-            cfg->discrete_home = strdup(val);
-        else if(!strcmp(key, "discrete_middle"))
-            cfg->discrete_middle = strdup(val);
-        else if(!strcmp(key, "discrete_last"))
-            cfg->discrete_last = strdup(val);
-        else if(!strcmp(key, "discrete_beginning"))
-            cfg->discrete_beginning = strdup(val);
-        else if(!strcmp(key, "discrete_end"))
-            cfg->discrete_end = strdup(val);
-        else if(!strcmp(key, "discrete_word_size"))
-            cfg->discrete_word_size = atoi(val);
+        else if(!strcmp(key, "normal_left_word"))
+            cfg->normal_left_word = strdup(val);
+        else if(!strcmp(key, "normal_right_word"))
+            cfg->normal_right_word = strdup(val);
+        else if(!strcmp(key, "normal_down_word"))
+            cfg->normal_down_word = strdup(val);
+        else if(!strcmp(key, "normal_up_word"))
+            cfg->normal_up_word = strdup(val);
+        else if(!strcmp(key, "normal_left"))
+            cfg->normal_left = strdup(val);
+        else if(!strcmp(key, "normal_down"))
+            cfg->normal_down = strdup(val);
+        else if(!strcmp(key, "normal_up"))
+            cfg->normal_up = strdup(val);
+        else if(!strcmp(key, "normal_right"))
+            cfg->normal_right = strdup(val);
+        else if(!strcmp(key, "normal_color"))
+            cfg->normal_color = strdup(val);
+        else if(!strcmp(key, "normal_size"))
+            cfg->normal_size = atoi(val);
+        else if(!strcmp(key, "normal_home"))
+            cfg->normal_home = strdup(val);
+        else if(!strcmp(key, "normal_middle"))
+            cfg->normal_middle = strdup(val);
+        else if(!strcmp(key, "normal_last"))
+            cfg->normal_last = strdup(val);
+        else if(!strcmp(key, "normal_beginning"))
+            cfg->normal_beginning = strdup(val);
+        else if(!strcmp(key, "normal_end"))
+            cfg->normal_end = strdup(val);
+        else if(!strcmp(key, "normal_word_size"))
+            cfg->normal_word_size = atoi(val);
+        else if(!strcmp(key, "normal_hint_key"))
+            cfg->normal_hint_key = strdup(val);
+        else if(!strcmp(key, "normal_grid_key"))
+            cfg->normal_grid_key = strdup(val);
         else if(!strcmp(key, "scroll_fling_timeout"))
             cfg->scroll_fling_timeout = atoi(val);
         else if(!strcmp(key, "scroll_fling_velocity"))
@@ -205,6 +205,12 @@ struct cfg* parse_cfg(const char *fname) {
             cfg->scroll_down_key = strdup(val);
         else if(!strcmp(key, "scroll_up_key"))
             cfg->scroll_up_key = strdup(val);
+        else if(!strcmp(key, "scroll_right_key"))
+            cfg->scroll_right_key = strdup(val);
+        else if(!strcmp(key, "scroll_left_key"))
+            cfg->scroll_left_key = strdup(val);
+        else if(!strcmp(key, "oneshot_mode"))
+            cfg->oneshot_mode = strdup(val);
 
         free(line);
         line = NULL;

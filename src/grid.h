@@ -39,7 +39,7 @@ struct grid_keys {
 	uint16_t exit[MAX_EXIT_KEYS];
 };
 
-uint16_t grid_warp(int startrow, int startcol);
+uint16_t grid_mode(int startrow, int startcol);
 void init_grid(Display *_dpy,
 	       int _nr,
 	       int _nc,

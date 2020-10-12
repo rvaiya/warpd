@@ -26,7 +26,7 @@
 #include <stdint.h>
 #include "common.h"
 
-struct discrete_keys {
+struct normal_keys {
 	uint16_t up;
 	uint16_t down;
 	uint16_t left;
@@ -45,15 +45,17 @@ struct discrete_keys {
 
 	uint16_t scroll_down;
 	uint16_t scroll_up;
+	uint16_t scroll_left;
+	uint16_t scroll_right;
 	uint16_t exit[MAX_EXIT_KEYS];
 };
 
-uint16_t discrete_warp(uint16_t start_key);
+uint16_t normal_mode(uint16_t start_key);
 
-void init_discrete(Display *_dpy,
+void init_normal(Display *_dpy,
 		   const int _increment,
 		   const int _word_increment,
-		   struct discrete_keys *_keys,
+		   struct normal_keys *_keys,
 		   const char *indicator_color,
 		   size_t _indicator_sz,
 		   float _scroll_fling_timeout,
@@ -62,4 +64,5 @@ void init_discrete(Display *_dpy,
 		   float _scroll_fling_velocity,
 		   float _scroll_fling_acceleration,
 		   float _scroll_fling_deceleration);
+
 #endif
