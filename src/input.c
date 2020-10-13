@@ -325,14 +325,17 @@ void input_grab_keyboard(int wait_for_keyboard)
 	XISetMask(mask.mask, XI_KeyRelease);
 
 	for (i = 0; i < nkbds; i++) {
-		if(XIGrabDevice(dpy, kbds[i],
-				DefaultRootWindow(dpy),
-				CurrentTime,
-				None,
-				GrabModeAsync,
-				GrabModeAsync,
-				False, &mask)) {
-			fprintf(stderr, "FATAL: Failed to grab keyboard\n");
+		int rc;
+		if((rc = XIGrabDevice(dpy, kbds[i],
+				      DefaultRootWindow(dpy),
+				      CurrentTime,
+				      None,
+				      GrabModeAsync,
+				      GrabModeAsync,
+				      False, &mask))) {
+			int n;
+			XIDeviceInfo *info = XIQueryDevice(dpy, kbds[i], &n);
+			fprintf(stderr, "FATAL: Failed to grab keyboard %s: %d\n", info->name, rc);
 			exit(-1);
 		}
 	}
