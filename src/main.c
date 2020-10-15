@@ -176,6 +176,8 @@ static void set_cursor_visibility(int visible)
 {
 	static int state = 1;
 
+  dbg("Restoring cursor visibility!");
+
 	if(visible == state) return;
 
 	if(visible)

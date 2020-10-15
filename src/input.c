@@ -60,6 +60,8 @@ static int grabbed = 0;
 
 static int active_mods = 0;
 
+int not_grabbed[256]={0};
+
 static struct {
 	KeySym sym;
 	uint16_t mask;
@@ -313,7 +315,7 @@ static XEvent *get_xev(int timeout)
 
 void input_grab_keyboard(int wait_for_keyboard)
 {
-	size_t i;
+	size_t i, not_grabbed_count=0;
 	XIEventMask mask;
 
 	dbg("Grabbing keyboard");
@@ -334,11 +336,16 @@ void input_grab_keyboard(int wait_for_keyboard)
 				      GrabModeAsync,
 				      False, &mask))) {
 			int n;
+      not_grabbed_count++;
 			XIDeviceInfo *info = XIQueryDevice(dpy, kbds[i], &n);
 			fprintf(stderr, "FATAL: Failed to grab keyboard %s: %d\n", info->name, rc);
-			exit(-1);
+      not_grabbed[i]=1;
 		}
 	}
+  if (not_grabbed_count==nkbds){
+      dbg("Failed to grab All devices");
+			exit(-1);
+  }
 
 	XSync(dpy, False);
 	clear_keys();
@@ -456,6 +463,10 @@ void input_ungrab_keyboard(int wait_for_keyboard)
 		disabled = 0;
 
 		for (i = 0; i < nkbds; i++) {
+      if (not_grabbed[i]){
+        not_grabbed[i] = 0;
+        continue;
+      }
 			int n;
 			XIDeviceInfo *info = XIQueryDevice(dpy, kbds[i], &n);
 			assert(n == 1);
