@@ -113,7 +113,7 @@ static void rescan_devices()
 	for (i = 0; i < n; i++) {
 		if (devs[i].use == XISlaveKeyboard ||
 		    devs[i].use == XIFloatingSlave) {
-			if(!strstr(devs[i].name, "XTEST")) {
+			if(!strstr(devs[i].name, "XTEST") && devs[i].enabled) {
 				dbg("detected keyboard: %s (%d)", devs[i].name, devs[i].deviceid);
 				kbds[nkbds++] = devs[i].deviceid;
 			}
@@ -463,11 +463,13 @@ void input_ungrab_keyboard(int wait_for_keyboard)
 			//Attempting to ungrab a disabled xinput device causes X to crash.
 			//(see https://gitlab.freedesktop.org/xorg/lib/libxi/-/issues/11)
 			if(info->enabled) {
-				dbg("Ungrabbing %d\n", kbds[i]);
+				dbg("Ungrabbing %d...", kbds[i]);
 				XIUngrabDevice(dpy, kbds[i], CurrentTime);
-				dbg("Done");
-			} else
+				dbg("Done\n");
+			} else {
+				dbg("Waiting for %d\n", kbds[i]);
 				disabled = 1;
+			}
 		}
 
 		if(disabled) sleep(1);
