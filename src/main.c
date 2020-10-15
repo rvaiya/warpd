@@ -415,6 +415,7 @@ void main_loop()
 static void cleanup(int _)
 {
 	fprintf(stderr, "Received termination signal, cleaning up...\n");
+	set_cursor_visibility(1);
 	input_ungrab_keyboard(0);
 	exit(1);
 }
@@ -425,7 +426,7 @@ int main(int argc, char **argv)
 	sprintf(path, "%s/.warprc", getenv("HOME"));
 	cfg = parse_cfg(path);
 
-	dbg("Built from commit: "COMMIT"\n");
+	fprintf(stderr, "Built from commit: "COMMIT"\n");
 
 	if(!(dpy = XOpenDisplay(NULL))) {
 		fprintf(stderr,
