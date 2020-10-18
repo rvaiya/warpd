@@ -51,6 +51,10 @@ normal_word_size           int     80                      "Size of the incremen
 normal_hint_key            string   "x"                    "Activate hint mode while in normal mode."
 normal_grid_key            string   "g"                    "Activate grid mode while in normal mode."
 
+normal_hist_back           string   "C-o"                  "Move to the last position in the history stack."
+normal_hist_forward        string   "C-i"                  "Move to the next position in the history stack."
+
+
 scroll_fling_timeout       int      150                    "Double tap timeout used to determine fling intention."
 scroll_fling_velocity      int      40                     "Initial fling velocity."
 scroll_fling_acceleration  int      10                     "Fling acceleration."

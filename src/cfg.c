@@ -78,6 +78,8 @@ struct cfg* parse_cfg(const char *fname) {
     cfg->normal_word_size = 80;
     cfg->normal_hint_key = "x";
     cfg->normal_grid_key = "g";
+    cfg->normal_hist_back = "C-o";
+    cfg->normal_hist_forward = "C-i";
     cfg->scroll_fling_timeout = 150;
     cfg->scroll_fling_velocity = 40;
     cfg->scroll_fling_acceleration = 10;
@@ -189,6 +191,10 @@ struct cfg* parse_cfg(const char *fname) {
             cfg->normal_hint_key = strdup(val);
         else if(!strcmp(key, "normal_grid_key"))
             cfg->normal_grid_key = strdup(val);
+        else if(!strcmp(key, "normal_hist_back"))
+            cfg->normal_hist_back = strdup(val);
+        else if(!strcmp(key, "normal_hist_forward"))
+            cfg->normal_hist_forward = strdup(val);
         else if(!strcmp(key, "scroll_fling_timeout"))
             cfg->scroll_fling_timeout = atoi(val);
         else if(!strcmp(key, "scroll_fling_velocity"))

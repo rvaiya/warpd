@@ -188,6 +188,10 @@ have the format:
 
 **normal_grid_key**: Activate grid mode while in normal mode. (default: g).
 
+**normal_hist_back**: Move to the last position in the history stack. (default: C-o).
+
+**normal_hist_forward**: Move to the next position in the history stack. (default: C-i).
+
 **scroll_fling_timeout**: Double tap timeout used to determine fling intention. (default: 150).
 
 **scroll_fling_velocity**: Initial fling velocity. (default: 40).

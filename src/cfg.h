@@ -47,6 +47,8 @@ struct cfg {
     int normal_word_size;
     char* normal_hint_key;
     char* normal_grid_key;
+    char* normal_hist_back;
+    char* normal_hist_forward;
     int scroll_fling_timeout;
     int scroll_fling_velocity;
     int scroll_fling_acceleration;

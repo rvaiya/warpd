@@ -47,6 +47,10 @@ struct normal_keys {
 	uint16_t scroll_up;
 	uint16_t scroll_left;
 	uint16_t scroll_right;
+
+	uint16_t hist_back;
+	uint16_t hist_forward;
+
 	uint16_t exit[MAX_EXIT_KEYS];
 };
 

@@ -252,9 +252,13 @@ static void normal_init(uint16_t *exit_keys,
 		beginning: get_keyseq(cfg->normal_beginning),
 		end: get_keyseq(cfg->normal_end),
 
+		hist_back: get_keyseq(cfg->normal_hist_back),
+		hist_forward: get_keyseq(cfg->normal_hist_forward),
+
 		scroll_up: scroll_up,
 		scroll_down: scroll_down,
 		scroll_left: scroll_left,
+		scroll_right: scroll_right,
 		scroll_right: scroll_right,
 	};
 
@@ -288,9 +292,9 @@ uint16_t get_action(int start_mode, uint16_t grid_key, uint16_t hint_key, uint16
 			hint_mode();
 		else if(key == grid_key) {
 			if((key = grid_mode(-1, -1)) != exit_key)
-				return key;
+				return key & 0xFF;
 		} else
-			return key;
+			return key & 0xFF;
 	}
 }
 
@@ -385,7 +389,6 @@ void main_loop()
 			while(1) {
 				uint16_t action = get_action(mode, normal_grid_key, normal_hint_key, exit_key);
 
-
 				if(action == buttons[0])      input_click(1);
 				else if(action == buttons[1]) input_click(2);
 				else if(action == buttons[2]) input_click(3);
@@ -407,7 +410,7 @@ void main_loop()
 			}
 		}
 
-		input_ungrab_keyboard(1);
+		input_ungrab_keyboard(0);
 		set_cursor_visibility(1);
 	}
 }

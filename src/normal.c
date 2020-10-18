@@ -31,6 +31,7 @@
 #include <assert.h>
 #include "normal.h"
 #include "input.h"
+#include "history.h"
 #include "scroll.h"
 
 static Display *dpy;
@@ -181,9 +182,13 @@ static int tonum(uint16_t keyseq)
 
 uint16_t normal_mode(uint16_t start_key)
 {
+	int x, y;
 	int opnum = 0;
 
 	draw();
+
+	input_get_cursor_position(&x, &y);
+	hist_add(x, y);
 
 	while(1) {
 		uint16_t keyseq;
@@ -226,6 +231,17 @@ uint16_t normal_mode(uint16_t start_key)
 		} else if(keyseq == keys->up_word) {
 			rel_warp(0, -word_increment*(opnum ? opnum : 1));
 			opnum = 0;
+		} else if(keyseq == keys->hist_back) {
+			input_get_cursor_position(&x, &y);
+			hist_add(x, y);
+
+			hist_prev();
+			hist_get(&x, &y);
+			XWarpPointer(dpy, 0, DefaultRootWindow(dpy), 0, 0, 0, 0, x, y);
+		} else if(keyseq == keys->hist_forward) {
+			hist_next();
+			hist_get(&x, &y);
+			XWarpPointer(dpy, 0, DefaultRootWindow(dpy), 0, 0, 0, 0, x, y);
 		} else if(keyseq == keys->down_word) {
 			rel_warp(0, word_increment*(opnum ? opnum : 1));
 			opnum = 0;
@@ -247,8 +263,7 @@ uint16_t normal_mode(uint16_t start_key)
 				     scroll_fling_deceleration,
 				     scroll_fling_timeout);
 
-			if(key)
-				return normal_mode(key);
+			if(key) return normal_mode(key);
 		} else if(keyseq == keys->scroll_up || keyseq == keys->scroll_down) {
 			uint16_t key;
 				
@@ -262,13 +277,16 @@ uint16_t normal_mode(uint16_t start_key)
 				     scroll_fling_deceleration,
 				     scroll_fling_timeout);
 
-			if(key)
-				return normal_mode(key);
+			if(key) return normal_mode(key);
 		} else {
 			size_t i;
 			for (i = 0; i < sizeof keys->exit / sizeof keys->exit[0]; i++) {
 				if(keys->exit[i] == keyseq) {
 					hide();
+
+					input_get_cursor_position(&x, &y);
+					hist_add(x, y);
+
 					return keyseq;
 				}
 			}
