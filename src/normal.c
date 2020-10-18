@@ -187,9 +187,6 @@ uint16_t normal_mode(uint16_t start_key)
 
 	draw();
 
-	input_get_cursor_position(&x, &y);
-	hist_add(x, y);
-
 	while(1) {
 		uint16_t keyseq;
 		int num;
