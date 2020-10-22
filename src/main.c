@@ -363,7 +363,7 @@ void main_loop()
 		dbg("Waiting for activation key");
 
 		key = input_wait_for_key(grabbed_keys, sizeof grabbed_keys / sizeof grabbed_keys[0]);
-//start:
+
 		dbg("Processing activation key %s.", input_keyseq_to_string(key));
 		input_grab_keyboard(1);
 		set_cursor_visibility(0);
@@ -381,6 +381,8 @@ void main_loop()
 					     cfg->scroll_fling_deceleration,
 					     cfg->scroll_fling_timeout);
 			}
+
+			input_ungrab_keyboard(0);
 		} else {
 			int mode = key == hint_key ? HINT_MODE :
 				   key == grid_key ? GRID_MODE :
@@ -408,9 +410,10 @@ void main_loop()
 
 				mode = NORMAL_MODE;
 			}
+
+			input_ungrab_keyboard(1);
 		}
 
-		input_ungrab_keyboard(0);
 		set_cursor_visibility(1);
 	}
 }
