@@ -76,3 +76,11 @@ If you are interesting in adding warpd to your distribution's repository please 
 
 - This was a small one off c file that ballooned into a small project, I did not originally plan to publish it. Consequently the code is ugly/will eat your face. You have been warned.
 
+
+# Contributions
+
+A special thanks to
+
+ - Pete Fein - For encouragement and early adoption.
+ - Matheus Fillipe - For the original border radius patch as well as numerous bug reports and feature requests.
+ - The Kaleidoscope/Vimperator projects - For inspiration.

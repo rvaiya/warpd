@@ -152,6 +152,8 @@ have the format:
 
 **hint_opacity**: Hint transparency (requires a compositor). (default: 100).
 
+**hint_border_radius**: Border radius. (default: 0).
+
 **normal_left_word**: Move the cursor left by word size in normal mode. (default: b).
 
 **normal_right_word**: Move the cursor right by word size in normal mode. (default: w).

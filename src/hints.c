@@ -76,6 +76,7 @@ static void generate_positions(struct hint *hints, size_t n, int w, int h)
 		hints[i].y = ((i / nc) * rowh) + ((rowh-h)/2);
 		hints[i].w = w;
 		hints[i].h = h;
+		hints[i].border_radius = 10;
 	}
 }
 
@@ -217,6 +218,7 @@ void init_hint(Display *_dpy,
 	       const char *fgcol,
 	       int width,
 	       int height,
+	       int border_radius,
 	       int opacity) 
 {
 	dpy = _dpy;
@@ -230,5 +232,5 @@ void init_hint(Display *_dpy,
 	} else
 		nhints = generate(hint_characters, width, height, hints);
 
-	init_hint_drw(dpy, hints, nhints, opacity, bgcol, fgcol);
+	init_hint_drw(dpy, hints, nhints, border_radius, opacity, bgcol, fgcol);
 }

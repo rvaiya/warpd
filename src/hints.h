@@ -32,6 +32,7 @@ void init_hint(Display *_dpy,
 	       const char *fgcol,
 	       int width,
 	       int height,
+	       int border_radius,
 	       int opacity);
 
 uint16_t hint_mode();

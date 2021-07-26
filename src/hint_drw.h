@@ -31,12 +31,14 @@ struct hint
 	int y;
 	int w;
 	int h;
+	int border_radius;
 	char label[10];
 };
 
-void init_hint_drw(Display *dpy,
-		   struct hint *hints,
+void init_hint_drw(Display *_dpy,
+		   struct hint *_hints,
 		   size_t n,
+		   int border_radius,
 		   int opacity,
 		   const char *bgcol,
 		   const char *fgcol);

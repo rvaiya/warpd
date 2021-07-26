@@ -33,9 +33,18 @@ static Display *dpy;
 
 static struct hint *hints;
 static int nhints;
+static int border_radius;
 
-static Pixmap backing_pixmap;
-static Window win;
+static Pixmap label_pixmap;
+
+//Dedicated window for full hint display.
+static Window fhwin;
+
+//Window for all other hint subsets, usually small enough
+//to generate on the fly without performance penalties
+//(split thusly for optimization)
+static Window win; 
+
 static int winh, winw;
 static GC gc = None;
 
@@ -65,7 +74,8 @@ static Window create_win(uint8_t r, uint8_t g, uint8_t b,
 			 int x,
 			 int y,
 			 int w,
-			 int h)
+			 int h,
+			 int opacity)
 {
 	Window win = XCreateWindow(dpy,
 				   DefaultRootWindow(dpy),
@@ -74,14 +84,17 @@ static Window create_win(uint8_t r, uint8_t g, uint8_t b,
 				   DefaultDepth(dpy, DefaultScreen(dpy)),
 				   InputOutput,
 				   DefaultVisual(dpy, DefaultScreen(dpy)),
-				   CWOverrideRedirect | CWBackPixel | CWBackingPixel | CWEventMask,
+				   CWOverrideRedirect | CWBackPixel | CWBackingStore | CWBackingPixel | CWEventMask,
 				   &(XSetWindowAttributes){
 				   .backing_pixel = color(r,g,b),
 				   .background_pixel = color(r,g,b),
+				   .backing_store = Always,
 				   .override_redirect = 1,
 				   .event_mask = ExposureMask,
 				   });
 
+
+	set_opacity(dpy, win, opacity);
 
 	return win;
 }
@@ -210,7 +223,7 @@ static int hex_to_rgb(const char *str, uint8_t *r, uint8_t *g, uint8_t *b)
 	return 0;
 }
 
-static Pixmap create_backing_store(Display *dpy,
+static Pixmap create_label_pixmap(Display *dpy,
 				   struct hint *hints,
 				   size_t n,
 				   const char *bgcol,
@@ -255,66 +268,114 @@ static Pixmap create_backing_store(Display *dpy,
 	return pm;
 }
 
+static void draw_rounded_rectangle(Drawable dst,
+			    GC gc,
+			    unsigned int x,
+			    unsigned int y,
+			    unsigned int w,
+			    unsigned int h,
+			    unsigned int r)
+{
+
+	XFillArc(dpy, dst, gc, x, y, 2*r, 2*r, 64*90*1, 64*90);
+	XFillArc(dpy, dst, gc, x+w-2*r, y, 2*r, 2*r, 64*90*0, 64*90);
+	XFillArc(dpy, dst, gc, x+w-2*r, y+h-2*r, 2*r, 2*r, 64*90*3, 64*90);
+	XFillArc(dpy, dst, gc, x, y+h-2*r, 2*r, 2*r, 64*90*2, 64*90);
+
+	XFillRectangle(dpy, dst, gc, x+r, y, w-2*r, h);
+	XFillRectangle(dpy, dst, gc, x, y+r, w, h-2*r);
+}
+
+static void apply_window_mask(Window win, size_t *indices, size_t n)
+{
+	static Pixmap mask = 0;
+	static GC gc = 0;
+	size_t i;
+
+	if(!mask) {
+		mask = XCreatePixmap(dpy, win, winw, winh, 1);
+		gc = XCreateGC(dpy, mask, 0, NULL);
+	}
+
+	XSetForeground(dpy, gc, 0);
+	XFillRectangle(dpy, mask, gc, 0, 0, winw, winh);
+
+	XSetForeground(dpy, gc, 1);
+	for(i = 0; i < n; i++) {
+		struct hint *h = &hints[indices[i]];
+		draw_rounded_rectangle(mask, gc, h->x, h->y, h->w, h->h, border_radius);
+	}
+
+	XShapeCombineMask(dpy, win, ShapeBounding, 0, 0, mask, ShapeSet);
+}
+
+static void hidewin(Window win)
+{
+	//Avoid unmapping since map appears to be expensive for shaped windows.
+	XLowerWindow(dpy, win);
+	XMoveWindow(dpy, win, -winw*10, -winh*10);
+}
+
+static void showwin(Window win)
+{
+	XRaiseWindow(dpy, win);
+	XMoveWindow(dpy, win, 0, 0);
+	XMapWindow(dpy, win);
+	XCopyArea(dpy, label_pixmap, win, gc, 0, 0, winw, winh, 0, 0);
+}
+
+
 void init_hint_drw(Display *_dpy,
 		   struct hint *_hints,
 		   size_t n,
+		   int _border_radius,
 		   int opacity,
 		   const char *bgcol,
 		   const char *fgcol)
 {
+	size_t i;
+	size_t indices[MAX_HINTS];
 	uint8_t r,g,b;
 	dpy = _dpy;
 
 	XWindowAttributes info;
 	XGetWindowAttributes(dpy, DefaultRootWindow(dpy), &info);
 
-	hex_to_rgb(bgcol, &r, &g, &b);
-
+	border_radius = _border_radius;
+	winw = info.width;
+	winh = info.height;
 	hints = _hints;
 	nhints = n;
 
-	backing_pixmap = create_backing_store(dpy, hints, nhints, bgcol, fgcol);
+	label_pixmap = create_label_pixmap(dpy, hints, nhints, bgcol, fgcol);
+	hex_to_rgb(bgcol, &r, &g, &b);
 
+	fhwin = create_win(r, g, b, 0, 0, winw, winh, opacity);
+	win = create_win(r, g, b, 0, 0, winw, winh, opacity);
 
-	win = create_win(r, g, b, 0, 0, info.width, info.height);
-	winw = info.width;
-	winh = info.height;
+	for(i = 0;i < n;i++)
+		indices[i] = i;
+
+	apply_window_mask(fhwin, indices, n);
+
 	gc = XCreateGC(dpy,
 		       DefaultRootWindow(dpy),
 		       GCFillStyle,
 		       &(XGCValues){ .fill_style = FillSolid });
 
-	set_opacity(dpy, win, opacity);
 }
 
-void hint_drw_filter(size_t *indices, size_t nindices)
+void hint_drw_filter(size_t *indices, size_t n)
 {
-	size_t i, n = 0;
-	static XRectangle recs[MAX_HINTS];
-
-	if(!nindices) {
-		XUnmapWindow(dpy, win);
-		return;
+	if(!n) {
+		hidewin(fhwin);
+		hidewin(win);
+	} else if(n == nhints) {
+		hidewin(win);
+		showwin(fhwin);
+	} else {
+		apply_window_mask(win, indices, n);
+		showwin(win);
+		hidewin(fhwin);
 	}
-
-	for (i = 0; i < nindices; i++) {
-		struct hint *h = &hints[indices[i]];
-
-		recs[n].x = h->x;
-		recs[n].y = h->y;
-		recs[n].width = h->w;
-		recs[n++].height = h->h;
-	}
-
-	XShapeCombineRectangles(dpy, win,
-				ShapeBounding,
-				0,0,
-				recs, n,
-				ShapeSet,
-				Unsorted);
-
-
-	XMapRaised(dpy, win);
-	XCopyArea(dpy, backing_pixmap, win, gc, 0, 0, winw, winh, 0, 0);
-	XFlush(dpy);
 }

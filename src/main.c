@@ -223,6 +223,7 @@ static void hint_init()
 		  cfg->hint_fgcolor,
 		  cfg->hint_width,
 		  cfg->hint_height,
+		  cfg->hint_border_radius,
 		  cfg->hint_opacity);
 }
 
