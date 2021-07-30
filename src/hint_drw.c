@@ -77,6 +77,10 @@ static Window create_win(uint8_t r, uint8_t g, uint8_t b,
 			 int h,
 			 int opacity)
 {
+	XClassHint *hint = XAllocClassHint();
+	hint->res_name = "warpd_hints";
+	hint->res_class = "warpd_hints";
+
 	Window win = XCreateWindow(dpy,
 				   DefaultRootWindow(dpy),
 				   x, y, w, h,
@@ -94,7 +98,10 @@ static Window create_win(uint8_t r, uint8_t g, uint8_t b,
 				   });
 
 
+	XSetClassHint(dpy, win, hint);
+
 	set_opacity(dpy, win, opacity);
+	XFree(hint);
 
 	return win;
 }
