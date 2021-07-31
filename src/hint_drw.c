@@ -319,15 +319,12 @@ static void apply_window_mask(Window win, size_t *indices, size_t n)
 static void hidewin(Window win)
 {
 	//Avoid unmapping since map appears to be expensive for shaped windows.
-	XLowerWindow(dpy, win);
 	XMoveWindow(dpy, win, -winw*10, -winh*10);
 }
 
 static void showwin(Window win)
 {
-	XRaiseWindow(dpy, win);
 	XMoveWindow(dpy, win, 0, 0);
-	XMapWindow(dpy, win);
 	XCopyArea(dpy, label_pixmap, win, gc, 0, 0, winw, winh, 0, 0);
 }
 
@@ -370,6 +367,11 @@ void init_hint_drw(Display *_dpy,
 		       GCFillStyle,
 		       &(XGCValues){ .fill_style = FillSolid });
 
+	XMoveWindow(dpy, win, -winw*10, -winh*10);
+	XMoveWindow(dpy, fhwin, -winw*10, -winh*10);
+
+	XMapRaised(dpy, fhwin);
+	XMapRaised(dpy, win);
 }
 
 void hint_drw_filter(size_t *indices, size_t n)
