@@ -325,6 +325,7 @@ static void hidewin(Window win)
 static void showwin(Window win)
 {
 	XMoveWindow(dpy, win, 0, 0);
+	XRaiseWindow(dpy, win);
 	XCopyArea(dpy, label_pixmap, win, gc, 0, 0, winw, winh, 0, 0);
 }
 
