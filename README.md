@@ -38,18 +38,18 @@ sudo apt-get install libxi-dev libxinerama-dev libxft-dev libxfixes-dev libxtst-
 1. Run `warpd` 
 
 ## Hint Mode
-2. Press `M-x` to generate a list of hints
+2. Press `A-M-x` to generate a list of hints
 3. Enter the key sequence associated with the desired target to warp the pointer to that location and enter normal mode.
 4. Use the normal mode movement keys to select the final desination (see Normal Mode). 
 
 ## Grid Mode
-2. Press `M-z` (meta is the command key) to activate the warping process.
+2. Press `A-M-z` (meta is the command key) to activate the warping process.
 3. Use `u`,`i`,`j`,`k` to repeatedly navigate to different quadrants.
 4. Press `m` to left click, `,` to middle click or `.` to right click. 
 5. See Normal Mode
 
 ## Normal Mode
-2. Press `M-c` to activate normal mode.
+2. Press `A-M-c` to activate normal mode.
 3. Use the normal movement keys (default `hjkl`) to adjust the cursor.
 4. Press `m` to left click, `,` to middle click or `.` to right click. 
 5. Press `q` to quit.

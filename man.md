@@ -102,11 +102,11 @@ have the format:
 <option>: <value>
 ```
 
-**hint_activation_key**: Activates hint mode. (default: M-x).
+**hint_activation_key**: Activates hint mode. (default: A-M-x).
 
-**grid_activation_key**: Activates grid mode and allows for further manipulation of the pointer using the mapped keys. (default: M-z).
+**grid_activation_key**: Activates grid mode and allows for further manipulation of the pointer using the mapped keys. (default: A-M-z).
 
-**normal_activation_key**: Activate normal movement mode (manual cursor movement). (default: M-c).
+**normal_activation_key**: Activate normal movement mode (manual cursor movement). (default: A-M-c).
 
 **movement_increment**: The movement increment used for grid and normal mode. (default: 20).
 

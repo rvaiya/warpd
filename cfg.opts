@@ -1,6 +1,6 @@
-hint_activation_key       string  "M-x"                   "Activates hint mode."
-grid_activation_key       string  "M-z"                   "Activates grid mode and allows for further manipulation of the pointer using the mapped keys."
-normal_activation_key     string  "M-c"                     "Activate normal movement mode (manual cursor movement)."
+hint_activation_key       string  "A-M-x"                   "Activates hint mode."
+grid_activation_key       string  "A-M-z"                   "Activates grid mode and allows for further manipulation of the pointer using the mapped keys."
+normal_activation_key     string  "A-M-c"                   "Activate normal movement mode (manual cursor movement)."
 
 movement_increment        int     20                      "The movement increment used for grid and normal mode."
 buttons                   string  "m,comma,period,u,i,y,o" "Keys corresponding to mouse buttons (4/5 == scroll down/scroll up while 6/7 correpond to scroll left/right)."

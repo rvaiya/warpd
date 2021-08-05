@@ -35,9 +35,9 @@ struct cfg* parse_cfg(const char *fname) {
     size_t n = 0, ln = 0;
     struct cfg *cfg = malloc(sizeof(struct cfg));
 
-    cfg->hint_activation_key = "M-x";
-    cfg->grid_activation_key = "M-z";
-    cfg->normal_activation_key = "M-c";
+    cfg->hint_activation_key = "A-M-x";
+    cfg->grid_activation_key = "A-M-z";
+    cfg->normal_activation_key = "A-M-c";
     cfg->movement_increment = 20;
     cfg->buttons = "m,comma,period,u,i,y,o";
     cfg->exit = "Escape";
