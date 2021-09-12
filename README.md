@@ -52,7 +52,7 @@ sudo apt-get install libxi-dev libxinerama-dev libxft-dev libxfixes-dev libxtst-
 2. Press `A-M-c` to activate normal mode.
 3. Use the normal movement keys (default `hjkl`) to adjust the cursor.
 4. Press `m` to left click, `,` to middle click or `.` to right click. 
-5. Press `q` to quit.
+5. Press `escape` to quit.
 
 A drag movement can be simulated from any of the above modes by focusing on the source and then pressing the `drag_key` (default `v`) which will cause normal mode to be activated for selection of the drag target.
 

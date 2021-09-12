@@ -25,7 +25,7 @@ by discrete increments using configurable keybindings (vi based
 by default). In addition to normal mode there exist two other
 modes for long distance warping called 'hint and grid mode'.
 
-## Normal Mode (default: `M-c`)
+## Normal Mode (default: `A-M-c`)
 
 This is the default mode (and the endpoint of both grid and normal mode unless
 the *oneshot* option is specified) which is designed for short distance pointer
@@ -38,7 +38,7 @@ Finally a numeric multiplier can be supplied to the directional keys as an
 input prefix in order to affect movement in the corresponding direction (e.g
 10j moves 10 units down). 
 
-## Hint Mode (default: M-x or simply 'x' within normal mode)
+## Hint Mode (default: A-M-x or simply 'x' within normal mode)
 
 This mode populates the screen with a list of labels and allows the
 user to immediately warp the pointer to a given location by pressing the
@@ -53,7 +53,7 @@ second nature and is (in the author's opinion) superior to the grid method for
 quickly pinpointing text and UI elements.
 
 
-## Grid Mode (default: `M-z` or simply 'g' within normal mode)
+## Grid Mode (default: `A-M-z` or simply 'g' within normal mode)
 
 By default grid mode divides the screen into a 2x2 grid. Each time a key
 is pressed the grid shrinks to cover the targeted area. Once the pointer
