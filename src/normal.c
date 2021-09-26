@@ -48,6 +48,8 @@ static float scroll_fling_velocity;
 static float scroll_fling_acceleration;
 static float scroll_fling_deceleration;
 
+static int dragging = 0;
+
 static void hide()
 {
 	XUnmapWindow(dpy, indicator);
@@ -180,6 +182,14 @@ static int tonum(uint16_t keyseq)
 }
 
 
+void normal_cancel_drag()
+{
+	if(dragging) {
+		XTestFakeButtonEvent(dpy, 1, False, CurrentTime);
+		dragging = 0;
+	}
+}
+
 uint16_t normal_mode(uint16_t start_key)
 {
 	int x, y;
@@ -247,12 +257,12 @@ uint16_t normal_mode(uint16_t start_key)
 				rel_warp(-10000, 0);
 			else
 				opnum = opnum*10 + num;
-		} else if(keyseq == keys->scroll_left || keyseq == keys->scroll_right) {
+		} else if(keyseq == keys->buttons[5] || keyseq == keys->buttons[6]) {
 			uint16_t key;
 				
 			key = scroll(dpy,
 				     keyseq,
-				     keyseq == keys->scroll_left ? 6 : 7,
+				     keyseq == keys->buttons[5] ? 6 : 7,
 				     scroll_velocity,
 				     scroll_acceleration,
 				     scroll_fling_velocity,
@@ -261,12 +271,12 @@ uint16_t normal_mode(uint16_t start_key)
 				     scroll_fling_timeout);
 
 			if(key) return normal_mode(key);
-		} else if(keyseq == keys->scroll_up || keyseq == keys->scroll_down) {
+		} else if(keyseq == keys->buttons[3] || keyseq == keys->buttons[4]) {
 			uint16_t key;
 				
 			key = scroll(dpy,
 				     keyseq,
-				     keyseq == keys->scroll_up ? 5 : 4,
+				     keyseq == keys->buttons[3] ? 4 : 5,
 				     scroll_velocity,
 				     scroll_acceleration,
 				     scroll_fling_velocity,
@@ -274,11 +284,27 @@ uint16_t normal_mode(uint16_t start_key)
 				     scroll_fling_deceleration,
 				     scroll_fling_timeout);
 
-			if(key) return normal_mode(key);
+			if(key) 
+				return normal_mode(key);
+		} else if(keyseq == keys->drag) {
+			if(dragging) {
+				XTestFakeButtonEvent(dpy, 1, False, CurrentTime);
+				dragging = 0;
+			} else {
+				XTestFakeButtonEvent(dpy, 1, True, CurrentTime);
+				dragging = 1;
+			}
 		} else {
 			size_t i;
-			for (i = 0; i < sizeof keys->exit / sizeof keys->exit[0]; i++) {
-				if(keys->exit[i] == keyseq) {
+
+			for(i = 0;i < 3;i++)
+				if(keyseq == keys->buttons[i]) {
+					normal_cancel_drag();
+					input_click(i+1);
+				}
+
+			for(i = 0;i < keys->exit_sz;i++)
+				if(keyseq == keys->exit[i]) {
 					hide();
 
 					input_get_cursor_position(&x, &y);
@@ -286,7 +312,6 @@ uint16_t normal_mode(uint16_t start_key)
 
 					return keyseq;
 				}
-			}
 		}
 
 		draw();

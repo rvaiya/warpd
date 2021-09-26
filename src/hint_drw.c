@@ -32,7 +32,7 @@
 static Display *dpy;
 
 static struct hint *hints;
-static int nhints;
+static size_t nhints;
 static int border_radius;
 
 static Pixmap label_pixmap;

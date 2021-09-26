@@ -43,18 +43,19 @@ struct normal_keys {
 	uint16_t beginning;
 	uint16_t end;
 
-	uint16_t scroll_down;
-	uint16_t scroll_up;
-	uint16_t scroll_left;
-	uint16_t scroll_right;
-
 	uint16_t hist_back;
 	uint16_t hist_forward;
 
-	uint16_t exit[MAX_EXIT_KEYS];
+	uint16_t *exit;
+	size_t exit_sz;
+
+	uint16_t drag;
+	uint16_t *buttons;
+	size_t buttons_sz;
 };
 
 uint16_t normal_mode(uint16_t start_key);
+void normal_cancel_drag();
 
 void init_normal(Display *_dpy,
 		   const int _increment,

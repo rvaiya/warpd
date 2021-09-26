@@ -270,7 +270,7 @@ uint16_t grid_mode(int startrow, int startcol)
 						redraw();
 					}
 
-			for (size_t i = 0; i < sizeof keys->exit / sizeof keys->exit[0]; i++) {
+			for (size_t i = 0; i < keys->exit_sz; i++) {
 				if(keys->exit[i] == keyseq) {
 					hidden = 1;
 					redraw();

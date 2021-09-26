@@ -193,7 +193,7 @@ static void sync_state()
 uint16_t normalize_keycode(uint16_t code) {
 
 	/* Kludge to account for keysyms with multiple keycodes.
-	 * Alternatively we could do everything in keysyms but 
+	 * Alternatively we could do everything in keysyms but
 	 * that complicates the code.
 	 */
 
@@ -241,7 +241,7 @@ static int process_xev(XEvent *ev, uint16_t *keyseq)
 	case XI_KeyPress:
 		dev = (XIDeviceEvent*)(cookie->data);
 		code = normalize_keycode(dev->detail);
-		mask = get_mod_mask(code); 
+		mask = get_mod_mask(code);
 
 		key_state[dev->detail] = 1;
 
@@ -311,7 +311,7 @@ static XEvent *get_xev(int timeout)
 
 }
 
-void input_grab_keyboard(int wait_for_keyboard)
+void input_grab_keyboard()
 {
 	size_t i;
 	XIEventMask mask;
@@ -376,7 +376,7 @@ const char* input_keyseq_to_string(uint16_t seq)
 	return s;
 }
 
-uint16_t input_parse_keyseq(const char* key) 
+uint16_t input_parse_keyseq(const char* key)
 {
 	if(!key || key[0] == 0) return 0;
 
@@ -481,7 +481,7 @@ void input_ungrab_keyboard(int wait_for_keyboard)
 	grabbed = 0;
 }
 
-void input_click(int btn) 
+void input_click(int btn)
 {
 	uint16_t mods = (active_mods >> 8);
 	XUngrabKeyboard(dpy, CurrentTime);
@@ -514,7 +514,7 @@ int input_next_ev(int timeout, uint16_t *keyseq)
 {
 	int type;
 	XEvent *ev = get_xev(timeout);
-	if(!ev) 
+	if(!ev)
 		return EV_TIMEOUT;
 
 	type = process_xev(ev, keyseq);
@@ -566,37 +566,39 @@ static int input_xerr(Display *dpy, XErrorEvent *ev)
 	return 0;
 }
 
-uint16_t input_wait_for_key(uint16_t *keys, size_t n)
-{
-	size_t i;
+//We only do this to maintain exclusivity of 
+//activation keys, we don't actually care 
+//about the corresponding events.
 
+void input_grab_key(uint16_t key)
+{
 	XSetErrorHandler(input_xerr);
 
-	for (i = 0; i < n; i++) {
-		xerr_key = input_keyseq_to_string(keys[i]);
+	xerr_key = input_keyseq_to_string(key);
 
-		// Ensure X doesn't process the key without modifiers. We don't
-		// actually care about this event.
-		XGrabKey(dpy,
-			 keys[i] & 0xFF,
-			 keys[i] >> 8,
-			 DefaultRootWindow(dpy),
-			 False,
-			 0, 0);
+	XGrabKey(dpy,
+		 key & 0xFF,
+		 key >> 8,
+		 DefaultRootWindow(dpy),
+		 False,
+		 0, 0);
 
-		XGrabKey(dpy,
-			 keys[i] & 0xFF,
-			 (keys[i] >> 8) | Mod2Mask,
-			 DefaultRootWindow(dpy),
-			 False,
-			 0, 0);
+	XGrabKey(dpy,
+		 key & 0xFF,
+		 (key >> 8) | Mod2Mask,
+		 DefaultRootWindow(dpy),
+		 False,
+		 0, 0);
 
-		XSync(dpy, False);
-	}
+	XSync(dpy, False);
 
 	XSetErrorHandler(NULL);
+}
 
+uint16_t input_wait_for_key(uint16_t *keys, size_t n)
+{
 	while(1) {
+		size_t i;
 		uint16_t key = input_next_key(0, 0);
 
 		for (i = 0; i < n; i++) {

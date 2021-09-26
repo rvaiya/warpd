@@ -50,12 +50,15 @@
 static Display *dpy;
 static int opt_foreground = 0;
 
-static const char usage[] = 
+static uint16_t buttons[MAX_BTNS];
+static size_t buttons_sz = 0;
+
+static const char usage[] =
 "warpd [-l] [-h] [-v] \n\n"
 "See the manpage for more details and usage examples.\n";
 static struct cfg *cfg;
 
-static uint16_t get_keyseq(const char *s) 
+static uint16_t parse_keyseq(const char *s)
 {
 	uint16_t seq;
 
@@ -94,7 +97,7 @@ static int parse_keylist(const char *s, uint16_t *keycodes, int sz)
 	return n;
 }
 
-static void daemonize() 
+static void daemonize()
 {
 	const char *path;
 
@@ -117,7 +120,7 @@ static void daemonize()
 	freopen("/dev/null", "w", stdout);
 }
 
-static void proc_args(char **argv, int argc) 
+static void proc_args(char **argv, int argc)
 {
 	int opt;
 
@@ -145,7 +148,7 @@ static void proc_args(char **argv, int argc)
 	}
 }
 
-static void check_lock_file() 
+static void check_lock_file()
 {
 	char lock_file[PATH_MAX];
 	int fd;
@@ -172,7 +175,7 @@ static void check_lock_file()
 //XFixes* functions are not idempotent (calling them more than
 //once crashes the client, so we need this wrapper function).
 
-static void set_cursor_visibility(int visible) 
+static void set_cursor_visibility(int visible)
 {
 	static int state = 1;
 
@@ -187,22 +190,39 @@ static void set_cursor_visibility(int visible)
 	state = visible;
 }
 
-static void grid_init(uint16_t *exit_keys, size_t n)
+static void grid_init()
 {
+	size_t i;
 	static struct grid_keys keys;
+	static uint16_t exit[128];
+
+	size_t n = 0;
+	for (i = 0; i < buttons_sz; i++) {
+		if(buttons[i]) {
+			exit[n++] = buttons[i];
+			exit[n++] = buttons[i] | (Mod1Mask << 8);
+			exit[n++] = buttons[i] | (Mod4Mask << 8);
+			exit[n++] = buttons[i] | (ShiftMask << 8);
+			exit[n++] = buttons[i] | (ControlMask << 8);
+		}
+	}
+
+	exit[n++] = parse_keyseq(cfg->exit);
+	exit[n++] = parse_keyseq(cfg->drag_key);
 
 	keys = (struct grid_keys) {
-		up: get_keyseq(cfg->grid_up),
-		down: get_keyseq(cfg->grid_down),
-		left: get_keyseq(cfg->grid_left),
-		right: get_keyseq(cfg->grid_right)
+		up: parse_keyseq(cfg->grid_up),
+		down: parse_keyseq(cfg->grid_down),
+		left: parse_keyseq(cfg->grid_left),
+		right: parse_keyseq(cfg->grid_right),
+
+		exit: exit,
+		exit_sz: n,
 	};
 
 	parse_keylist(cfg->grid_keys,
 		      keys.grid,
 		      sizeof keys.grid / sizeof keys.grid[0]);
-
-	memcpy(keys.exit, exit_keys, n * sizeof(exit_keys[0]));
 
 	init_grid(dpy,
 		  cfg->grid_nr,
@@ -227,43 +247,42 @@ static void hint_init()
 		  cfg->hint_opacity);
 }
 
-static void normal_init(uint16_t *exit_keys,
-	size_t n,
-	uint16_t scroll_up,
-	uint16_t scroll_down,
-	uint16_t scroll_left,
-	uint16_t scroll_right)
+static void normal_init()
 {
 	static struct normal_keys keys;
+	static uint16_t exit[3];
+
+	exit[0] = parse_keyseq(cfg->exit);
+	exit[1] = parse_keyseq(cfg->normal_grid_key);
+	exit[2] = parse_keyseq(cfg->normal_hint_key);
 
 	keys = (struct normal_keys) {
-		up: get_keyseq(cfg->normal_up),
-		down: get_keyseq(cfg->normal_down),
-		left: get_keyseq(cfg->normal_left),
-		right: get_keyseq(cfg->normal_right),
+		up: parse_keyseq(cfg->normal_up),
+		down: parse_keyseq(cfg->normal_down),
+		left: parse_keyseq(cfg->normal_left),
+		right: parse_keyseq(cfg->normal_right),
 
-		right_word: get_keyseq(cfg->normal_right_word),
-		left_word: get_keyseq(cfg->normal_left_word),
-		up_word: get_keyseq(cfg->normal_up_word),
-		down_word: get_keyseq(cfg->normal_down_word),
+		right_word: parse_keyseq(cfg->normal_right_word),
+		left_word: parse_keyseq(cfg->normal_left_word),
+		up_word: parse_keyseq(cfg->normal_up_word),
+		down_word: parse_keyseq(cfg->normal_down_word),
 
-		home: get_keyseq(cfg->normal_home),
-		middle: get_keyseq(cfg->normal_middle),
-		last: get_keyseq(cfg->normal_last),
-		beginning: get_keyseq(cfg->normal_beginning),
-		end: get_keyseq(cfg->normal_end),
+		home: parse_keyseq(cfg->normal_home),
+		middle: parse_keyseq(cfg->normal_middle),
+		last: parse_keyseq(cfg->normal_last),
+		beginning: parse_keyseq(cfg->normal_beginning),
+		end: parse_keyseq(cfg->normal_end),
 
-		hist_back: get_keyseq(cfg->normal_hist_back),
-		hist_forward: get_keyseq(cfg->normal_hist_forward),
+		hist_back: parse_keyseq(cfg->normal_hist_back),
+		hist_forward: parse_keyseq(cfg->normal_hist_forward),
 
-		scroll_up: scroll_up,
-		scroll_down: scroll_down,
-		scroll_left: scroll_left,
-		scroll_right: scroll_right,
-		scroll_right: scroll_right,
+		buttons: buttons,
+		buttons_sz: buttons_sz,
+
+		exit: exit,
+		exit_sz: sizeof exit/sizeof exit[0],
+		drag: parse_keyseq(cfg->drag_key),
 	};
-
-	memcpy(keys.exit, exit_keys, sizeof exit_keys[0] * n);
 
 	init_normal(dpy,
 		    cfg->movement_increment,
@@ -279,73 +298,79 @@ static void normal_init(uint16_t *exit_keys,
 		    cfg->scroll_fling_deceleration);
 }
 
-uint16_t get_action(int start_mode, uint16_t grid_key, uint16_t hint_key, uint16_t exit_key)
+void activate(int mode)
 {
-	uint16_t key;
+	static uint16_t hint_key = 0;
+	static uint16_t grid_key = 0;
 
-	if(start_mode == GRID_MODE) return grid_mode(-1, -1);
-	if(start_mode == HINT_MODE && hint_mode() == exit_key) return exit_key;
+	uint16_t start_key = 0;
+
+	if(!hint_key) {
+		hint_key = parse_keyseq(cfg->normal_hint_key);
+		grid_key = parse_keyseq(cfg->normal_grid_key);
+	}
 
 	while(1) {
-		key = normal_mode(0);
+		switch(mode) {
+			uint16_t key;
 
-		if(key == hint_key)
-			hint_mode();
-		else if(key == grid_key) {
-			if((key = grid_mode(-1, -1)) != exit_key)
-				return key & 0xFF;
-		} else
-			return key & 0xFF;
+		case GRID_MODE:
+			start_key = grid_mode(-1, -1);
+			mode = NORMAL_MODE;
+			break;
+		case HINT_MODE:
+			start_key = hint_mode();
+			mode = NORMAL_MODE;
+			break;
+		case NORMAL_MODE:
+			key = normal_mode(start_key);
+			start_key = 0;
+
+			if(key == hint_key) {
+				mode = HINT_MODE;
+			} else if(key == grid_key) {
+				mode = GRID_MODE;
+			} else {
+				normal_cancel_drag();
+				return;
+			}
+			break;
+		}
 	}
 }
 
 void main_loop()
 {
-	size_t i, n;
+	uint16_t normal_key = parse_keyseq(cfg->normal_activation_key);
+	uint16_t hint_key = parse_keyseq(cfg->hint_activation_key);
+	uint16_t grid_key = parse_keyseq(cfg->grid_activation_key);
 
-	uint16_t buttons[MAX_BTNS];
-	uint16_t exit_keys[MAX_EXIT_KEYS] = {0};
+	uint16_t scroll_up_key = parse_keyseq(cfg->scroll_up_key);
+	uint16_t scroll_down_key = parse_keyseq(cfg->scroll_down_key);
+	uint16_t scroll_left_key = parse_keyseq(cfg->scroll_left_key);
+	uint16_t scroll_right_key = parse_keyseq(cfg->scroll_right_key);
 
-	uint16_t normal_key = get_keyseq(cfg->normal_activation_key);
-	uint16_t hint_key = get_keyseq(cfg->hint_activation_key);
-	uint16_t grid_key = get_keyseq(cfg->grid_activation_key);
+	input_grab_key(normal_key);
+	input_grab_key(hint_key);
+	input_grab_key(grid_key);
 
-	uint16_t scroll_up_key = get_keyseq(cfg->scroll_up_key);
-	uint16_t scroll_down_key = get_keyseq(cfg->scroll_down_key);
-	uint16_t scroll_left_key = get_keyseq(cfg->scroll_left_key);
-	uint16_t scroll_right_key = get_keyseq(cfg->scroll_right_key);
+	input_grab_key(scroll_up_key);
+	input_grab_key(scroll_down_key);
+	input_grab_key(scroll_left_key);
+	input_grab_key(scroll_right_key);
 
-	uint16_t normal_hint_key = get_keyseq(cfg->normal_hint_key);
-	uint16_t normal_grid_key = get_keyseq(cfg->normal_grid_key);
-
-	uint16_t drag_key = get_keyseq(cfg->drag_key);
-	uint16_t exit_key = get_keyseq(cfg->exit);
-	int oneshot = !strcmp(cfg->oneshot_mode, "true");
-
-	parse_keylist(cfg->buttons,
+	buttons_sz = parse_keylist(cfg->buttons,
 		      buttons,
 		      sizeof buttons / sizeof buttons[0]);
 
-	n = 0;
-	for (i = 0; i < 3; i++) {
-		if(buttons[i]) {
-			exit_keys[n++] = buttons[i]; 
-			exit_keys[n++] = buttons[i] | (Mod1Mask << 8);
-			exit_keys[n++] = buttons[i] | (Mod4Mask << 8);
-			exit_keys[n++] = buttons[i] | (ShiftMask << 8);
-			exit_keys[n++] = buttons[i] | (ControlMask << 8);
-		}
-	}
-
-	exit_keys[n++] = exit_key;
-	exit_keys[n++] = drag_key;
-
 	hint_init();
-	grid_init(exit_keys, n);
+	grid_init();
+	normal_init();
 
-	exit_keys[n++] = normal_hint_key;
-	exit_keys[n++] = normal_grid_key;
-	normal_init(exit_keys, n, buttons[3], buttons[4], buttons[5], buttons[6]);
+	if(opt_foreground)
+		init_dbg();
+	else
+		daemonize();
 
 	while(1) {
 		uint16_t grabbed_keys[] = {
@@ -369,11 +394,17 @@ void main_loop()
 		input_grab_keyboard(1);
 		set_cursor_visibility(0);
 
-		if(key == scroll_left_key || key == scroll_right_key || key == scroll_up_key || key == scroll_down_key) {
-			while(key == scroll_left_key || key == scroll_right_key || key == scroll_up_key || key == scroll_down_key) {
-				key = scroll(dpy, key, 
-					     key == scroll_down_key ? 5 : 
-					     key == scroll_up_key ? 4 : 
+		if(key == scroll_left_key ||
+		   key == scroll_right_key ||
+		   key == scroll_up_key ||
+		   key == scroll_down_key) {
+			while(key == scroll_left_key ||
+			      key == scroll_right_key ||
+			      key == scroll_up_key ||
+			      key == scroll_down_key) {
+				key = scroll(dpy, key,
+					     key == scroll_down_key ? 5 :
+					     key == scroll_up_key ? 4 :
 					     key == scroll_left_key ? 6 : 7,
 					     cfg->scroll_velocity,
 					     cfg->scroll_acceleration,
@@ -382,39 +413,16 @@ void main_loop()
 					     cfg->scroll_fling_deceleration,
 					     cfg->scroll_fling_timeout);
 			}
-
-			input_ungrab_keyboard(0);
 		} else {
 			int mode = key == hint_key ? HINT_MODE :
 				   key == grid_key ? GRID_MODE :
 				   NORMAL_MODE;
 
-			while(1) {
-				uint16_t action = get_action(mode, normal_grid_key, normal_hint_key, exit_key);
-
-				if(action == buttons[0])      input_click(1);
-				else if(action == buttons[1]) input_click(2);
-				else if(action == buttons[2]) input_click(3);
-				else if(action == drag_key) {
-					XTestFakeButtonEvent(dpy, 1, True, CurrentTime);
-					get_action(NORMAL_MODE, normal_grid_key, normal_hint_key, exit_key);
-					XTestFakeButtonEvent(dpy, 1, False, CurrentTime);
-				}
-				else break;
-
-				if(oneshot) {
-					while(action == buttons[0] && input_next_key(cfg->double_click_timeout, 0) == buttons[0])
-						input_click(1);
-
-					break;
-				}
-
-				mode = NORMAL_MODE;
-			}
-
-			input_ungrab_keyboard(1);
+			activate(mode);
 		}
 
+
+		input_ungrab_keyboard(0);
 		set_cursor_visibility(1);
 	}
 }
@@ -427,7 +435,7 @@ static void cleanup(int _)
 	exit(1);
 }
 
-int main(int argc, char **argv) 
+int main(int argc, char **argv)
 {
 	char path[PATH_MAX];
 	sprintf(path, "%s/.warprc", getenv("HOME"));
@@ -443,11 +451,6 @@ int main(int argc, char **argv)
 
 	proc_args(argv, argc);
 	check_lock_file();
-
-	if(opt_foreground) 
-		init_dbg();
-	else 
-		daemonize();
 
 	signal(SIGINT, cleanup);
 	signal(SIGTERM, cleanup);

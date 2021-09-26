@@ -60,7 +60,6 @@ struct cfg {
     char* scroll_up_key;
     char* scroll_right_key;
     char* scroll_left_key;
-    char* oneshot_mode;
 };
 
 struct cfg* parse_cfg(const char *fname);

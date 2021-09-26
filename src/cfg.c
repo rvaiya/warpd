@@ -39,7 +39,7 @@ struct cfg* parse_cfg(const char *fname) {
     cfg->grid_activation_key = "A-M-z";
     cfg->normal_activation_key = "A-M-c";
     cfg->movement_increment = 20;
-    cfg->buttons = "m,comma,period,u,i,y,o";
+    cfg->buttons = "m,comma,period,q,e,r,t";
     cfg->exit = "Escape";
     cfg->double_click_timeout = 300;
     cfg->drag_key = "v";
@@ -87,11 +87,10 @@ struct cfg* parse_cfg(const char *fname) {
     cfg->scroll_fling_deceleration = 30;
     cfg->scroll_velocity = 10;
     cfg->scroll_acceleration = 30;
-    cfg->scroll_down_key = "A-j";
-    cfg->scroll_up_key = "A-k";
-    cfg->scroll_right_key = "A-l";
-    cfg->scroll_left_key = "A-h";
-    cfg->oneshot_mode = "false";
+    cfg->scroll_down_key = "M-A-j";
+    cfg->scroll_up_key = "M-A-k";
+    cfg->scroll_right_key = "M-A-l";
+    cfg->scroll_left_key = "M-A-h";
 
     FILE *fp = fopen(fname, "r");
     if(!fp) return cfg; //Return defaults if no config file xists..
@@ -218,8 +217,6 @@ struct cfg* parse_cfg(const char *fname) {
             cfg->scroll_right_key = strdup(val);
         else if(!strcmp(key, "scroll_left_key"))
             cfg->scroll_left_key = strdup(val);
-        else if(!strcmp(key, "oneshot_mode"))
-            cfg->oneshot_mode = strdup(val);
 
         free(line);
         line = NULL;

@@ -35,8 +35,9 @@ struct grid_keys {
 	uint16_t left;
 	uint16_t down;
 
+	uint16_t *exit;
+	size_t exit_sz;
 	uint16_t grid[MAX_ROWS*MAX_COLS];
-	uint16_t exit[MAX_EXIT_KEYS];
 };
 
 uint16_t grid_mode(int startrow, int startcol);

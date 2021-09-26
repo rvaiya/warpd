@@ -110,7 +110,7 @@ have the format:
 
 **movement_increment**: The movement increment used for grid and normal mode. (default: 20).
 
-**buttons**: Keys corresponding to mouse buttons (4/5 == scroll down/scroll up while 6/7 correpond to scroll left/right). (default: m,comma,period,u,i,y,o).
+**buttons**: Keys corresponding to mouse buttons (4/5 == scroll down/scroll up while 6/7 correpond to scroll left/right). (default: m,comma,period,q,e,r,t).
 
 **exit**: The key used to prematurely terminate the current movement session. (default: Escape).
 
@@ -206,15 +206,13 @@ have the format:
 
 **scroll_acceleration**: Scroll acceleration. (default: 30).
 
-**scroll_down_key**: Scroll down key. (default: A-j).
+**scroll_down_key**: Scroll down key. (default: M-A-j).
 
-**scroll_up_key**: Scroll up key. (default: A-k).
+**scroll_up_key**: Scroll up key. (default: M-A-k).
 
-**scroll_right_key**: Scroll right key. (default: A-l).
+**scroll_right_key**: Scroll right key. (default: M-A-l).
 
-**scroll_left_key**: Scroll left key. (default: A-h).
-
-**oneshot_mode**: If set to true immediately close warp after a button has been pressed. (default: false).
+**scroll_left_key**: Scroll left key. (default: M-A-h).
 
 
 
