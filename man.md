@@ -27,16 +27,15 @@ modes for long distance warping called 'hint and grid mode'.
 
 ## Normal Mode (default: `A-M-c`)
 
-This is the default mode (and the endpoint of both grid and normal mode unless
-the *oneshot* option is specified) which is designed for short distance pointer
-manipulation. It is particularly useful for manipulating popup menus and
-selecting text (see *Dragging*). The default behaviour is vi-like. Pressing
-the mapped directional keys (default hjkl) moves the cursor by a fixed
-increment but the pointer can also be warped to the edges of the screen using
-the home (H), middle (M), and last (L) mappings (see *Config Options*).
-Finally a numeric multiplier can be supplied to the directional keys as an
-input prefix in order to affect movement in the corresponding direction (e.g
-10j moves 10 units down). 
+This is the default mode (and the endpoint of both grid and normal mode) which
+is designed for short distance pointer manipulation. It is particularly useful
+for manipulating popup menus and selecting text (see *Dragging*). The default
+behaviour is vi-like. Pressing the mapped directional keys (default hjkl) moves
+the cursor by a fixed increment but the pointer can also be warped to the edges
+of the screen using the home (H), middle (M), and last (L) mappings (see
+*Config Options*).  Finally a numeric multiplier can be supplied to the
+directional keys as an input prefix in order to affect movement in the
+corresponding direction (e.g 10j moves 10 units down). 
 
 ## Hint Mode (default: A-M-x or simply 'x' within normal mode)
 
@@ -107,6 +106,12 @@ have the format:
 **grid_activation_key**: Activates grid mode and allows for further manipulation of the pointer using the mapped keys. (default: A-M-z).
 
 **normal_activation_key**: Activate normal movement mode (manual cursor movement). (default: A-M-c).
+
+**hint_oneshot_activation_key**: Activates oneshot hint mode. (default: A-M-S-x).
+
+**grid_oneshot_activation_key**: Activates oneshot grid mode and allows for further manipulation of the pointer using the mapped keys. (default: A-M-S-z).
+
+**normal_oneshot_activation_key**: Activate oneshot normal movement mode (manual cursor movement). (default: A-M-S-c).
 
 **movement_increment**: The movement increment used for grid and normal mode. (default: 20).
 

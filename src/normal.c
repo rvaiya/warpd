@@ -41,6 +41,7 @@ static int increment;
 static int indicator_sz;
 static int word_increment;
 
+static int double_click_timeout;
 static float scroll_fling_timeout;
 static float scroll_acceleration;
 static float scroll_velocity;
@@ -190,7 +191,7 @@ void normal_cancel_drag()
 	}
 }
 
-uint16_t normal_mode(uint16_t start_key)
+uint16_t normal_mode(uint16_t start_key, int oneshot)
 {
 	int x, y;
 	int opnum = 0;
@@ -270,7 +271,8 @@ uint16_t normal_mode(uint16_t start_key)
 				     scroll_fling_deceleration,
 				     scroll_fling_timeout);
 
-			if(key) return normal_mode(key);
+			if(key) 
+				return normal_mode(key, oneshot);
 		} else if(keyseq == keys->buttons[3] || keyseq == keys->buttons[4]) {
 			uint16_t key;
 				
@@ -285,7 +287,7 @@ uint16_t normal_mode(uint16_t start_key)
 				     scroll_fling_timeout);
 
 			if(key) 
-				return normal_mode(key);
+				return normal_mode(key, oneshot);
 		} else if(keyseq == keys->drag) {
 			if(dragging) {
 				XTestFakeButtonEvent(dpy, 1, False, CurrentTime);
@@ -293,6 +295,23 @@ uint16_t normal_mode(uint16_t start_key)
 			} else {
 				XTestFakeButtonEvent(dpy, 1, True, CurrentTime);
 				dragging = 1;
+			}
+		} else if(keyseq == keys->buttons[0]) {
+			if(oneshot) {
+				int x, y;
+
+				input_click(1);
+				while(input_next_key(double_click_timeout, 0) == keyseq)
+					input_click(1);
+
+				hide();
+
+				input_get_cursor_position(&x, &y);
+				hist_add(x, y);
+
+				return 0;
+			} else {
+				input_click(1);
 			}
 		} else {
 			size_t i;
@@ -324,6 +343,7 @@ void init_normal(Display *_dpy,
 		 struct normal_keys *_keys,
 		 const char *indicator_color,
 		 size_t _indicator_sz,
+		 int _double_click_timeout,
 		 float _scroll_fling_timeout,
 		 float _scroll_velocity,
 		 float _scroll_acceleration,
@@ -337,6 +357,7 @@ void init_normal(Display *_dpy,
 	word_increment = _word_increment;
 	indicator_sz = _indicator_sz;
 
+	double_click_timeout = _double_click_timeout;
 	indicator_sz = _indicator_sz;
 	scroll_fling_timeout = _scroll_fling_timeout;
 	scroll_acceleration = _scroll_acceleration;

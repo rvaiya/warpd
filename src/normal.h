@@ -54,20 +54,21 @@ struct normal_keys {
 	size_t buttons_sz;
 };
 
-uint16_t normal_mode(uint16_t start_key);
+uint16_t normal_mode(uint16_t start_key, int oneshot);
 void normal_cancel_drag();
 
 void init_normal(Display *_dpy,
-		   const int _increment,
-		   const int _word_increment,
-		   struct normal_keys *_keys,
-		   const char *indicator_color,
-		   size_t _indicator_sz,
-		   float _scroll_fling_timeout,
-		   float _scroll_velocity,
-		   float _scroll_acceleration,
-		   float _scroll_fling_velocity,
-		   float _scroll_fling_acceleration,
-		   float _scroll_fling_deceleration);
+		 const int _increment,
+		 const int _word_increment,
+		 struct normal_keys *_keys,
+		 const char *indicator_color,
+		 size_t _indicator_sz,
+		 int _double_click_timeout,
+		 float _scroll_fling_timeout,
+		 float _scroll_velocity,
+		 float _scroll_acceleration,
+		 float _scroll_fling_velocity,
+		 float _scroll_fling_acceleration,
+		 float _scroll_fling_deceleration);
 
 #endif
