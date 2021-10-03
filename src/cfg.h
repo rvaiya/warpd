@@ -33,6 +33,7 @@ struct cfg {
     char* hint_characters;
     int hint_opacity;
     int hint_border_radius;
+    char* normal_oneshot;
     char* normal_left_word;
     char* normal_right_word;
     char* normal_down_word;

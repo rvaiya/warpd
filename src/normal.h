@@ -46,6 +46,8 @@ struct normal_keys {
 	uint16_t hist_back;
 	uint16_t hist_forward;
 
+	uint16_t oneshot;
+
 	uint16_t *exit;
 	size_t exit_sz;
 

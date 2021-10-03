@@ -159,6 +159,8 @@ have the format:
 
 **hint_border_radius**: Border radius. (default: 0).
 
+**normal_oneshot**: Send button 1 and deactivate. (default: n).
+
 **normal_left_word**: Move the cursor left by word size in normal mode. (default: b).
 
 **normal_right_word**: Move the cursor right by word size in normal mode. (default: w).

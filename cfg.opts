@@ -35,6 +35,8 @@ hint_characters           string  "asdfghjkl;'zxcvbm,./"  "The set of hint chara
 hint_opacity              int     100                     "Hint transparency (requires a compositor)."
 hint_border_radius        int     0                       "Border radius."
 
+normal_oneshot            string  "n"                      "Send button 1 and deactivate."
+
 normal_left_word           string  "b"                     "Move the cursor left by word size in normal mode."
 normal_right_word          string  "w"                     "Move the cursor right by word size in normal mode."
 normal_down_word           string  "S-j"                   "Move the cursor down by word size in normal mode."

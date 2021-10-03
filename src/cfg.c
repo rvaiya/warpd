@@ -64,6 +64,7 @@ struct cfg* parse_cfg(const char *fname) {
     cfg->hint_characters = "asdfghjkl;'zxcvbm,./";
     cfg->hint_opacity = 100;
     cfg->hint_border_radius = 0;
+    cfg->normal_oneshot = "n";
     cfg->normal_left_word = "b";
     cfg->normal_right_word = "w";
     cfg->normal_down_word = "S-j";
@@ -166,6 +167,8 @@ struct cfg* parse_cfg(const char *fname) {
             cfg->hint_opacity = atoi(val);
         else if(!strcmp(key, "hint_border_radius"))
             cfg->hint_border_radius = atoi(val);
+        else if(!strcmp(key, "normal_oneshot"))
+            cfg->normal_oneshot = strdup(val);
         else if(!strcmp(key, "normal_left_word"))
             cfg->normal_left_word = strdup(val);
         else if(!strcmp(key, "normal_right_word"))

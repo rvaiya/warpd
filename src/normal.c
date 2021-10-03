@@ -296,13 +296,15 @@ uint16_t normal_mode(uint16_t start_key, int oneshot)
 				XTestFakeButtonEvent(dpy, 1, True, CurrentTime);
 				dragging = 1;
 			}
-		} else if(keyseq == keys->buttons[0]) {
-			if(oneshot) {
+		} else if(keyseq == keys->buttons[0] || keyseq == keys->oneshot) {
+			if(oneshot || keyseq == keys->oneshot) {
 				int x, y;
 
-				input_click(1);
-				while(input_next_key(double_click_timeout, 0) == keyseq)
+				while(keyseq == keys->buttons[0] || keyseq == keys->oneshot) {
 					input_click(1);
+					keyseq = input_next_key(double_click_timeout, 0);
+				}
+
 
 				hide();
 

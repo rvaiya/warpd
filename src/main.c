@@ -209,6 +209,7 @@ static void grid_init()
 
 	exit[n++] = parse_keyseq(cfg->exit);
 	exit[n++] = parse_keyseq(cfg->drag_key);
+	exit[n++] = parse_keyseq(cfg->normal_oneshot);
 
 	keys = (struct grid_keys) {
 		up: parse_keyseq(cfg->grid_up),
@@ -251,6 +252,7 @@ static void normal_init()
 {
 	static struct normal_keys keys;
 	static uint16_t exit[3];
+	uint16_t oneshot = parse_keyseq(cfg->normal_oneshot);
 
 	exit[0] = parse_keyseq(cfg->exit);
 	exit[1] = parse_keyseq(cfg->normal_grid_key);
@@ -275,6 +277,8 @@ static void normal_init()
 
 		hist_back: parse_keyseq(cfg->normal_hist_back),
 		hist_forward: parse_keyseq(cfg->normal_hist_forward),
+
+		oneshot: oneshot,
 
 		buttons: buttons,
 		buttons_sz: buttons_sz,
