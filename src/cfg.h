@@ -7,9 +7,6 @@ struct cfg {
     char* hint_activation_key;
     char* grid_activation_key;
     char* normal_activation_key;
-    char* hint_oneshot_activation_key;
-    char* grid_oneshot_activation_key;
-    char* normal_oneshot_activation_key;
     int movement_increment;
     char* buttons;
     char* exit;

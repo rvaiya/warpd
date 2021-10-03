@@ -107,12 +107,6 @@ have the format:
 
 **normal_activation_key**: Activate normal movement mode (manual cursor movement). (default: A-M-c).
 
-**hint_oneshot_activation_key**: Activates oneshot hint mode. (default: A-M-S-x).
-
-**grid_oneshot_activation_key**: Activates oneshot grid mode and allows for further manipulation of the pointer using the mapped keys. (default: A-M-S-z).
-
-**normal_oneshot_activation_key**: Activate oneshot normal movement mode (manual cursor movement). (default: A-M-S-c).
-
 **movement_increment**: The movement increment used for grid and normal mode. (default: 20).
 
 **buttons**: Keys corresponding to mouse buttons (4/5 == scroll down/scroll up while 6/7 correpond to scroll left/right). (default: m,comma,period,q,e,r,t).

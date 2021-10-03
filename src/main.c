@@ -303,7 +303,7 @@ static void normal_init()
 		    cfg->scroll_fling_deceleration);
 }
 
-void activate(int mode, int oneshot)
+void activate(int mode)
 {
 	static uint16_t hint_key = 0;
 	static uint16_t grid_key = 0;
@@ -328,7 +328,7 @@ void activate(int mode, int oneshot)
 			mode = NORMAL_MODE;
 			break;
 		case NORMAL_MODE:
-			key = normal_mode(start_key, oneshot);
+			key = normal_mode(start_key);
 			start_key = 0;
 
 			if(key == hint_key) {
@@ -350,10 +350,6 @@ void main_loop()
 	uint16_t hint_key = parse_keyseq(cfg->hint_activation_key);
 	uint16_t grid_key = parse_keyseq(cfg->grid_activation_key);
 
-	uint16_t normal_key_oneshot = parse_keyseq(cfg->normal_oneshot_activation_key);
-	uint16_t hint_key_oneshot = parse_keyseq(cfg->hint_oneshot_activation_key);
-	uint16_t grid_key_oneshot = parse_keyseq(cfg->grid_oneshot_activation_key);
-
 	uint16_t scroll_up_key = parse_keyseq(cfg->scroll_up_key);
 	uint16_t scroll_down_key = parse_keyseq(cfg->scroll_down_key);
 	uint16_t scroll_left_key = parse_keyseq(cfg->scroll_left_key);
@@ -362,10 +358,6 @@ void main_loop()
 	input_grab_key(normal_key);
 	input_grab_key(hint_key);
 	input_grab_key(grid_key);
-
-	input_grab_key(normal_key_oneshot);
-	input_grab_key(hint_key_oneshot);
-	input_grab_key(grid_key_oneshot);
 
 	input_grab_key(scroll_up_key);
 	input_grab_key(scroll_down_key);
@@ -390,10 +382,6 @@ void main_loop()
 			grid_key,
 			hint_key,
 			normal_key,
-
-			grid_key_oneshot,
-			hint_key_oneshot,
-			normal_key_oneshot,
 
 			scroll_up_key,
 			scroll_down_key,
@@ -432,7 +420,6 @@ void main_loop()
 			}
 		} else {
 			int mode;
-			int oneshot = 0;
 
 			if(key == hint_key)
 				mode = HINT_MODE;
@@ -440,19 +427,8 @@ void main_loop()
 				mode = GRID_MODE;
 			else if(key == normal_key)
 				mode = NORMAL_MODE;
-			else if(key == hint_key_oneshot) {
-				mode = HINT_MODE;
-				oneshot = 1;
-			} else if(key == grid_key_oneshot) {
-				mode = GRID_MODE;
-				oneshot = 1;
-			} else if(key == normal_key_oneshot) {
-				mode = NORMAL_MODE;
-				oneshot = 1;
-			}
 
-
-			activate(mode, oneshot);
+			activate(mode);
 		}
 
 

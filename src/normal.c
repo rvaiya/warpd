@@ -191,7 +191,7 @@ void normal_cancel_drag()
 	}
 }
 
-uint16_t normal_mode(uint16_t start_key, int oneshot)
+uint16_t normal_mode(uint16_t start_key)
 {
 	int x, y;
 	int opnum = 0;
@@ -272,7 +272,7 @@ uint16_t normal_mode(uint16_t start_key, int oneshot)
 				     scroll_fling_timeout);
 
 			if(key) 
-				return normal_mode(key, oneshot);
+				return normal_mode(key);
 		} else if(keyseq == keys->buttons[3] || keyseq == keys->buttons[4]) {
 			uint16_t key;
 				
@@ -287,7 +287,7 @@ uint16_t normal_mode(uint16_t start_key, int oneshot)
 				     scroll_fling_timeout);
 
 			if(key) 
-				return normal_mode(key, oneshot);
+				return normal_mode(key);
 		} else if(keyseq == keys->drag) {
 			if(dragging) {
 				XTestFakeButtonEvent(dpy, 1, False, CurrentTime);
@@ -296,25 +296,20 @@ uint16_t normal_mode(uint16_t start_key, int oneshot)
 				XTestFakeButtonEvent(dpy, 1, True, CurrentTime);
 				dragging = 1;
 			}
-		} else if(keyseq == keys->buttons[0] || keyseq == keys->oneshot) {
-			if(oneshot || keyseq == keys->oneshot) {
-				int x, y;
+		} else if(keyseq == keys->oneshot) {
+			int x, y;
 
-				while(keyseq == keys->buttons[0] || keyseq == keys->oneshot) {
-					input_click(1);
-					keyseq = input_next_key(double_click_timeout, 0);
-				}
-
-
-				hide();
-
-				input_get_cursor_position(&x, &y);
-				hist_add(x, y);
-
-				return 0;
-			} else {
+			while(keyseq == keys->oneshot) {
 				input_click(1);
+				keyseq = input_next_key(double_click_timeout, 0);
 			}
+
+			hide();
+
+			input_get_cursor_position(&x, &y);
+			hist_add(x, y);
+
+			return 0;
 		} else {
 			size_t i;
 

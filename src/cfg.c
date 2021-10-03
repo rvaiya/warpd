@@ -38,9 +38,6 @@ struct cfg* parse_cfg(const char *fname) {
     cfg->hint_activation_key = "A-M-x";
     cfg->grid_activation_key = "A-M-z";
     cfg->normal_activation_key = "A-M-c";
-    cfg->hint_oneshot_activation_key = "A-M-S-x";
-    cfg->grid_oneshot_activation_key = "A-M-S-z";
-    cfg->normal_oneshot_activation_key = "A-M-S-c";
     cfg->movement_increment = 20;
     cfg->buttons = "m,comma,period,q,e,r,t";
     cfg->exit = "Escape";
@@ -115,12 +112,6 @@ struct cfg* parse_cfg(const char *fname) {
             cfg->grid_activation_key = strdup(val);
         else if(!strcmp(key, "normal_activation_key"))
             cfg->normal_activation_key = strdup(val);
-        else if(!strcmp(key, "hint_oneshot_activation_key"))
-            cfg->hint_oneshot_activation_key = strdup(val);
-        else if(!strcmp(key, "grid_oneshot_activation_key"))
-            cfg->grid_oneshot_activation_key = strdup(val);
-        else if(!strcmp(key, "normal_oneshot_activation_key"))
-            cfg->normal_oneshot_activation_key = strdup(val);
         else if(!strcmp(key, "movement_increment"))
             cfg->movement_increment = atoi(val);
         else if(!strcmp(key, "buttons"))

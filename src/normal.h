@@ -56,7 +56,7 @@ struct normal_keys {
 	size_t buttons_sz;
 };
 
-uint16_t normal_mode(uint16_t start_key, int oneshot);
+uint16_t normal_mode(uint16_t start_key);
 void normal_cancel_drag();
 
 void init_normal(Display *_dpy,
