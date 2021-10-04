@@ -153,7 +153,7 @@ have the format:
 
 **hint_border_radius**: Border radius. (default: 0).
 
-**normal_oneshot**: Send button 1 and deactivate. (default: n).
+**oneshot_buttons**: Oneshot mouse buttons. (default: n,minus,slash).
 
 **normal_left_word**: Move the cursor left by word size in normal mode. (default: b).
 

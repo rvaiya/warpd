@@ -53,6 +53,9 @@ static int opt_foreground = 0;
 static uint16_t buttons[MAX_BTNS];
 static size_t buttons_sz = 0;
 
+static uint16_t oneshot_buttons[MAX_BTNS];
+static size_t oneshot_buttons_sz;
+
 static const char usage[] =
 "warpd [-l] [-h] [-v] \n\n"
 "See the manpage for more details and usage examples.\n";
@@ -209,7 +212,10 @@ static void grid_init()
 
 	exit[n++] = parse_keyseq(cfg->exit);
 	exit[n++] = parse_keyseq(cfg->drag_key);
-	exit[n++] = parse_keyseq(cfg->normal_oneshot);
+
+	for(i = 0;i < oneshot_buttons_sz;i++) {
+		exit[n++] = oneshot_buttons[i];
+	}
 
 	keys = (struct grid_keys) {
 		up: parse_keyseq(cfg->grid_up),
@@ -252,7 +258,6 @@ static void normal_init()
 {
 	static struct normal_keys keys;
 	static uint16_t exit[3];
-	uint16_t oneshot = parse_keyseq(cfg->normal_oneshot);
 
 	exit[0] = parse_keyseq(cfg->exit);
 	exit[1] = parse_keyseq(cfg->normal_grid_key);
@@ -278,7 +283,7 @@ static void normal_init()
 		hist_back: parse_keyseq(cfg->normal_hist_back),
 		hist_forward: parse_keyseq(cfg->normal_hist_forward),
 
-		oneshot: oneshot,
+		oneshot_buttons: oneshot_buttons,
 
 		buttons: buttons,
 		buttons_sz: buttons_sz,
@@ -365,9 +370,12 @@ void main_loop()
 	input_grab_key(scroll_right_key);
 
 	buttons_sz = parse_keylist(cfg->buttons,
-		      buttons,
-		      sizeof buttons / sizeof buttons[0]);
+				   buttons,
+				   sizeof buttons / sizeof buttons[0]);
 
+	oneshot_buttons_sz = parse_keylist(cfg->oneshot_buttons,
+					   oneshot_buttons,
+					   sizeof(oneshot_buttons)/sizeof(oneshot_buttons[0]));
 	hint_init();
 	grid_init();
 	normal_init();

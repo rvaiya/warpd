@@ -3,7 +3,10 @@ grid_activation_key               string  "A-M-z"                   "Activates g
 normal_activation_key             string  "A-M-c"                   "Activate normal movement mode (manual cursor movement)."
 
 movement_increment        int     20                      "The movement increment used for grid and normal mode."
+
 buttons                   string  "m,comma,period,q,e,r,t" "Keys corresponding to mouse buttons (4/5 == scroll down/scroll up while 6/7 correpond to scroll left/right)."
+oneshot_buttons           string  "n,minus,slash"          "Oneshot mouse buttons (deactivate on click)."
+
 exit                      string  "Escape"                "The key used to prematurely terminate the current movement session."
 double_click_timeout      int     300                     "The length of time (in ms) before warp automatically deactivates after the last click. 0 disables automatic deactivation entirely. This option only applies to button 1 (left click)."
 drag_key                  string  "v"                     "Drag mode activation key."
@@ -30,8 +33,6 @@ hint_fgcolor              string  "#000000"               "The foreground hint c
 hint_characters           string  "asdfghjkl;'zxcvbm,./"  "The set of hint characters used by hint mode."
 hint_opacity              int     100                     "Hint transparency (requires a compositor)."
 hint_border_radius        int     0                       "Border radius."
-
-normal_oneshot            string  "n"                      "Send button 1 and deactivate."
 
 normal_left_word           string  "b"                     "Move the cursor left by word size in normal mode."
 normal_right_word          string  "w"                     "Move the cursor right by word size in normal mode."

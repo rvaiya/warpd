@@ -296,28 +296,36 @@ uint16_t normal_mode(uint16_t start_key)
 				XTestFakeButtonEvent(dpy, 1, True, CurrentTime);
 				dragging = 1;
 			}
-		} else if(keyseq == keys->oneshot) {
-			int x, y;
-
-			while(keyseq == keys->oneshot) {
-				input_click(1);
-				keyseq = input_next_key(double_click_timeout, 0);
-			}
-
-			hide();
-
-			input_get_cursor_position(&x, &y);
-			hist_add(x, y);
-
-			return 0;
 		} else {
 			size_t i;
 
-			for(i = 0;i < 3;i++)
+			for(i = 0;i < 3;i++) {
+				if(keyseq == keys->oneshot_buttons[i]) {
+					int x, y;
+
+					if(keyseq == keys->oneshot_buttons[0]) {
+						while(keyseq == keys->oneshot_buttons[0]) {
+							input_click(1);
+							keyseq = input_next_key(double_click_timeout, 0);
+						}
+					} else {
+						input_click(i+1);
+					}
+
+					hide();
+
+					input_get_cursor_position(&x, &y);
+					hist_add(x, y);
+
+					return 0;
+
+				}
+
 				if(keyseq == keys->buttons[i]) {
 					normal_cancel_drag();
 					input_click(i+1);
 				}
+			}
 
 			for(i = 0;i < keys->exit_sz;i++)
 				if(keyseq == keys->exit[i]) {

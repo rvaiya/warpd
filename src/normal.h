@@ -46,14 +46,15 @@ struct normal_keys {
 	uint16_t hist_back;
 	uint16_t hist_forward;
 
-	uint16_t oneshot;
-
 	uint16_t *exit;
 	size_t exit_sz;
 
 	uint16_t drag;
 	uint16_t *buttons;
 	size_t buttons_sz;
+
+	uint16_t *oneshot_buttons;
+	size_t oneshot_buttons_sz;
 };
 
 uint16_t normal_mode(uint16_t start_key);
