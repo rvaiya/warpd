@@ -1,5 +1,6 @@
+VERSION=0.0.1
 CC=gcc
-CFLAGS=-lXfixes -lXext -lXi -lXtst -lX11 -lXft -I/usr/include/freetype2 -DCOMMIT=\"$(shell git describe --no-match --always --abbrev=40 --dirty)\" -o bin/warpd -Wall -Wextra -Wno-unused-function -Wno-unused-parameter -Wno-deprecated-declarations
+CFLAGS=-lXfixes -lXext -lXi -lXtst -lX11 -lXft -I/usr/include/freetype2 -DVERSION=\"$(VERSION)\" -DCOMMIT=\"$(shell git describe --no-match --always --abbrev=40 --dirty)\" -o bin/warpd -Wall -Wextra -Wno-unused-function -Wno-unused-parameter -Wno-deprecated-declarations
  
 SRC=src/cfg.c src/history.c src/input.c src/hint_drw.c src/normal.c src/grid.c src/hints.c src/dbg.c src/scroll.c src/main.c 
 

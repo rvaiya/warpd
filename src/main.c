@@ -141,7 +141,7 @@ static void proc_args(char **argv, int argc)
 			opt_foreground++;
 			break;
 		case 'v':
-			fprintf(stderr, "Compiled from git commit: "COMMIT"\n");
+			fprintf(stderr, "version: "VERSION" ("COMMIT")\n");
 			exit(0);
 			break;
 		default:
