@@ -440,7 +440,7 @@ void main_loop()
 		}
 
 
-		input_ungrab_keyboard(0);
+		input_ungrab_keyboard(1);
 		set_cursor_visibility(1);
 	}
 }
