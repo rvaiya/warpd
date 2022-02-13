@@ -20,58 +20,11 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef _H_DISCRETE_
-#define _H_DISCRETE_
+#include <Cocoa/Cocoa.h>
 
-#include <stdint.h>
-#include "common.h"
-
-struct normal_keys {
-	uint16_t up;
-	uint16_t down;
-	uint16_t left;
-	uint16_t right;
-
-	uint16_t right_word;
-	uint16_t left_word;
-	uint16_t down_word;
-	uint16_t up_word;
-
-	uint16_t home;
-	uint16_t middle;
-	uint16_t last;
-	uint16_t beginning;
-	uint16_t end;
-
-	uint16_t hist_back;
-	uint16_t hist_forward;
-
-	uint16_t *exit;
-	size_t exit_sz;
-
-	uint16_t drag;
-	uint16_t *buttons;
-	size_t buttons_sz;
-
-	uint16_t *oneshot_buttons;
-	size_t oneshot_buttons_sz;
-};
-
-uint16_t normal_mode(uint16_t start_key);
-void normal_cancel_drag();
-
-void init_normal(Display *_dpy,
-		 const int _increment,
-		 const int _word_increment,
-		 struct normal_keys *_keys,
-		 const char *indicator_color,
-		 size_t _indicator_sz,
-		 int _double_click_timeout,
-		 float _scroll_fling_timeout,
-		 float _scroll_velocity,
-		 float _scroll_acceleration,
-		 float _scroll_fling_velocity,
-		 float _scroll_fling_acceleration,
-		 float _scroll_fling_deceleration);
-
-#endif
+void screen_get_dimensions(int *w, int *h)
+{
+	NSRect frame = [[NSScreen mainScreen] frame];
+	*w = frame.size.width;
+	*h = frame.size.height;
+}

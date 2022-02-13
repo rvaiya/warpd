@@ -1,114 +1,117 @@
-#include <X11/extensions/Xinerama.h>
-#include <X11/extensions/XTest.h>
-#include <X11/Xlib.h>
-#include <stdint.h>
-#include "scroll.h"
-#include "input.h"
+/* Copyright © 2019 Raheman Vaiya.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice (including the next
+ * paragraph) shall be included in all copies or substantial portions of the
+ * Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
 
-static int _scroll(Display *dpy,
-		   const int btn,
-		   float *v,
-		   float a,
-		   uint16_t *key,
-		   int timeout)
+#include "warpd.h"
+
+#ifdef __APPLE__
+const int factor = 1;
+#else
+const int factor = 50;
+#endif
+
+int fling_velocity = 2000/factor;
+
+static long last_tick = 0;
+
+/* terminal velocity */
+const float vt = 9000/factor;
+const float v0 = 300/factor;
+
+const float da0 = -3400/factor; /* deceleration */
+
+const float a0 = 1600/factor;
+
+/* in scroll units per second. */
+static float v = 0;
+static float a = 0;
+static float d = 0; /* total distance */
+
+static int direction = 0;
+
+static long traveled = 0; /* scroll units emitted. */
+
+
+static long get_time_ms()
 {
-	//Non zero to provide the illusion of continuous scrolling
-	const float stop_threshold = 8; 
-	const float vf = 1000;
+	struct timespec ts;
+	clock_gettime(CLOCK_MONOTONIC, &ts);
+	return ts.tv_nsec/1E6 + ts.tv_sec*1E3;
+}
 
-	int total_time = 0; //in ms
-	float t = 0; //in ms
-	int d = 0;
-	float v0 = (*v <= stop_threshold) ? (stop_threshold + 1) : *v;
+void scroll_tick()
+{
+	int i;
+	/* Non zero to provide the illusion of continuous scrolling */
 
-	while(1) {
-		const int nd = (int)(v0*(t/1000) + .5 * a * (t/1000) * (t/1000));
-		*v = (v0+(a * (t/1000)));
+	const float t = (float)(get_time_ms()-last_tick); //time elapsed since last tick in ms
+	last_tick = get_time_ms();
 
-		if(a && *v >= vf) {
-			t = 0;
-			a = 0;
-			d = 0;
-			v0 = vf;
-			continue;
-		}
+	/* distance traveled since the last tick */
+	d += v*(t/1000) + .5 * a * (t/1000) * (t/1000);
+	v += a * (t/1000);
 
-		int type = input_next_ev(1, key);
-		if(type != EV_TIMEOUT && type != EV_KEYREPEAT)
-			return type;
+	if (v < 0) {
+		v = 0;
+		d = 0;
+		traveled = 0;
+	}
 
-		if(*v <= stop_threshold) return -1;
+	if (v >= vt) {
+		v = vt;
+		a = 0;
+	}
 
-		for (int i = 0; i < (nd-d); i++) {
-			XTestFakeButtonEvent(dpy, btn, True, CurrentTime);
-			XTestFakeButtonEvent(dpy, btn, False, CurrentTime);
-			XFlush(dpy);
-		}
+	for (i = 0; i < (long)d-traveled; i++)
+		scroll(direction);
 
-		d = nd;
-		t++;
-		total_time++;
+	traveled = (long) d;
+}
 
-		if(timeout && total_time >= timeout)
-			return EV_TIMEOUT;
+void scroll_stop()
+{
+	v = 0;
+	a = 0;
+	traveled = 0;
+	d = 0;
+}
+
+void scroll_decelerate()
+{
+	a = da0;
+}
+
+void scroll_accelerate(int _direction)
+{
+	direction = _direction;
+	a = a0;
+
+	if (v == 0) {
+		d = 0;
+		traveled = 0;
+		v = v0;
 	}
 }
 
-uint16_t scroll(Display *dpy,
-		uint16_t start_key,
-		int btn,
-		float velocity,
-		float acceleration,
-		float fling_velocity,
-		float fling_acceleration,
-		float fling_deceleration,
-		float fling_timeout)
+void scroll_impart_impulse()
 {
-	uint16_t key;
-
-	float v = velocity;
-	float a = acceleration;
-
-	int exit = 0;
-	int flung = 0;
-
-	while(!exit) {
-		int ev = _scroll(dpy, btn, &v, a, &key, 0);
-
-		switch(ev) {
-		case EV_KEYPRESS:
-			if(key != start_key)
-				return key;
-
-			else if(flung && key == start_key)
-				v += fling_velocity;
-			break;
-		case EV_KEYRELEASE:
-			if((key & 0xFF) == (start_key & 0xFF)) {
-				if(flung) {
-					a = -fling_deceleration;
-				} else {
-					int ev;
-					switch(ev = input_next_ev(fling_timeout, &key)) {
-					case EV_KEYPRESS:
-						if(key == start_key) {
-							v += fling_velocity;
-							a = fling_acceleration;
-							flung = 1;
-						} else
-							return key;
-						break;
-					default:
-						exit = 1;
-					}
-				}
-			}
-			break;
-		case -1: //Stopped
-			exit = 1;
-			break;
-		}
-	}
-
-	return 0;
+	v += fling_velocity;
 }

@@ -20,32 +20,38 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef __H_INPUT_
-#define __H_INPUT_
+#ifndef IMPL_H
+#define IMPL_H
 
-#define TIMEOUT_KEYSEQ (1<<7)
+#include "../../platform.h"
+#include <X11/Xlib.h>
 
-#define EV_XEV 1
-#define EV_DEVICE_CHANGE 2
-#define EV_KEYPRESS 3
-#define EV_KEYRELEASE 4
-#define EV_KEYREPEAT 5
-#define EV_MOD 6
-#define EV_TIMEOUT 7
+extern Display *dpy;
 
-void init_input(Display *_dpy);
+struct pixmap {
+	GC gc;
+	Pixmap pixmap;
+	int w;
+	int h;
+};
 
-uint16_t input_wait_for_key(uint16_t *keys, size_t n);
+Window	create_window(const char *color, int x, int y, int w, int h);
 
-const char* input_keyseq_to_string(uint16_t seq);
-uint16_t input_parse_keyseq(const char* key);
+void	window_commit();
+void	window_show(Window win);
+void	window_hide(Window win);
+void	window_move(Window win, int x, int y);
+void	window_resize(Window win, int w, int h);
 
-void input_click(int btn);
-void input_grab_keyboard();
-void input_ungrab_keyboard(int wait_for_keyboard);
+void	mouse_move_abs(int x, int y);
+void	mouse_hide();
+void	mouse_unhide();
+void	mouse_get_current_position(int *x, int *y);
 
-uint16_t input_next_key(int timeout, int include_repeats);
-int input_next_ev(int timeout, uint16_t *keyseq);
-void input_get_cursor_position(int *x, int *y);
-void input_grab_key(uint16_t key);
+void	init_mouse();
+
+int	hex_to_rgba(const char *str, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a);
+
+struct pixmap	*create_pixmap(const char *color, int w, int h);
+void 		 pixmap_copy(struct pixmap *pixmap, Window win);
 #endif

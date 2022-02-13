@@ -1,18 +1,57 @@
-VERSION=0.0.1
-CC=gcc
-CFLAGS=-lXfixes -lXext -lXi -lXtst -lX11 -lXft -I/usr/include/freetype2 -DVERSION=\"$(VERSION)\" -DCOMMIT=\"$(shell git describe --no-match --always --abbrev=40 --dirty)\" -o bin/warpd -Wall -Wextra -Wno-unused-function -Wno-unused-parameter -Wno-deprecated-declarations
- 
-SRC=src/cfg.c src/history.c src/input.c src/hint_drw.c src/normal.c src/grid.c src/hints.c src/dbg.c src/scroll.c src/main.c 
+COMMIT=$(shell git rev-parse --short HEAD)
+VERSION=1.0.0-beta
+DESTDIR=
+PREFIX=/usr/
+
+FILES=src/cfg.c\
+      src/normal.c\
+      src/history.c\
+      src/warpd.c\
+      src/input.c\
+      src/hint.c\
+      src/grid.c\
+      src/mouse.c\
+      src/scroll.c\
+      -Wall\
+      -Wextra
+
+CFLAGS=-g\
+       -Wall\
+       -Wextra\
+       -pedantic\
+       -Wno-unused-function\
+       -Wno-unused-parameter\
+       -Wno-deprecated-declarations\
+       -DVERSION=\"$(VERSION)\"\
+       -DCOMMIT=\"$(COMMIT)\"
+
+ifeq ($(shell uname), Darwin)
+	CFLAGS+=-framework cocoa -g -Wno-unused 
+	FILES+=src/platform/macos/*.m
+	PREFIX=/usr/local/
+else
+	CFLAGS+=-lXfixes\
+		-lXext\
+		-lXi\
+		-lXtst\
+		-lX11\
+		-lXft\
+		-I/usr/include/freetype2
+
+	FILES+=src/platform/X/*.c
+endif
 
 all:
 	-mkdir bin
-	$(CC) $(SRC) $(CFLAGS) 
-debug:
-	-mkdir bin
-	$(CC) -g -DDEBUG $(SRC) $(CFLAGS) 
+	$(CC) $(FILES) $(CFLAGS) -o bin/warpd
 assets:
-	python3 gen_assets.py
-	pandoc -s -t man -o - man.md|gzip > warpd.1.gz
+	./gen_assets.py 
+
 install:
-	install -m755 bin/warpd /usr/bin
-	install -m644 warpd.1.gz /usr/share/man/man1/
+	install -m644 warpd.1.gz $(DESTDIR)/$(PREFIX)/share/man/man1/
+	install -m755 bin/warpd $(DESTDIR)/$(PREFIX)/bin/
+uninstall:
+	rm $(DESTDIR)/$(PREFIX)/share/man/man1/warpd.1.gz\
+		$(DESTDIR)/$(PREFIX)/bin/warpd
+
+.PHONY: all assets install uninstall

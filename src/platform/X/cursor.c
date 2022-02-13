@@ -20,12 +20,27 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef _DBG_H_
-#define _DBG_H_
+#include <stdio.h>
+#include <X11/Xlib.h>
+#include <X11/extensions/XTest.h>
 
-#include <stdarg.h>
-void init_dbg();
-void _dbg(const char *func, const char *fmt, ...);
-#define dbg(...) _dbg(__FUNCTION__, __VA_ARGS__)
+#include "impl.h"
 
-#endif
+static Window win;
+
+void cursor_show(int x, int y)
+{
+	window_show(win);
+	window_move(win, x+1, y+1);
+	window_commit();
+}
+
+void cursor_hide()
+{
+	window_hide(win);
+}
+
+void init_cursor(const char *color, size_t sz)
+{
+	win = create_window(color, 0, 0, sz, sz);
+}

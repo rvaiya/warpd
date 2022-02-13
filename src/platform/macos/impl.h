@@ -20,28 +20,30 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef _HINT_DRW_H_
-#define _HINT_DRW_H_
+#ifndef EVLOOP_H
+#define EVLOOP_H
 
-#define MAX_HINTS 2048
+#include "../../platform.h"
+#include <stdint.h>
+#include <Cocoa/Cocoa.h>
 
-struct hint
-{
-	int x;
-	int y;
-	int w;
-	int h;
-	int border_radius;
-	char label[10];
-};
+struct window;
 
-void init_hint_drw(Display *_dpy,
-		   struct hint *_hints,
-		   size_t n,
-		   int border_radius,
-		   int opacity,
-		   const char *bgcol,
-		   const char *fgcol);
+extern int hide_cursor;
 
-void hint_drw_filter(size_t *indices, size_t n);
+void init_input();
+
+void	window_show(struct window *win);
+void	window_hide(struct window *win);
+void	window_redraw(struct window *win);
+void	window_move(struct window *win, int x, int y);
+
+struct window	*create_overlay_window(void (*draw_fn)(NSView *view));
+struct window	*create_window(const char *color, size_t sz);
+
+void	init_mouse();
+
+void	send_key(uint8_t code, int pressed);
+
+NSColor *parse_color(const char *str);
 #endif

@@ -20,85 +20,76 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#include <stdlib.h>
+#include <Cocoa/Cocoa.h>
+#include "impl.h"
 
-#define BUF_SZ 16
+static int nr;
+static int nc;
+static int gsz;
+static NSColor *borderColor = NULL;
+static int gx, gy, gw, gh;
+static struct window *win;
 
-static struct {
-	size_t head;
-	size_t tail;
-	int full;
-
-	size_t cur;
-
-	struct {
-		int x;
-		int y;
-	} buf[BUF_SZ];
-} hist = {0};
-
-static void add(int x, int y)
+static void draw_box(int x, int y, int w, int h)
 {
-	if (hist.full)
-		hist.tail = (hist.tail+1) % BUF_SZ;
+	int sw, sh;
+	NSScreen *scr;
 
-	hist.buf[hist.head].x = x;
-	hist.buf[hist.head].y = y;
+	[borderColor setFill];
 
-	hist.cur = hist.head;
-	hist.head = (hist.head+1) % BUF_SZ;
-	hist.full = hist.head == hist.tail;
+	scr = [NSScreen mainScreen];
+	sw = [scr frame].size.width;
+	sh = [scr frame].size.height;
+
+	CGContextFillRect([NSGraphicsContext currentContext].CGContext, CGRectMake(x, sh-y-h, w, h));
 }
 
-static void truncate()
+static void redraw(NSView *view)
 {
-	if (!hist.full && hist.tail == hist.head) 
-		return;
+	int i;
+	int y, x;
+	int rowgap, colgap;
 
-	hist.head = (hist.cur+1) % BUF_SZ;
-	hist.full = hist.tail == hist.head;
+	y = gy;
+
+	rowgap = (gh-gsz+1)/nr;
+	colgap = (gw-gsz+1)/nc;
+
+	for (i = 0; i < nr+1; i++) {
+		draw_box(gx,y,gw,gsz);
+		y += rowgap;
+	}
+
+	x = gx;
+	for (i = 0; i < nc+1; i++) {
+		draw_box(x,gy,gsz,gh);
+		x += colgap;
+	}
 }
 
-int hist_get(int *x, int *y)
+
+void init_grid(const char *_color, size_t _thickness, size_t _nc, size_t _nr)
 {
-	if (!hist.full && hist.tail == hist.head) 
-		return -1;
-
-	*x = hist.buf[hist.cur].x;
-	*y = hist.buf[hist.cur].y;
-
-	return 0;
+	nc = _nc;
+	nr = _nr;
+	borderColor = parse_color(_color);
+	gsz = _thickness;
+	win = create_overlay_window(redraw);
 }
 
-void hist_add(int x, int y)
+void grid_hide()
 {
-	int cx, cy;
-
-	if (!hist_get(&cx, &cy) && cx == x && cy == y) 
-		return; //dedup
-
-	truncate();
-	add(x, y);
+	cursor_hide();
+	window_hide(win);
 }
 
-void hist_prev()
+void grid_draw(int x, int y, int w, int h)
 {
-	if (!hist.full && hist.tail == hist.head)
-		return;
+	gx = x;
+	gy = y;
+	gw = w;
+	gh = h;
 
-	if (hist.cur == hist.tail) 
-		return;
-
-	hist.cur = hist.cur == 0 ? BUF_SZ-1 : hist.cur-1;
-}
-
-void hist_next()
-{
-	if (!hist.full && hist.tail == hist.head) 
-		return;
-
-	size_t n = (hist.cur + 1) % BUF_SZ;
-
-	if (n != hist.head)
-		hist.cur = n;
+	window_redraw(win);
+	window_show(win);
 }

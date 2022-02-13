@@ -20,20 +20,27 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef __H_HINTS_
-#define __H_HINTS_
+#include <stdio.h>
+#include <stddef.h>
 
-#include <stdint.h>
-#include "common.h"
-	
-void init_hint(Display *_dpy,
-	       char *hint_characters,
-	       const char *bgcol,
-	       const char *fgcol,
-	       int width,
-	       int height,
-	       int border_radius,
-	       int opacity);
+#include "impl.h"
 
-uint16_t hint_mode();
-#endif
+static struct window *win;
+
+void cursor_show(int x, int y)
+{
+	window_move(win, x, y);
+	window_show(win);
+}
+
+void cursor_hide()
+{
+	window_hide(win);
+}
+
+
+void init_cursor(const char *color, size_t sz)
+{
+	win = create_window(color, sz);
+	window_hide(win);
+}

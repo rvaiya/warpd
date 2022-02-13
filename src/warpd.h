@@ -20,34 +20,53 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef _H_GRID_
-#define _H_GRID_
+#ifndef WARPD
+#define WARPD
 
-#define MAX_COLS 100
-#define MAX_ROWS 100
+#include "cfg.h"
+#include "platform.h"
+#include <time.h>
 
-#include <stdint.h>
-#include "common.h"
+extern struct cfg *cfg;
 
-struct grid_keys {
-	uint16_t up;
-	uint16_t right;
-	uint16_t left;
-	uint16_t down;
+enum {
+	MODE_RESERVED,
 
-	uint16_t *exit;
-	size_t exit_sz;
-	uint16_t grid[MAX_ROWS*MAX_COLS];
+	MODE_HINT,
+	MODE_GRID,
+	MODE_NORMAL,
 };
 
-uint16_t grid_mode(int startrow, int startcol);
-void init_grid(Display *_dpy,
-	       int _nr,
-	       int _nc,
-	       int _line_width,
-	       int _cursor_width,
-	       int _movement_increment,
-	       const char *gridcol,
-	       const char *mousecol,
-	       struct grid_keys *_keys);
+void			 screen_get_dimensions(int *x, int *y);
+
+struct input_event	*normal_mode(struct input_event *start_ev);
+struct input_event	*grid_mode();
+int			 hint_mode();
+
+void	init_hint_mode();
+void	init_normal_mode();
+void	init_grid_mode();
+
+const char	*input_event_tostr(struct input_event *ev);
+int		 input_event_eq(struct input_event *ev, const char *str);
+int		 input_parse_string(struct input_event *ev, const char *s);
+
+void	toggle_drag();
+
+int	mouse_process_key(struct input_event *ev, 
+			const char *up_key, const char *down_key,
+			const char *left_key, const char *right_key);
+
+void	mouse_reset();
+
+void	scroll_tick();
+void	scroll_stop();
+void	scroll_accelerate(int direction);
+void	scroll_decelerate();
+
+int	hist_add(int x, int y);
+int	hist_get(int *x, int *y);
+void	hist_prev();
+void	hist_next();
+
 #endif
