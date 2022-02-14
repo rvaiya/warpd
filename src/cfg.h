@@ -50,6 +50,7 @@ struct cfg {
 	char	 *hint_bgcolor;
 	char	 *hint_fgcolor;
 	int	  hint_border_radius;
+	char	 *hint_font;
 	char	 *scroll_down;
 	char	 *scroll_up;
 };

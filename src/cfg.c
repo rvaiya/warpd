@@ -107,6 +107,7 @@ struct cfg* parse_cfg(const char *fname) {
 	cfg->hint_bgcolor = strdup("#00ff00");
 	cfg->hint_fgcolor = strdup("#000000");
 	cfg->hint_border_radius = atoi("0");
+	cfg->hint_font = strdup("Monospace");
 	cfg->scroll_down = strdup("e");
 	cfg->scroll_up = strdup("r");
 
@@ -201,6 +202,8 @@ struct cfg* parse_cfg(const char *fname) {
             cfg->hint_fgcolor = strdup(val);
         else if(!strcmp(key, "hint_border_radius"))
             cfg->hint_border_radius = atoi(val);
+        else if(!strcmp(key, "hint_font"))
+            cfg->hint_font = strdup(val);
         else if(!strcmp(key, "scroll_down"))
             cfg->scroll_down = strdup(val);
         else if(!strcmp(key, "scroll_up"))

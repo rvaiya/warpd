@@ -328,7 +328,8 @@ void init_hint(struct hint *_hints,
 	       int _height,
 	       int _border_radius,
 	       const char *bgcol,
-	       const char *fgcol)
+	       const char *fgcol,
+	       const char *ufont)
 {
 	size_t i;
 	int sw, sh;
@@ -342,7 +343,7 @@ void init_hint(struct hint *_hints,
 	border_radius = _border_radius;
 	height = (sh * _height) / 1000;
 
-	font = get_font("Monospace", height);
+	font = get_font(ufont, height);
 
 	for(i = 0;i < nhints;i++)
 		active_indices[i] = 1;

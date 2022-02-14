@@ -83,7 +83,7 @@ void init_hint_mode() {
 			hint->label[2] = 0;
 		}
 
-	init_hint(hints, nhints, sz, cfg->hint_border_radius, cfg->hint_bgcolor, cfg->hint_fgcolor);
+	init_hint(hints, nhints, sz, cfg->hint_border_radius, cfg->hint_bgcolor, cfg->hint_fgcolor, cfg->hint_font);
 	filter("", NULL);
 }
 

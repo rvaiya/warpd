@@ -51,6 +51,8 @@ hint_bgcolor		string		"#00ff00"		"The background hint color."
 hint_fgcolor		string		"#000000"		"The foreground hint color."
 hint_border_radius	int		0			"Border radius."
 
+hint_font	string		"Monospace"			"Font for hint text"
+
 scroll_down		string		"e"			"Scroll down key."
 scroll_up		string		"r"			"Scroll up key."
 
