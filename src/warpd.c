@@ -133,7 +133,7 @@ static void daemonize()
 	sprintf(path, "%s/warpd.log", config_dir);
 	printf("daemonizing, log output stored in %s.\n", path);
 
-	int fd = open(path, O_WRONLY | O_CREAT | O_TRUNC);
+	int fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
 	if (fd < 0) {
 		perror("open");
 		exit(-1);
