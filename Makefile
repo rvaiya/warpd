@@ -1,7 +1,7 @@
 COMMIT=$(shell git rev-parse --short HEAD)
-VERSION=1.0.0-beta
+VERSION=1.0.1-beta
 DESTDIR=
-PREFIX=/usr/
+PREFIX=/usr
 
 FILES=src/cfg.c\
       src/normal.c\
@@ -28,7 +28,7 @@ CFLAGS=-g\
 ifeq ($(shell uname), Darwin)
 	CFLAGS+=-framework cocoa -g -Wno-unused 
 	FILES+=src/platform/macos/*.m
-	PREFIX=/usr/local/
+	PREFIX=/usr/local
 else
 	CFLAGS+=-lXfixes\
 		-lXext\

@@ -26,6 +26,7 @@
 #include "cfg.h"
 #include "platform.h"
 #include <time.h>
+#include <stdio.h>
 
 extern struct cfg *cfg;
 

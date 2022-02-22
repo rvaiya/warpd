@@ -69,12 +69,12 @@ int mouse_process_key(struct input_event *ev,
 	int sh, sw;
 	int cx, cy;
 	int old_pp;
-	float pixels_per_ms;
+	double pixels_per_ms;
 
 	mouse_get_position(&cx, &cy);
 	screen_get_dimensions(&sw, &sh);
 
-	pixels_per_ms = (((float)sh / 1000 / 100) * cfg->speed);
+	pixels_per_ms = (((double)sh / 1000 / 100) * cfg->speed);
 
 	if (!ev)
 		goto exit;

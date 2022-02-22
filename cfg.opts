@@ -45,12 +45,15 @@ grid_keys		list		"u,i,j,k"		"A sequence of comma delimited keybindings which are
 grid_color		string		"#ff0000"		"The color of the grid."
 grid_size		int		5			"The thickness of grid lines."
 
-hint_size		int		22			"Hint size in device independent pixels."
+hint_size		int		20			"Hint size in device independent pixels."
 
-hint_bgcolor		string		"#00ff00"		"The background hint color."
-hint_fgcolor		string		"#000000"		"The foreground hint color."
-hint_border_radius	int		0			"Border radius."
+hint_bgcolor		string		"#1c1c1e"		"The background hint color."
+hint_fgcolor		string		"#a1aba7"		"The foreground hint color."
+hint_border_radius	int		3			"Border radius."
 
 scroll_down		string		"e"			"Scroll down key."
 scroll_up		string		"r"			"Scroll up key."
 
+hint_chars		string		"abcdefghijklmnopqrstuvwxyz"	"The character set from which hints are generated. The total number of hints is the square of the size of this string. It may be desirable to increase this for larger screens or trim it to increase gaps between hints."
+
+hint_font		string		"Arial"			"The font name used by hints. Note: This is platform specific, in X it corresponds to a valid xft font name, on macos it corresponds to a postscript name."

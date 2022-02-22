@@ -102,8 +102,8 @@ void	screen_get_dimensions(int *sw, int *sh);
 /* Hints */
 
 /* Hints are centered around the provided x,y coordinates. */
-void	init_hint(struct hint *_hints, size_t n, int _ptsz, int _border_radius, 
-			const char *bgcol, const char *fgcol);
+void init_hint(struct hint *_hints, size_t n, int _box_height, int _border_radius, 
+			const char *bg, const char *fg, const char *font_family);
 
 /* indices must be the same size as the initialized hints */
 void	hint_show(uint8_t *indices);

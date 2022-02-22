@@ -103,12 +103,14 @@ struct cfg* parse_cfg(const char *fname) {
 	parse_list("u,i,j,k", &cfg->grid_keys, &cfg->grid_keys_sz);
 	cfg->grid_color = strdup("#ff0000");
 	cfg->grid_size = atoi("5");
-	cfg->hint_size = atoi("22");
-	cfg->hint_bgcolor = strdup("#00ff00");
-	cfg->hint_fgcolor = strdup("#000000");
-	cfg->hint_border_radius = atoi("0");
+	cfg->hint_size = atoi("20");
+	cfg->hint_bgcolor = strdup("#1c1c1e");
+	cfg->hint_fgcolor = strdup("#a1aba7");
+	cfg->hint_border_radius = atoi("3");
 	cfg->scroll_down = strdup("e");
 	cfg->scroll_up = strdup("r");
+	cfg->hint_chars = strdup("abcdefghijklmnopqrstuvwxyz");
+	cfg->hint_font = strdup("Arial");
 
     FILE *fp = fopen(fname, "r");
     if(!fp) return cfg; //Return defaults if no config file xists..
@@ -205,6 +207,10 @@ struct cfg* parse_cfg(const char *fname) {
             cfg->scroll_down = strdup(val);
         else if(!strcmp(key, "scroll_up"))
             cfg->scroll_up = strdup(val);
+        else if(!strcmp(key, "hint_chars"))
+            cfg->hint_chars = strdup(val);
+        else if(!strcmp(key, "hint_font"))
+            cfg->hint_font = strdup(val);
 
         free(line);
         line = NULL;

@@ -28,7 +28,7 @@ static struct window *win;
 static size_t nhints;
 static struct hint hints[MAX_HINTS];
 static uint8_t active_indices[MAX_HINTS];
-static size_t ptsz;
+static size_t box_height;
 static float border_radius;
 
 static NSDictionary *fontAttrs;
@@ -37,12 +37,23 @@ static NSColor *fgColor;
 
 /* TODO: optimize. */
 
-static void calculate_box_dimensions(const char *s, int *w, int *h)
+static void init_fontAttrs(const char *family, int h)
 {
-	CGSize size = [@"m" sizeWithAttributes:fontAttrs];
-
-	*w = size.width * strlen(s);
-	*h = size.height;
+	int ptsz = h;
+	CGSize size;
+	do {
+		NSFont *font = [NSFont fontWithName:[NSString stringWithUTF8String:family] size:ptsz];
+		if (!font) {
+			fprintf(stderr, "ERROR: %s is not a valid font\n", family);
+			exit(-1);
+		}
+		fontAttrs = @{
+			NSFontAttributeName: font,
+			NSForegroundColorAttributeName: fgColor,
+		};
+		size = [@"m" sizeWithAttributes:fontAttrs];
+		ptsz--;
+	} while (size.height > h);
 }
 
 static void calculate_string_dimensions(const char *s, int *w, int *h)
@@ -53,12 +64,11 @@ static void calculate_string_dimensions(const char *s, int *w, int *h)
 	*h = size.height;
 }
 
-static void draw_text_box(NSView *view, int x, int y, const char *s)
+static void draw_text_box(NSView *view, int x, int y, int w, int h, const char *s)
 {
-	int w, h, sw, sh;
+	int sw, sh;
 
 	calculate_string_dimensions(s, &sw, &sh);
-	calculate_box_dimensions(s, &w, &h);
 
 	NSString *str = [NSString stringWithUTF8String:s];
 
@@ -81,31 +91,36 @@ static void draw_text_box(NSView *view, int x, int y, const char *s)
 static void redraw(NSView *view)
 {
 	size_t i;
+	int w = 0;
+	int h = box_height;
+
+	for (i = 0; i < nhints; i++) {
+		int nw = [[NSString stringWithUTF8String:hints[i].label] sizeWithAttributes:fontAttrs].width;
+		if (nw > w)
+			w = nw;
+	}
+
+	w += 2;
 
 	for (i = 0; i < nhints; i++) {
 		if (active_indices[i])
-			draw_text_box(view, hints[i].x, hints[i].y, hints[i].label);
+			draw_text_box(view, hints[i].x, hints[i].y, w, h, hints[i].label);
 	}
 }
 
-void init_hint(struct hint *_hints, size_t n, int _ptsz, int _border_radius, 
-			const char *bg, const char *fg)
+void init_hint(struct hint *_hints, size_t n, int _box_height, int _border_radius, 
+			const char *bg, const char *fg, const char *font_family)
 {
 	size_t i;
 	win = create_overlay_window(redraw);
 
 	nhints = n;
-	ptsz = _ptsz;
+	box_height = _box_height;
 	bgColor = parse_color(bg);
 	fgColor = parse_color(fg);
 	border_radius = (float)_border_radius;
 
-	fontAttrs = @{
-		NSFontAttributeName: [NSFont fontWithName:@"Arial" size:_ptsz],
-
-		NSForegroundColorAttributeName: fgColor,
-	};
-
+	init_fontAttrs(font_family, box_height);
 
 	memcpy(hints, _hints, sizeof(struct hint)*n);
 	for (i = 0; i < nhints; i++)

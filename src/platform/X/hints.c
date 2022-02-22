@@ -28,13 +28,11 @@
 #include "impl.h"
 #include "../../platform.h"
 
-static const int padding = 10;
-
 static struct hint	 hints[MAX_HINTS];
 static size_t		 nhints;
 
-static int		 height;
 static int		 border_radius;
+static int		 boxw, boxh;
 static uint8_t		 active_indices[MAX_HINTS];
 static XftFont		*font;
 
@@ -42,7 +40,7 @@ static XftFont		*font;
 
 
 /* 
- * Dedicated window for full hint display. We permanently keep this offscreen
+ * Dedicated window for full hint display. We permanently keep this off screen
  * as an optimization to avoid the expensive map call on a shaped window with
  * all hints (particularly noticable when border_radius != 0).
  */
@@ -150,19 +148,12 @@ static int draw_text(Drawable win,
 void calculate_string_dimensions(const char *s, int *w, int *h)
 {
 	XGlyphInfo e;
-	XftTextExtentsUtf8(dpy, font, (FcChar8 *)"M", 1, &e);
-	//XftTextExtentsUtf8(dpy, font, (FcChar8 *)s, strlen(s), &e);
+	XftTextExtentsUtf8(dpy, font, (FcChar8 *)s, strlen(s), &e);
 
-	*w = (e.width)*strlen(s);
-	*h = height;
-}
-
-
-void calculate_hint_dimensions(struct hint *hint, int *w, int *h)
-{
-	calculate_string_dimensions(hint->label, w, h);
-	*w += padding;
-	*h += padding;
+	if (w)
+		*w = e.width;
+	if (h)
+		*h = e.height;
 }
 
 static struct pixmap *create_label_pixmap(struct hint *hints,
@@ -171,30 +162,27 @@ static struct pixmap *create_label_pixmap(struct hint *hints,
 				   const char *fgcol)
 {
 	size_t i;
-	int sw, sh;
+	int scrw, scrh;
 
-	screen_get_dimensions(&sw, &sh);
+	screen_get_dimensions(&scrw, &scrh);
 
-	struct pixmap *pm = create_pixmap(bgcol, sw, sh);
+	struct pixmap *pm = create_pixmap(bgcol, scrw, scrh);
 
 	/* Draw labels. */
 
 	XftColor xftcolor = parse_xft_color(fgcol); 
 
 	for (i = 0; i < n; i++) {
+		int sw, sh;
 		struct hint *hint = &hints[i];
-		/* TODO: center */
-		int tw, th, hh, hw, x, y;
+		const int x = hint->x - boxw/2;
+		const int y = hint->y - boxh/2;
 
-		calculate_hint_dimensions(hint, &hw, &hh);
-		calculate_string_dimensions(hint->label, &tw, &th);
-
-		x = hint->x - hw/2;
-		y = hint->y - hh/2;
+		calculate_string_dimensions(hint->label, &sw, &sh);
 
 		draw_text(pm->pixmap,
-			  x + (hw-tw)/2,
-			  y + (hh-th)/2,
+			  x + (boxw - sw)/2,
+			  y,
 			  &xftcolor,
 			  hint->label);
 	}
@@ -262,11 +250,9 @@ static void apply_mask(Window win, uint8_t *indices)
 
 	for(i = 0; i < nhints; i++) {
 		if (indices[i]) {
-			int w, h;
 			struct hint *hint = &hints[i];
 
-			calculate_hint_dimensions(hint, &w, &h);
-			draw_rounded_rectangle(mask, gc, hint->x-w/2, hint->y-h/2, w, h, border_radius);
+			draw_rounded_rectangle(mask, gc, hint->x-boxw/2, hint->y-boxh/2, boxw, boxh, border_radius);
 		}
 	}
 
@@ -325,10 +311,11 @@ static Window create_fhwin(const char *color)
 
 void init_hint(struct hint *_hints,
 	       size_t n,
-	       int _height,
+	       int height,
 	       int _border_radius,
 	       const char *bgcol,
-	       const char *fgcol)
+	       const char *fgcol,
+	       const char *font_family)
 {
 	size_t i;
 	int sw, sh;
@@ -340,9 +327,10 @@ void init_hint(struct hint *_hints,
 	memcpy(hints, _hints, sizeof(hints[0])*n);
 	nhints = n;
 	border_radius = _border_radius;
-	height = (sh * _height) / 1000;
+	boxh = height;
 
-	font = get_font("Monospace", height);
+	font = get_font(font_family, boxh);
+	calculate_string_dimensions("WW", &boxw, NULL);
 
 	for(i = 0;i < nhints;i++)
 		active_indices[i] = 1;

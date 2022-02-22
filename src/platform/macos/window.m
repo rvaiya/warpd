@@ -111,7 +111,7 @@ struct window *create_overlay_window(void (*draw_fn)(NSView *view))
 
 		[nsWin setBackgroundColor:[NSColor clearColor]];
 		[nsWin makeKeyAndOrderFront:nil];
-		[nsWin setLevel:NSMainMenuWindowLevel+1];
+		[nsWin setLevel:NSMainMenuWindowLevel+999];
 
 		win->win = nsWin;
 	});

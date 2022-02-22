@@ -51,15 +51,16 @@ static int filter(const char *s, struct hint **match)
 
 void init_hint_mode() {
 	int i, j;
-	int sz = cfg->hint_size;
 
 	int sw, sh;
 	screen_get_dimensions(&sw, &sh);
 
-	const char chars[] = "abcdefghijklmnopqrstuvwxyz./;[],\\";
+	const int height = (cfg->hint_size * sh)/1000;
 
-	const int xoffset = sz;
-	const int yoffset = sz;
+	const char *chars = cfg->hint_chars;
+
+	const int xoffset = height;
+	const int yoffset = height;
 
 	const int nr = strlen(chars);
 	const int nc = strlen(chars);
@@ -83,7 +84,7 @@ void init_hint_mode() {
 			hint->label[2] = 0;
 		}
 
-	init_hint(hints, nhints, sz, cfg->hint_border_radius, cfg->hint_bgcolor, cfg->hint_fgcolor);
+	init_hint(hints, nhints, height, cfg->hint_border_radius, cfg->hint_bgcolor, cfg->hint_fgcolor, cfg->hint_font);
 	filter("", NULL);
 }
 
