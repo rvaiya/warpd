@@ -26,31 +26,35 @@ CFLAGS=-g\
        -DCOMMIT=\"$(COMMIT)\"
 
 ifeq ($(shell uname), Darwin)
-	CFLAGS+=-framework cocoa -g -Wno-unused 
-	PLATFORM_FILES=../src/platform/macos/*.m
+	PLATFORM_CFLAGS+=-framework cocoa -g -Wno-unused 
+
+	PLATFORM_FILES=$(shell find src/platform/macos/*.m)
+	PLATFORM_OBJECTS=$(PLATFORM_FILES:.m=.o)
+
 	PREFIX=/usr/local
 else
-	CFLAGS+=-lXfixes\
+	CFLAGS+=-I/usr/include/freetype2
+
+	PLATFORM_CFLAGS+=-lXfixes\
 		-lXext\
 		-lXi\
 		-lXtst\
 		-lX11\
-		-lXft\
-		-I/usr/include/freetype2
+		-lXft
 
-	PLATFORM_FILES=../src/platform/X/*.c
+	PLATFORM_FILES=$(shell find src/platform/X/*.c)
+	PLATFORM_OBJECTS=$(PLATFORM_FILES:.c=.o)
 endif
 
-all: platform bin
-bin:
-	-mkdir bin
-	$(CC) $(FILES) $(CFLAGS) lib/platform.a -o bin/warpd
-platform:
-	-mkdir lib
-	cd lib && $(CC) -c $(PLATFORM_FILES) $(CFLAGS) && ar rcs platform.a *.o && rm *.o
+FILES=$(shell find src/*.c)
+OBJECTS=$(FILES:.c=.o) $(PLATFORM_OBJECTS)
+
+all: $(OBJECTS)
+	$(CC) $(PLATFORM_CFLAGS) $(CFLAGS) -o bin/warpd $(OBJECTS)
 assets:
 	./gen_assets.py 
-
+clean:
+	rm $(OBJECTS)
 install:
 	install -m644 warpd.1.gz $(DESTDIR)/$(PREFIX)/share/man/man1/
 	install -m755 bin/warpd $(DESTDIR)/$(PREFIX)/bin/

@@ -7,3 +7,4 @@ tags
 NOTES
 lib/
 bin/
+*.o
