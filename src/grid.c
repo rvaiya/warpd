@@ -96,6 +96,8 @@ next:
 		gx = cx - gw/2;
 		gy = cy - gh/2;
 
+		cursor_show(cx - cfg->cursor_size/2, cy - cfg->cursor_size/2);
+
 		grid_draw(gx, gy, gw, gh);
 	}
 
