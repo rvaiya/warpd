@@ -1,8 +1,9 @@
 *swp
 *swn
 *swo
-bin
 tags
 *.out
 *gch
 NOTES
+lib/
+bin/

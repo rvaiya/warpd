@@ -27,7 +27,7 @@ CFLAGS=-g\
 
 ifeq ($(shell uname), Darwin)
 	CFLAGS+=-framework cocoa -g -Wno-unused 
-	FILES+=src/platform/macos/*.m
+	PLATFORM_FILES=../src/platform/macos/*.m
 	PREFIX=/usr/local
 else
 	CFLAGS+=-lXfixes\
@@ -38,12 +38,16 @@ else
 		-lXft\
 		-I/usr/include/freetype2
 
-	FILES+=src/platform/X/*.c
+	PLATFORM_FILES=../src/platform/X/*.c
 endif
 
-all:
+all: platform bin
+bin:
 	-mkdir bin
-	$(CC) $(FILES) $(CFLAGS) -o bin/warpd
+	$(CC) $(FILES) $(CFLAGS) lib/platform.a -o bin/warpd
+platform:
+	-mkdir lib
+	cd lib && $(CC) -c $(PLATFORM_FILES) $(CFLAGS) && ar rcs platform.a *.o && rm *.o
 assets:
 	./gen_assets.py 
 
@@ -54,4 +58,4 @@ uninstall:
 	rm $(DESTDIR)/$(PREFIX)/share/man/man1/warpd.1.gz\
 		$(DESTDIR)/$(PREFIX)/bin/warpd
 
-.PHONY: all assets install uninstall
+.PHONY: all platform assets install uninstall bin
