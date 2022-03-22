@@ -85,15 +85,16 @@ static void main_loop()
 	init_normal_mode();
 	init_hint_mode();
 
-	struct input_event activation_events[3] = {0};
+	struct input_event activation_events[4] = {0};
 
 	input_parse_string(&activation_events[0], cfg->activation_key);
 	input_parse_string(&activation_events[1], cfg->hint_activation_key);
 	input_parse_string(&activation_events[2], cfg->grid_activation_key);
+	input_parse_string(&activation_events[3], cfg->hint_oneshot_key);
 
 	while(1) {
 		int mode = 0;
-		struct input_event *ev = input_wait(activation_events, 3);
+		struct input_event *ev = input_wait(activation_events, 4);
 
 		if (input_event_eq(ev, cfg->activation_key))
 			mode = MODE_NORMAL;
@@ -101,6 +102,10 @@ static void main_loop()
 			mode = MODE_GRID;
 		else if (input_event_eq(ev, cfg->hint_activation_key))
 			mode = MODE_HINT;
+		else if (input_event_eq(ev, cfg->hint_oneshot_key)) {
+			hint_mode();
+			continue;
+		}
 
 		activation_loop(mode);
 	}

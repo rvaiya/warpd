@@ -11,6 +11,7 @@ struct cfg {
 	char	 *hint_activation_key;
 	char	 *grid_activation_key;
 	char	 *activation_key;
+	char	 *hint_oneshot_key;
 	int	  repeat_interval;
 	int	  speed;
 	char	**buttons;

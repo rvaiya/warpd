@@ -71,6 +71,7 @@ struct cfg* parse_cfg(const char *fname) {
 	cfg->hint_activation_key = strdup("A-M-x");
 	cfg->grid_activation_key = strdup("A-M-g");
 	cfg->activation_key = strdup("A-M-c");
+	cfg->hint_oneshot_key = strdup("A-M-l");
 	cfg->repeat_interval = atoi("20");
 	cfg->speed = atoi("30");
 	parse_list("m, comma, .", &cfg->buttons, &cfg->buttons_sz);
@@ -131,6 +132,8 @@ struct cfg* parse_cfg(const char *fname) {
             cfg->grid_activation_key = strdup(val);
         else if(!strcmp(key, "activation_key"))
             cfg->activation_key = strdup(val);
+        else if(!strcmp(key, "hint_oneshot_key"))
+            cfg->hint_oneshot_key = strdup(val);
         else if(!strcmp(key, "repeat_interval"))
             cfg->repeat_interval = atoi(val);
         else if(!strcmp(key, "speed"))
