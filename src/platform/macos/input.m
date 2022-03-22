@@ -101,9 +101,18 @@ static CGEventRef eventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEv
 
 		code = (nsev.data1 >> 16) + 220;
 		pressed = !(nsev.data1 & 0x100);
+
+		/*
+		 * pass other system events through, things like sticky keys
+		 * rely on this for visual notifications
+		 */
+		if (nsev.subtype != NX_SUBTYPE_AUX_CONTROL_BUTTONS)
+			return event;
+
 		break;
 	case kCGEventFlagsChanged: /* modifier codes */
 		code = CGEventGetIntegerValueField(event, kCGKeyboardEventKeycode)+1;
+
 		pressed = !keystate[code];
 		break;
 	case kCGEventKeyDown:
