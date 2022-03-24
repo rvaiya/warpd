@@ -90,10 +90,11 @@ void	cursor_hide();
 void	cursor_show(int x, int y);
 
 /* Grid */
-void	grid_draw(int x, int y, int w, int h);
-void	grid_hide();
+struct grid;
 
-void	init_grid(const char *color, size_t border_sz, size_t nc, size_t nr);
+void		 grid_draw(struct grid *g, int x, int y, int w, int h);
+void		 grid_hide(struct grid *g);
+struct grid	*create_grid(const char *color, size_t width, size_t nc, size_t nr);
 
 /* Util */
 

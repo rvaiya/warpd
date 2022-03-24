@@ -25,102 +25,84 @@
 #include "impl.h"
 #include <X11/Xlib.h>
 
-static Window bw1, bw2, bw3, bw4;
-static Window gridwins[32];
-static size_t nc, nr;
-static int thickness;
+struct grid {
+	Window gridwins[32];
+	size_t nc, nr;
 
-void grid_hide()
+	float width;
+};
+
+void grid_hide(struct grid *g)
 {
 	size_t i;
 
-	window_hide(bw1);
-	window_hide(bw2);
-	window_hide(bw3);
-	window_hide(bw4);
-	//window_hide(mw);
-
-	for(i = 0; i < (nr + nc - 2); i++)
-		window_hide(gridwins[i]);
-
-	window_commit();
+	for(i = 0; i < (g->nr + g->nc + 2); i++)
+		XUnmapWindow(dpy, g->gridwins[i]);
 }
 
-static void redraw(int ux, int uy, int lx, int ly)
+static void redraw(struct grid *g, float ux, float uy, float lx, float ly)
 {
 	size_t i;
-	int rowh, colw;
+	float gap;
+	float offset;
+	int nw = 0;
 
+	offset = lx;
+	gap = (ux-lx)/g->nc;
 
-	/* TODO: fixme */
-	//XMoveWindow(dpy, mw, cx-(cursor_width/2), cy-(cursor_width/2));
-	//XResizeWindow(dpy, mw, cursor_width, cursor_width);
+	for(i = 0; i < g->nc+1; i++) {
+		Window w = g->gridwins[nw++];
 
-	XMoveWindow(dpy, bw2, lx, ly);
-	XResizeWindow(dpy, bw2, ux-lx, thickness);
+		XMoveResizeWindow(dpy,
+				  w,
+				  offset-(g->width/2), ly-g->width/2, 
+				  g->width, uy-ly+g->width);
 
-	XMoveWindow(dpy, bw1, lx, uy-thickness);
-	XResizeWindow(dpy, bw1, ux-lx, thickness);
-
-	XMoveWindow(dpy, bw3, lx, ly);
-	XResizeWindow(dpy, bw3, thickness, uy-ly);
-
-	XMoveWindow(dpy, bw4, ux-thickness, ly);
-	XResizeWindow(dpy, bw4, thickness, uy-ly);
-
-	XMoveWindow(dpy, bw4, ux-thickness, ly);
-	XResizeWindow(dpy, bw4, thickness, uy-ly);
-
-	rowh = (uy-ly)/nr;
-	colw = (ux-lx)/nc;
-
-	for(i = 0; i < nc-1; i++) {
-		XMoveWindow(dpy,
-			    gridwins[i],
-			    lx + (i+1) * colw - (thickness/2), ly);
-		XResizeWindow(dpy, gridwins[i], thickness, uy-ly);
+		XMapRaised(dpy, w);
+		offset += gap;
 	}
 
-	for(i = 0; i < nr-1; i++) {
-		XMoveWindow(dpy,
-			    gridwins[nc+i-1],
-			    lx, ly + (i+1) * rowh - (thickness/2));
-		XResizeWindow(dpy, gridwins[nc+i-1], ux-lx, thickness);
+
+	offset = ly;
+	gap = (uy-ly)/g->nr;
+
+	for(i = 0; i < g->nr+1; i++) {
+		Window w = g->gridwins[nw++];
+
+		XMoveResizeWindow(dpy,
+				  w,
+				  lx-(g->width/2), offset-(g->width/2),
+				  ux-lx+g->width, g->width);
+
+		XMapRaised(dpy, w);
+		offset += gap;
 	}
-
-	window_show(bw1);
-	window_show(bw2);
-	window_show(bw3);
-	window_show(bw4);
-
-	for(i = 0; i < nc+nr-2; i++) 
-		window_show(gridwins[i]);
-
-	window_commit();
-	//window_show(dpy, mw);
 }
 
-void init_grid(const char *color, size_t _thickness, size_t _nc, size_t _nr)
+struct grid *create_grid(const char *color, size_t width, size_t nc, size_t nr)
 {
 	size_t i;
 
-	nc = _nc;
-	nr = _nr;
-	thickness = _thickness;
+	struct grid *g = malloc(sizeof(struct grid));
 
-	bw1 = create_window(color, 0, 0, 0, 0);
-	bw2 = create_window(color, 0, 0, 0, 0);
-	bw3 = create_window(color, 0, 0, 0, 0);
-	bw4 = create_window(color, 0, 0, 0, 0);
+	g->nc = nc;
+	g->nr = nr;
+	g->width = (float)width;
 
-	assert((nr + nc - 2) < sizeof(gridwins)/sizeof(gridwins[0]));
+	assert((g->nr + g->nc - 2) < sizeof(g->gridwins)/sizeof(g->gridwins[0]));
 
-	for(i = 0; i < (nr + nc - 2); i++)
-		gridwins[i] = create_window(color, 0, 0, 0, 0);
+	for(i = 0; i < (g->nr + g->nc + 2); i++)
+		g->gridwins[i] = create_window(color, 0, 0, 0, 0);
+
+	return g;
 }
 
-void grid_draw(int x, int y, int w, int h)
+void grid_draw(struct grid *g, int _x, int _y, int _w, int _h)
 {
-	mouse_hide();
-	redraw(x+w, y+h, x, y);
+	float x = _x;
+	float y = _y;
+	float w = _w;
+	float h = _h;
+
+	redraw(g, x+w-g->width/2, y+h-g->width/2, x+g->width/2, y+g->width/2);
 }

@@ -104,6 +104,8 @@ struct cfg* parse_cfg(const char *fname) {
 	parse_list("u,i,j,k", &cfg->grid_keys, &cfg->grid_keys_sz);
 	cfg->grid_color = strdup("#ff0000");
 	cfg->grid_size = atoi("5");
+	cfg->grid_border_size = atoi("0");
+	cfg->grid_border_color = strdup("#ffffff");
 	cfg->hint_size = atoi("20");
 	cfg->hint_bgcolor = strdup("#1c1c1e");
 	cfg->hint_fgcolor = strdup("#a1aba7");
@@ -198,6 +200,10 @@ struct cfg* parse_cfg(const char *fname) {
             cfg->grid_color = strdup(val);
         else if(!strcmp(key, "grid_size"))
             cfg->grid_size = atoi(val);
+        else if(!strcmp(key, "grid_border_size"))
+            cfg->grid_border_size = atoi(val);
+        else if(!strcmp(key, "grid_border_color"))
+            cfg->grid_border_color = strdup(val);
         else if(!strcmp(key, "hint_size"))
             cfg->hint_size = atoi(val);
         else if(!strcmp(key, "hint_bgcolor"))

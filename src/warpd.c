@@ -81,7 +81,7 @@ exit:
 
 static void main_loop()
 {
-	init_grid(cfg->grid_color, cfg->grid_size, cfg->grid_nc, cfg->grid_nr);
+	init_grid_mode();
 	init_normal_mode();
 	init_hint_mode();
 

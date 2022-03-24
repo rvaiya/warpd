@@ -50,6 +50,7 @@ FILES=$(shell find src/*.c)
 OBJECTS=$(FILES:.c=.o) $(PLATFORM_OBJECTS)
 
 all: $(OBJECTS)
+	-mkdir bin
 	$(CC) $(PLATFORM_CFLAGS) $(CFLAGS) -o bin/warpd $(OBJECTS)
 assets:
 	./gen_assets.py 

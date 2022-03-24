@@ -36,8 +36,8 @@ static int		 boxw, boxh;
 static uint8_t		 active_indices[MAX_HINTS];
 static XftFont		*font;
 
-/* TODO: Add multi screen support. Will probably require a cached fhwin for each geometry :/. */
-
+/* TODO: Add multi screen support. Will probably require a cached fhwin
+ * for each geometry :/. */
 
 /* 
  * Dedicated window for full hint display. We permanently keep this off screen
@@ -180,7 +180,7 @@ static struct pixmap *create_label_pixmap(struct hint *hints,
 
 		calculate_string_dimensions(hint->label, &sw, &sh);
 
-		draw_text(pm->pixmap,
+		draw_text(pm->map,
 			  x + (boxw - sw)/2,
 			  y,
 			  &xftcolor,
@@ -215,7 +215,7 @@ static void hidewin(Window win)
 	screen_get_dimensions(&sw, &sh);
 
 	/* Avoid unmapping since map appears to be expensive for shaped windows. */
-	window_move(win, -sw, -sh);
+	XMoveWindow(dpy, win, -sw, -sh);
 }
 
 void hint_hide()
@@ -226,7 +226,7 @@ void hint_hide()
 
 static void showwin(Window win)
 {
-	window_move(win, 0, 0);
+	XMoveWindow(dpy, win, 0, 0);
 }
 
 static void apply_mask(Window win, uint8_t *indices)
@@ -277,7 +277,6 @@ static void redraw()
 		showwin(fhwin);
 		pixmap_copy(label_pixmap, fhwin);
 
-		window_commit();
 		return;
 	}
 
@@ -286,7 +285,6 @@ static void redraw()
 
 	apply_mask(win, active_indices);
 	pixmap_copy(label_pixmap, win);
-	window_commit();
 }
 
 /* indices must be the same size as the initialized hints */
@@ -339,14 +337,12 @@ void init_hint(struct hint *_hints,
 	fhwin		= create_fhwin(bgcol);
 	win		= create_window(bgcol, 0, 0, sw, sh);
 
-	window_move(win, -sw, -sh);
-	window_move(fhwin, -sw, -sh);
+	XMoveWindow(dpy, win, -sw, -sh);
+	XMoveWindow(dpy, fhwin, -sw, -sh);
 
-	window_show(fhwin);
-	window_show(win);
+	XMapRaised(dpy, fhwin);
+	XMapRaised(dpy, win);
 
 	hidewin(fhwin);
 	hidewin(win);
-
-	window_commit();
 }

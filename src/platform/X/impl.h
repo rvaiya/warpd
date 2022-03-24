@@ -30,18 +30,12 @@ extern Display *dpy;
 
 struct pixmap {
 	GC gc;
-	Pixmap pixmap;
+	Pixmap map;
 	int w;
 	int h;
 };
 
 Window	create_window(const char *color, int x, int y, int w, int h);
-
-void	window_commit();
-void	window_show(Window win);
-void	window_hide(Window win);
-void	window_move(Window win, int x, int y);
-void	window_resize(Window win, int w, int h);
 
 void	mouse_move_abs(int x, int y);
 void	mouse_hide();

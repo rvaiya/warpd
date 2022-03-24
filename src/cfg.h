@@ -47,6 +47,8 @@ struct cfg {
 	size_t	  grid_keys_sz;
 	char	 *grid_color;
 	int	  grid_size;
+	int	  grid_border_size;
+	char	 *grid_border_color;
 	int	  hint_size;
 	char	 *hint_bgcolor;
 	char	 *hint_fgcolor;

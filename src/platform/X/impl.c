@@ -100,7 +100,7 @@ static void set_opacity(Display *dpy, Window w, uint8_t _opacity)
 
 void pixmap_copy(struct pixmap *pixmap, Window win)
 {
-	XCopyArea(dpy, pixmap->pixmap, win, pixmap->gc, 0, 0, pixmap->w, pixmap->h, 0, 0);
+	XCopyArea(dpy, pixmap->map, win, pixmap->gc, 0, 0, pixmap->w, pixmap->h, 0, 0);
 }
 
 void copy_selection()
@@ -162,7 +162,7 @@ struct pixmap *create_pixmap(const char *color, int w, int h)
 
 	p = malloc(sizeof(struct pixmap));
 
-	p->pixmap = pm;
+	p->map = pm;
 	p->gc = gc;
 	p->w = w;
 	p->h = h;
@@ -211,32 +211,6 @@ Window create_window(const char *color, int x, int y, int w, int h)
 	XFree(hint);
 
 	return win;
-}
-
-void window_commit()
-{
-	XSync(dpy, False);
-}
-
-void window_resize(Window win, int w, int h)
-{
-	XResizeWindow(dpy, win, w, h);
-}
-
-
-void window_move(Window win, int x, int y)
-{
-	XMoveWindow(dpy, win, x, y);
-}
-
-void window_hide(Window win)
-{
-	XUnmapWindow(dpy, win);
-}
-
-void window_show(Window win)
-{
-	XMapRaised(dpy, win);
 }
 
 void mouse_up(int btn)
@@ -294,7 +268,6 @@ void mouse_show()
 	XSync(dpy, False);
 	mouse_visible = 1;
 }
-
 
 void start_main_loop(void (*init)(void))
 {

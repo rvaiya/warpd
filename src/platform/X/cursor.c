@@ -26,21 +26,20 @@
 
 #include "impl.h"
 
-static Window win;
+static Window curwin;
 
 void cursor_show(int x, int y)
 {
-	window_show(win);
-	window_move(win, x+1, y+1);
-	window_commit();
+	XMoveWindow(dpy, curwin, x+1, y+1);
+	XMapRaised(dpy, curwin);
 }
 
 void cursor_hide()
 {
-	window_hide(win);
+	XUnmapWindow(dpy, curwin);
 }
 
 void init_cursor(const char *color, size_t sz)
 {
-	win = create_window(color, 0, 0, sz, sz);
+	curwin = create_window(color, 0, 0, sz, sz);
 }
