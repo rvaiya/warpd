@@ -25,6 +25,13 @@
 
 struct window {
 	NSWindow *win;
+
+	int visible;
+
+	int x;
+	int y;
+	int w;
+	int h;
 };
 
 @interface MainView: NSView
@@ -41,44 +48,52 @@ struct window {
 
 void window_show(struct window *win)
 {
+	win->visible = 1;
+}
+
+void window_commit(struct window *win)
+{
 	dispatch_sync(dispatch_get_main_queue(), ^{
-		[win->win makeKeyAndOrderFront:nil];
+		NSRect fr = [[NSScreen mainScreen] frame];
+
+		if (win->visible) {
+			[win->win makeKeyAndOrderFront:nil];
+
+			/* Adjust window coordinates from top/left */
+			const int sh = fr.size.height;
+			const int sw = fr.size.width;
+			const int wh = [win->win frame].size.height;
+
+			int y = sh-win->y-wh;
+			int x = win->x;
+
+			y = y < 0 ? 0 : y;
+			x = win->x > sw-wh ? sw-wh : win->x;
+
+			/* move */
+			[win->win setFrameOrigin:NSMakePoint(x, y)];
+
+			/* show */
+			[win->win makeKeyAndOrderFront:nil];
+
+			/* update (force redraw) */
+			[[win->win contentView] setNeedsDisplay:TRUE];
+		} else {
+			[win->win orderOut:nil];
+		}
+
 	});
 }
 
 void window_move(struct window *win, int x, int y)
 {
-	dispatch_sync(dispatch_get_main_queue(), ^{
-		NSRect fr = [[NSScreen mainScreen] frame];
-
-		const int sh = fr.size.height;
-		const int sw = fr.size.width;
-		const int wh = [win->win frame].size.height;
-
-		int fy = sh-y-wh;
-		int fx = x;
-
-		fy = fy < 0 ? 0 : fy;
-		fx = x > sw-wh ? sw-wh : x;
-
-		[win->win makeKeyAndOrderFront:nil];
-		[win->win setFrameOrigin:NSMakePoint(fx, fy)];
-	});
-}
-
-
-void window_redraw(struct window *win)
-{
-	dispatch_sync(dispatch_get_main_queue(), ^{
-		[[win->win contentView] setNeedsDisplay:TRUE];
-	});
+	win->x = x;
+	win->y = y;
 }
 
 void window_hide(struct window *win)
 {
-	dispatch_sync(dispatch_get_main_queue(), ^{
-		[win->win orderOut:nil];
-	});
+	win->visible = 0;
 }
 
 struct window *create_overlay_window(void (*draw_fn)(NSView *view))
@@ -114,6 +129,11 @@ struct window *create_overlay_window(void (*draw_fn)(NSView *view))
 		[nsWin setLevel:NSMainMenuWindowLevel+999];
 
 		win->win = nsWin;
+
+		win->x = 0;
+		win->y = 0;
+		win->w = sw;
+		win->h = sh;
 	});
 
 	return win;

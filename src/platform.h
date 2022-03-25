@@ -110,8 +110,14 @@ void init_hint(struct hint *_hints, size_t n, int _box_height, int _border_radiu
 void	hint_show(uint8_t *indices);
 void	hint_hide();
 
-
 void	scroll(int direction);
 
 void	copy_selection();
+
+/* 
+ * Draw operations may (or may not) be queued until this function
+ * is called.
+ */
+void	platform_commit();
+
 #endif

@@ -26,25 +26,26 @@
 #include "impl.h"
 
 static struct window *win;
-static int hidden = 1;
 
 void cursor_show(int x, int y)
 {
 	window_move(win, x, y);
-	if (hidden) {
-		hidden = 0;
-		window_show(win);
-	}
+	window_show(win);
 }
 
 void cursor_hide()
 {
 	window_hide(win);
-	hidden = 1;
 }
 
 void init_cursor(const char *color, size_t sz)
 {
 	win = create_window(color, sz);
 	window_hide(win);
+	window_commit(win);
+}
+
+void cursor_commit()
+{
+	window_commit(win);
 }

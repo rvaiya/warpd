@@ -108,7 +108,7 @@ static void redraw(NSView *view)
 	}
 }
 
-void init_hint(struct hint *_hints, size_t n, int _box_height, int _border_radius, 
+void init_hint(struct hint *_hints, size_t n, int _box_height, int _border_radius,
 			const char *bg, const char *fg, const char *font_family)
 {
 	size_t i;
@@ -116,10 +116,11 @@ void init_hint(struct hint *_hints, size_t n, int _box_height, int _border_radiu
 
 	nhints = n;
 	box_height = _box_height;
+
 	bgColor = parse_color(bg);
 	fgColor = parse_color(fg);
-	border_radius = (float)_border_radius;
 
+	border_radius = (float)_border_radius;
 	init_fontAttrs(font_family, box_height);
 
 	memcpy(hints, _hints, sizeof(struct hint)*n);
@@ -127,16 +128,18 @@ void init_hint(struct hint *_hints, size_t n, int _box_height, int _border_radiu
 		active_indices[i] = 1;
 
 	window_hide(win);
+	window_commit(win);
 }
 
 void hint_hide()
 {
 	window_hide(win);
+	window_commit(win);
 }
 
 void hint_show(uint8_t *indices)
 {
 	memcpy(active_indices, indices, sizeof(indices[0])*nhints);
 	window_show(win);
-	window_redraw(win);
+	window_commit(win);
 }

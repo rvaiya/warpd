@@ -38,8 +38,13 @@ void	window_hide(struct window *win);
 void	window_redraw(struct window *win);
 void	window_move(struct window *win, int x, int y);
 
+void	window_commit(struct window *w);
+
 struct window	*create_overlay_window(void (*draw_fn)(NSView *view));
 struct window	*create_window(const char *color, size_t sz);
+
+void	grid_commit();
+void	cursor_commit();
 
 void	init_mouse();
 

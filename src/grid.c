@@ -47,6 +47,8 @@ static void redraw(int gx, int gy, int gw, int gh)
 	}
 
 	cursor_show(cx - cfg->cursor_size/2, cy - cfg->cursor_size/2);
+
+	platform_commit();
 }
 
 /* returns the terminating input event. */
@@ -142,6 +144,8 @@ exit:
 	mouse_show();
 
 	input_ungrab_keyboard();
+
+	platform_commit();
 	return ev;
 }
 

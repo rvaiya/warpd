@@ -140,6 +140,8 @@ next:
 		mouse_get_position(&cx, &cy);
 		cursor_show(cx+1, cy+1);
 		scroll_tick();
+
+		platform_commit();
 	}
 
 exit:
@@ -149,6 +151,8 @@ exit:
 	cursor_hide();
 
 	input_ungrab_keyboard();
+
+	platform_commit();
 	return ev;
 }
 

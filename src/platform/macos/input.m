@@ -263,7 +263,6 @@ struct input_event *input_next_event(int timeout)
 {
 	static struct input_event ev;
 
-	long start = get_time_ms();
 	if (read_message(input_fds[0], &ev, sizeof ev, timeout) < 0)
 		return 0;
 
@@ -296,6 +295,11 @@ void init_input()
 			kCGHeadInsertEventTap,
 			0, kCGEventMaskForAllEvents,
 			eventTapCallback, NULL);
+
+	if (!tap) {
+		fprintf(stderr, "Failed to create event tap, make sure warpd is whitelisted as an accessibility feature.\n");
+		exit(-1);
+	}
 
 	CFRunLoopSourceRef runLoopSource = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, tap, 0);
 	CFRunLoopAddSource(CFRunLoopGetCurrent(), runLoopSource, kCFRunLoopCommonModes);

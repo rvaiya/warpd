@@ -114,6 +114,12 @@ void scroll(int direction) {
 	CGEventPost(kCGHIDEventTap, ev);
 }
 
+void platform_commit()
+{
+	grid_commit();
+	cursor_commit();
+}
+
 void start_main_loop(void (*loop)())
 {
 	pthread_t thread;

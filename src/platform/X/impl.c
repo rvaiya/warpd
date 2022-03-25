@@ -274,3 +274,7 @@ void start_main_loop(void (*init)(void))
 	dpy = XOpenDisplay(NULL);
 	init();
 }
+
+void platform_commit()
+{
+}
