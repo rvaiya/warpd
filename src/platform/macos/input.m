@@ -289,7 +289,7 @@ struct input_event *input_wait(struct input_event *keys, size_t sz)
 }
 
 /* called by the main thread to set up event stream. */
-void init_input()
+void macos_init_input()
 {
 	CFMachPortRef tap = CGEventTapCreate(kCGHIDEventTap,
 			kCGHeadInsertEventTap,

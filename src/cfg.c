@@ -73,7 +73,9 @@ struct cfg* parse_cfg(const char *fname) {
 	cfg->activation_key = strdup("A-M-c");
 	cfg->hint_oneshot_key = strdup("A-M-l");
 	cfg->repeat_interval = atoi("20");
-	cfg->speed = atoi("30");
+	cfg->speed = atoi("220");
+	cfg->max_speed = atoi("800");
+	cfg->acceleration = atoi("700");
 	parse_list("m, comma, .", &cfg->buttons, &cfg->buttons_sz);
 	parse_list("n, -, /", &cfg->oneshot_buttons, &cfg->oneshot_buttons_sz);
 	cfg->oneshot_timeout = atoi("300");
@@ -103,10 +105,10 @@ struct cfg* parse_cfg(const char *fname) {
 	cfg->grid_right = strdup("d");
 	parse_list("u,i,j,k", &cfg->grid_keys, &cfg->grid_keys_sz);
 	cfg->grid_color = strdup("#ff0000");
-	cfg->grid_size = atoi("5");
+	cfg->grid_size = atoi("4");
 	cfg->grid_border_size = atoi("0");
 	cfg->grid_border_color = strdup("#ffffff");
-	cfg->hint_size = atoi("20");
+	cfg->hint_size = atoi("28");
 	cfg->hint_bgcolor = strdup("#1c1c1e");
 	cfg->hint_fgcolor = strdup("#a1aba7");
 	cfg->hint_border_radius = atoi("3");
@@ -140,6 +142,10 @@ struct cfg* parse_cfg(const char *fname) {
             cfg->repeat_interval = atoi(val);
         else if(!strcmp(key, "speed"))
             cfg->speed = atoi(val);
+        else if(!strcmp(key, "max_speed"))
+            cfg->max_speed = atoi(val);
+        else if(!strcmp(key, "acceleration"))
+            cfg->acceleration = atoi(val);
         else if(!strcmp(key, "buttons"))
             parse_list(val, &cfg->buttons, &cfg->buttons_sz);
         else if(!strcmp(key, "oneshot_buttons"))

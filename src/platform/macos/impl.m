@@ -124,8 +124,8 @@ void start_main_loop(void (*loop)())
 {
 	pthread_t thread;
 
-	init_input();
-	init_mouse();
+	macos_init_input();
+	macos_init_mouse();
 
 	[NSApplication sharedApplication];
 	[NSApp setActivationPolicy:NSApplicationActivationPolicyAccessory];

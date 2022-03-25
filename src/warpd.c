@@ -79,8 +79,24 @@ exit:
 	return;
 }
 
+static void normalize_dimensions()
+{
+	int sw, sh;
+
+	screen_get_dimensions(&sw, &sh);
+
+	cfg->speed = (cfg->speed * sh)/1080;
+	cfg->hint_size = (cfg->hint_size * sh)/1080;
+	cfg->cursor_size = (cfg->cursor_size * sh)/1080;
+	cfg->grid_size = (cfg->grid_size * sh)/1080;
+	cfg->grid_border_size = (cfg->grid_border_size * sh)/1080;
+}
+
 static void main_loop()
 {
+	normalize_dimensions();
+
+	init_mouse();
 	init_grid_mode();
 	init_normal_mode();
 	init_hint_mode();
@@ -197,5 +213,6 @@ int main(int argc, char *argv[])
 		daemonize();
 
 	printf("Starting warpd: "VERSION"\n");
+
 	start_main_loop(main_loop);
 }

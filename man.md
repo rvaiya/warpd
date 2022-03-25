@@ -97,6 +97,9 @@ have the format:
 
 <option>: <value>
 
+_Note:_ All pixel based values are relative to a 1920x1080 virtual screen and
+will be scaled according to the current dimensions.
+
 {opts}
 
 # Notes

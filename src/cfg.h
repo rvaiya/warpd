@@ -14,6 +14,8 @@ struct cfg {
 	char	 *hint_oneshot_key;
 	int	  repeat_interval;
 	int	  speed;
+	int	  max_speed;
+	int	  acceleration;
 	char	**buttons;
 	size_t	  buttons_sz;
 	char	**oneshot_buttons;

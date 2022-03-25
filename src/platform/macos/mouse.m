@@ -187,7 +187,7 @@ void mouse_show()
 	});
 }
 
-void init_mouse()
+void macos_init_mouse()
 {
 	/* 
 	 * Kludge to make background cursor setting work.

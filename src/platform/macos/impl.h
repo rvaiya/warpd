@@ -31,8 +31,6 @@ struct window;
 
 extern int hide_cursor;
 
-void init_input();
-
 void	window_show(struct window *win);
 void	window_hide(struct window *win);
 void	window_redraw(struct window *win);
@@ -46,7 +44,8 @@ struct window	*create_window(const char *color, size_t sz);
 void	grid_commit();
 void	cursor_commit();
 
-void	init_mouse();
+void	macos_init_input();
+void	macos_init_mouse();
 
 void	send_key(uint8_t code, int pressed);
 

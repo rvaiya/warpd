@@ -69,5 +69,6 @@ int	hist_add(int x, int y);
 int	hist_get(int *x, int *y);
 void	hist_prev();
 void	hist_next();
+void	init_mouse();
 
 #endif

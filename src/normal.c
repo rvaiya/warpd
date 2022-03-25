@@ -45,7 +45,9 @@ struct input_event *normal_mode(struct input_event *start_ev)
 			start_ev = NULL;
 		}
 
-		if (mouse_process_key(ev, cfg->up, cfg->down, cfg->left, cfg->right))
+		if (mouse_process_key(ev,
+				      cfg->up, cfg->down,
+				      cfg->left, cfg->right))
 			goto next;
 		if (!ev)
 			goto next;

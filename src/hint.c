@@ -55,8 +55,7 @@ void init_hint_mode() {
 	int sw, sh;
 	screen_get_dimensions(&sw, &sh);
 
-	const int height = (cfg->hint_size * sh)/1000;
-
+	const int height = cfg->hint_size;
 	const char *chars = cfg->hint_chars;
 
 	const int xoffset = height;
