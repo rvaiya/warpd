@@ -3,30 +3,18 @@ VERSION=1.0.2-beta
 DESTDIR=
 PREFIX=/usr
 
-FILES=src/cfg.c\
-      src/normal.c\
-      src/history.c\
-      src/warpd.c\
-      src/input.c\
-      src/hint.c\
-      src/grid.c\
-      src/mouse.c\
-      src/scroll.c\
-      -Wall\
-      -Wextra
-
 CFLAGS=-g\
-       -Wall\
-       -Wextra\
-       -pedantic\
-       -Wno-unused-function\
-       -Wno-unused-parameter\
-       -Wno-deprecated-declarations\
-       -DVERSION=\"$(VERSION)\"\
-       -DCOMMIT=\"$(COMMIT)\"
+	-Wall\
+	-Wextra\
+	-pedantic\
+	-Wno-unused-function\
+	-Wno-unused-parameter\
+	-Wno-deprecated-declarations\
+	-DVERSION=\"$(VERSION)\"\
+	-DCOMMIT=\"$(COMMIT)\"
 
 ifeq ($(shell uname), Darwin)
-	PLATFORM_CFLAGS+=-framework cocoa -g -Wno-unused 
+	PLATFORM_FLAGS=-framework cocoa
 
 	PLATFORM_FILES=$(shell find src/platform/macos/*.m)
 	PLATFORM_OBJECTS=$(PLATFORM_FILES:.m=.o)
@@ -35,12 +23,12 @@ ifeq ($(shell uname), Darwin)
 else
 	CFLAGS+=-I/usr/include/freetype2
 
-	PLATFORM_CFLAGS+=-lXfixes\
-		-lXext\
-		-lXi\
-		-lXtst\
-		-lX11\
-		-lXft
+	PLATFORM_FLAGS=-lXfixes\
+			-lXext\
+			-lXi\
+			-lXtst\
+			-lX11\
+			-lXft
 
 	PLATFORM_FILES=$(shell find src/platform/X/*.c)
 	PLATFORM_OBJECTS=$(PLATFORM_FILES:.c=.o)
@@ -51,7 +39,7 @@ OBJECTS=$(FILES:.c=.o) $(PLATFORM_OBJECTS)
 
 all: $(OBJECTS)
 	-mkdir bin
-	$(CC) $(PLATFORM_CFLAGS) $(CFLAGS) -o bin/warpd $(OBJECTS)
+	$(CC)  $(CFLAGS) -o bin/warpd $(OBJECTS) $(PLATFORM_FLAGS)
 assets:
 	./gen_assets.py 
 clean:
