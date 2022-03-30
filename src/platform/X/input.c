@@ -114,6 +114,45 @@ static XEvent *get_next_xev(int timeout)
 
 }
 
+static uint8_t sym_table[] = {
+	[XK_q] = 24,
+	[XK_w] = 25,
+	[XK_e] = 26,
+	[XK_r] = 27,
+	[XK_t] = 28,
+	[XK_y] = 29,
+	[XK_u] = 30,
+	[XK_i] = 31,
+	[XK_o] = 32,
+	[XK_p] = 33,
+	[XK_a] = 38,
+	[XK_s] = 39,
+	[XK_d] = 40,
+	[XK_f] = 41,
+	[XK_g] = 42,
+	[XK_h] = 43,
+	[XK_j] = 44,
+	[XK_k] = 45,
+	[XK_l] = 46,
+	[XK_semicolon] = 47,
+	[XK_apostrophe] = 48,
+	[XK_grave] = 49,
+	[XK_backslash] = 51,
+	[XK_z] = 52,
+	[XK_x] = 53,
+	[XK_c] = 54,
+	[XK_v] = 55,
+	[XK_b] = 56,
+	[XK_n] = 57,
+	[XK_m] = 58,
+	[XK_comma] = 59,
+	[XK_period] = 60,
+	[XK_slash] = 61,
+	[XK_space] = 65,
+};
+
+static const size_t sym_table_sz = sizeof(sym_table)/sizeof(sym_table[0]);
+
 static uint8_t normalize_keycode(uint8_t code) {
 	/* 
 	 * NOTE: In theory the X server doesn't encode any information in the
@@ -121,6 +160,11 @@ static uint8_t normalize_keycode(uint8_t code) {
 	 * In practice the code appears to correspond to the evdev code which
 	 * generated the X code + 8. This is the basis for our X code map.
 	 */
+
+	KeySym sym = XKeycodeToKeysym(dpy, code, 0);
+
+	if (sym < sym_table_sz && sym_table[sym])
+		code = sym_table[sym];
 
 	return code-8;
 }
