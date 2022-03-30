@@ -227,9 +227,14 @@ for name, _, val, desc in opts:
     optstr += '*%s*: %s (default: %s).\n\n' % (name, desc, val)
 
 print("Generating README.md")
-print("man.md")
-subprocess.run(["/bin/sh", "-c", "scdoc|gzip > warpd.1.gz"],
-               input=open('man.md', 'r').read().replace('{opts}', optstr).encode('utf8'))
+print("Generating man page")
+
+markdown = open('warpd.scdoc', 'r').read().replace(
+    '{opts}', optstr).encode('utf8')
+open('man.md', 'wb').write(markdown)
+
+subprocess.run(["/bin/sh", "-c", "scdoc < man.md|gzip > warpd.1.gz"])
+
 print("Generating src/cfg.c")
 open('src/cfg.c', 'w').write(c)
 print("Generating src/cfg.h")

@@ -100,7 +100,7 @@ A drag movement can be simulated from any of the above modes by focusing on the
 source and then pressing the `drag_key` (default `v`) which will cause normal
 mode to be activated for selection of the drag target.
 
-A more comprehensive description can be found in the man page (along with a list of options).
+A more comprehensive description can be found in the [man page](man.md) (along with a list of options).
 
 # Packages:
 
