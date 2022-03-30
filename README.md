@@ -80,7 +80,7 @@ make && sudo make install
 1. Run `warpd` 
 
 ## Hint Mode
-2. Press `A-M-x` to generate a list of hints
+2. Press `A-M-x` (`alt+meta+x`) to generate a list of hints
 3. Enter the key sequence associated with the desired target to warp the pointer to that location and enter normal mode.
 4. Use the normal mode movement keys to select the final desination (see Normal Mode). 
 
