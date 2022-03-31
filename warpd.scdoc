@@ -123,12 +123,12 @@ first be less intuitive).
   See [Issue #3](https://github.com/rvaiya/warpd/issues/3#issuecomment-628936249) 
   for details.
 
-- Unplugging the keyboard whlie warpd is one of its active modes will cause
-  pandemonium.  If you do this you may need to remotely ssh into the machine or
-  switch to a VT to kill the process (don't do this :P).
+- Unplugging the keyboard while warpd is one of its active modes will cause
+  pandemonium.  If you do this (don't :P), you may need to remotely ssh into
+  the machine or switch to a VT to kill the process.
 
 - warpd uses Xinput for input processing to bypass certain limitation of the X
   input system. A byproduct of this is that certain remapping tools will not
   work (e.g xcape). If you are in the habit of making unorthodox changes to
   your keymap (like remapping capslock to control/escape) you may want to try
-  and evdev based remapper like keyd (https://github.com/rvaiya/keyd).
+  an evdev based remapper like keyd (https://github.com/rvaiya/keyd).

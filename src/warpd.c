@@ -212,6 +212,7 @@ int main(int argc, char *argv[])
 	if (!foreground_flag)
 		daemonize();
 
+	setvbuf(stdout, NULL, _IOLBF, 0);
 	printf("Starting warpd: "VERSION"\n");
 
 	start_main_loop(main_loop);

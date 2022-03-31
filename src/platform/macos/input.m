@@ -39,6 +39,7 @@ static size_t grabbed_keys_sz = 0;
 static uint8_t passthrough_keys[256] = {0};
 
 static int keystate[256] = {0};
+static CFMachPortRef tap;
 
 struct mod {
 	uint8_t mask;
@@ -86,11 +87,22 @@ static int read_message(int fd, void *msg, ssize_t sz, int timeout)
 
 static CGEventRef eventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef event, void* context)
 {
+	size_t i;
+	int is_key_event = 0;
+
 	uint8_t code = 0;
 	uint8_t pressed = 0;
+	uint8_t mods = 0;
+
 	static uint8_t active_mods = 0;
 	static uint8_t keymods[256] = {0}; /* Mods active at key down time. */
 	static long pressed_timestamps[256];
+
+	/* macOS will timeout the event tap, so we have to re-enable it :/ */
+	if (type == kCGEventTapDisabledByTimeout) {
+		CGEventTapEnable(tap, true);
+		return event;
+	}
 
 	/* If only apple designed its system APIs like its macbooks... */
 	switch (type) {
@@ -106,93 +118,91 @@ static CGEventRef eventTapCallback(CGEventTapProxy proxy, CGEventType type, CGEv
 		 * pass other system events through, things like sticky keys
 		 * rely on this for visual notifications
 		 */
-		if (nsev.subtype != NX_SUBTYPE_AUX_CONTROL_BUTTONS)
-			return event;
+		if (nsev.subtype == NX_SUBTYPE_AUX_CONTROL_BUTTONS)
+			is_key_event = 1;
 
 		break;
 	case kCGEventFlagsChanged: /* modifier codes */
 		code = CGEventGetIntegerValueField(event, kCGKeyboardEventKeycode)+1;
 
 		pressed = !keystate[code];
+
+		is_key_event = 1;
 		break;
 	case kCGEventKeyDown:
 	case kCGEventKeyUp:
 		/* We shift codes up by 1 so 0 is not a valid code. This is accounted for in the name table. */
 		code = CGEventGetIntegerValueField(event, kCGKeyboardEventKeycode)+1;
 		pressed = type == kCGEventKeyDown;
+
+		is_key_event = 1;
 		break;
 	default:
 		break;
 	}
 
-	/* key event. */
-	if (code) {
-		uint8_t mods;
-		size_t i;
+	if (!is_key_event)
+		return event;
 
-		/* repeat event.. */
-		if (keystate[code] && pressed)
-			pressed = 2;
 
-		if (pressed == 1)
-			pressed_timestamps[code] = get_time_ms();
+	/* repeat event.. */
+	if (keystate[code] && pressed)
+		pressed = 2;
+	else if (pressed == 1)
+		pressed_timestamps[code] = get_time_ms();
 
-		if (passthrough_keys[code]) {
-			passthrough_keys[code]--;
-			return event;
-		}
-
-		/* compute the active mod set */
-		for (i = 0; i < sizeof modifiers / sizeof modifiers[0]; i++) {
-			struct mod *mod = &modifiers[i];
-
-			if (code == mod->code1 || code == mod->code2) {
-				if (pressed)
-					active_mods |= mod->mask;
-				else
-					active_mods &= ~mod->mask;
-			}
-
-		}
-
-		/* ensure mods are consistent across keydown/up events. */
-		if (pressed == 0) {
-			mods = keymods[code];
-		} else if(pressed == 1) {
-			mods = active_mods;
-			keymods[code] = mods;
-		}
-
-		/* report all non-repeat events */
-		if (pressed != 2) {
-			struct input_event ev;
-
-			ev.code = code;
-			ev.pressed = pressed;
-			ev.mods = mods;
-
-			write_message(input_fds[1], &ev, sizeof ev);
-		}
-
-		keystate[code] = pressed;
-
-		for (i = 0; i < grabbed_keys_sz; i++)
-			if (grabbed_keys[i].code == code && grabbed_keys[i].mods == active_mods) {
-				grabbed = 1;
-				grabbed_time = get_time_ms();
-				return nil;
-			}
-
-		if (grabbed) {
-			/* if the keydown occurred before the grab, allow the keyup to pass through. */
-			if (pressed || pressed_timestamps[code] > grabbed_time) {
-				return nil;
-			}
-		}
-
-		//printf("Allowing %s %d\n", input_lookup_name(code), pressed);
+	if (passthrough_keys[code]) {
+		passthrough_keys[code]--;
+		return event;
 	}
 
+	/* compute the active mod set */
+	for (i = 0; i < sizeof modifiers / sizeof modifiers[0]; i++) {
+		struct mod *mod = &modifiers[i];
+
+		if (code == mod->code1 || code == mod->code2) {
+			if (pressed)
+				active_mods |= mod->mask;
+			else
+				active_mods &= ~mod->mask;
+		}
+
+	}
+
+	/* ensure mods are consistent across keydown/up events. */
+	if (pressed == 0) {
+		mods = keymods[code];
+	} else if(pressed == 1) {
+		mods = active_mods;
+		keymods[code] = mods;
+	}
+
+	/* report all non-repeat events */
+	if (pressed != 2) {
+		struct input_event ev;
+
+		ev.code = code;
+		ev.pressed = pressed;
+		ev.mods = mods;
+
+		write_message(input_fds[1], &ev, sizeof ev);
+	}
+
+	keystate[code] = pressed;
+
+	for (i = 0; i < grabbed_keys_sz; i++)
+		if (grabbed_keys[i].code == code && grabbed_keys[i].mods == active_mods) {
+			grabbed = 1;
+			grabbed_time = get_time_ms();
+			return nil;
+		}
+
+	if (grabbed) {
+		/* if the keydown occurred before the grab, allow the keyup to pass through. */
+		if (pressed || pressed_timestamps[code] > grabbed_time) {
+			return nil;
+		}
+	}
 	return event;
 }
 
@@ -291,7 +301,7 @@ struct input_event *input_wait(struct input_event *keys, size_t sz)
 /* called by the main thread to set up event stream. */
 void macos_init_input()
 {
-	CFMachPortRef tap = CGEventTapCreate(kCGHIDEventTap,
+	tap = CGEventTapCreate(kCGHIDEventTap,
 			kCGHeadInsertEventTap,
 			0, kCGEventMaskForAllEvents,
 			eventTapCallback, NULL);
