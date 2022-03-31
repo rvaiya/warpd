@@ -301,6 +301,10 @@ struct input_event *input_wait(struct input_event *keys, size_t sz)
 /* called by the main thread to set up event stream. */
 void macos_init_input()
 {
+	/* Request accessibility access if not present. */
+	NSDictionary *options = @{(id)kAXTrustedCheckOptionPrompt: @YES};
+	AXIsProcessTrustedWithOptions((CFDictionaryRef)options);
+
 	tap = CGEventTapCreate(kCGHIDEventTap,
 			kCGHeadInsertEventTap,
 			0, kCGEventMaskForAllEvents,
