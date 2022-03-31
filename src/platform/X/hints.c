@@ -226,6 +226,7 @@ void hint_hide()
 
 static void showwin(Window win)
 {
+	XRaiseWindow(dpy, win);
 	XMoveWindow(dpy, win, 0, 0);
 }
 
