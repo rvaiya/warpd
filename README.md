@@ -6,19 +6,19 @@ Kaleidoscope, the firmware for the Keyboardio.
 
 # Demo
 
-## Hint Mode
+## Hint Mode `Alt-Meta-x`
 
 <p align="center">
 <img src="demo/hints.gif" height="400px"/>
 </p>
 
-## Grid Mode
+## Grid Mode `Alt-Meta-g`
 
 <p align="center">
 <img src="demo/warp.gif" height="400px"/>
 </p>
 
-## Normal Mode
+## Normal Mode `Alt-Meta-c`
 
 <p align="center">
 <img src="demo/discrete.gif" height="400px"/>
