@@ -46,12 +46,15 @@ static long get_time_us()
 
 static int tonum(uint8_t code)
 {
-	char c = input_lookup_name(code)[0];
+	const char *name = input_lookup_name(code);
 
-	if (c > '9' || c < '0')
+	if (!name)
 		return -1;
 
-	return c-'0';
+	if (name[0] > '9' || name[0] < '0')
+		return -1;
+
+	return name[0]-'0';
 }
 
 static void get_mouse_position(double *x, double *y)

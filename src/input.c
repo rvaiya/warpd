@@ -72,6 +72,7 @@ int input_parse_string(struct input_event *ev, const char *s)
 const char *input_event_tostr(struct input_event *ev)
 {
 	static char s[64];
+	const char *name = input_lookup_name(ev->code);
 	int i = 0;
 
 	if (!ev)
@@ -97,7 +98,8 @@ const char *input_event_tostr(struct input_event *ev)
 		s[i++] = '-';
 	}
 
-	strcpy(s+i, input_lookup_name(ev->code));
+
+	strcpy(s+i, name ? name : "UNDEFINED");
 	return s;
 }
 

@@ -29,7 +29,7 @@
 
 /* TODO: make sure names are consistent with the linux map. */
 
-const char *input_code_names[] = {
+const char *input_code_names[256] = {
 	[1] = "a",
 	[2] = "s",
 	[3] = "d",

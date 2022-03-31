@@ -91,6 +91,8 @@ static char code_to_char(uint8_t code)
 {
 	const char *s = input_lookup_name(code);
 
+	if (!s)
+		return 0;
 	if (strlen(s) == 1)
 		return s[0];
 	if (!strcmp(s, "comma"))

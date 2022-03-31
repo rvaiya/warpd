@@ -170,7 +170,13 @@ static void daemonize()
 
 static void print_keys()
 {
-	/* TODO: implement */
+	size_t i;
+	for (i = 0; i < 256; i++) {
+		const char *name = input_lookup_name(i);
+
+		if (name)
+			printf("%s\n", name);
+	}
 }
 
 static void print_version()

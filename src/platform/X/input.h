@@ -29,7 +29,7 @@ struct keycode_table_ent {
 	const char *shifted_name;
 };
 
-static const struct keycode_table_ent keycode_table[] = {
+static const struct keycode_table_ent keycode_table[256] = {
 	[1] = { "esc", "escape", "" },
 	[2] = { "1", "", "!" },
 	[3] = { "2", "", "@" },
@@ -224,11 +224,6 @@ static const struct keycode_table_ent keycode_table[] = {
 	[192] = { "f22", "", "" },
 	[193] = { "f23", "", "" },
 	[194] = { "f24", "", "" },
-	[195] = { "(null)", "", "" },
-	[196] = { "(null)", "", "" },
-	[197] = { "(null)", "", "" },
-	[198] = { "(null)", "", "" },
-	[199] = { "(null)", "", "" },
 	[200] = { "playcd", "", "" },
 	[201] = { "pausecd", "", "" },
 	[202] = { "prog3", "", "" },
@@ -257,9 +252,6 @@ static const struct keycode_table_ent keycode_table[] = {
 	[225] = { "brightnessup", "", "" },
 	[226] = { "media", "", "" },
 	[227] = { "switchvideomode", "", "" },
-	[228] = { "(null)", "", "" },
-	[229] = { "(null)", "", "" },
-	[230] = { "(null)", "", "" },
 	[231] = { "send", "", "" },
 	[232] = { "reply", "", "" },
 	[233] = { "forwardmail", "", "" },
@@ -274,7 +266,6 @@ static const struct keycode_table_ent keycode_table[] = {
 	[242] = { "prev", "", "" },
 	[243] = { "cycle", "", "" },
 	[244] = { "auto", "", "" },
-	[245] = { "(null)", "", "" },
 	[246] = { "wwan", "", "" },
 	[247] = { "rfkill", "", "" },
 	[248] = { "micmute", "", "" },

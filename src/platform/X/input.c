@@ -427,5 +427,5 @@ uint8_t input_lookup_code(const char *name)
 
 const char *input_lookup_name(uint8_t code)
 {
-	return keycode_table[code].name ? keycode_table[code].name : "UNDEFINED";
+	return keycode_table[code].name ? keycode_table[code].name : NULL;
 }
