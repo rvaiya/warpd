@@ -1,3 +1,9 @@
+# v1.0.3-beta
+
+ - macos: solicit accessibility whitelisting on initialization (#64)
+ - macos: cleanup input handling code + fix freezing (#65)
+ - Account for different X maps
+
 # v1.0.2-beta
 
  - macos: Fix sticky key visual indicators
