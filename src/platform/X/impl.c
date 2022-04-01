@@ -87,6 +87,21 @@ void screen_get_dimensions(int *sw, int *sh)
 	*sh = HeightOfScreen(DefaultScreenOfDisplay(dpy));
 }
 
+/*
+ * Disable shadows for compton based compositors.
+ *
+ * Ref: https://github.com/yshui/picom/blob/aa316aa3601a4f3ce9c1ca79932218ab574e61a7/src/win.c#L850
+ */
+static void disable_compton_shadow(Display *dpy, Window w)
+{
+	Atom _COMPTON_SHADOW = XInternAtom (dpy, "_COMPTON_SHADOW", False);
+	unsigned int v = 0;
+
+	XChangeProperty(dpy, w, _COMPTON_SHADOW,
+			XA_CARDINAL, 32, PropModeReplace,
+			(unsigned char *) &v, 1L);
+}
+
 static void set_opacity(Display *dpy, Window w, uint8_t _opacity) 
 {
 	Atom OPACITY_ATOM = XInternAtom (dpy, "_NET_WM_WINDOW_OPACITY", False);
@@ -203,6 +218,7 @@ Window create_window(const char *color, int x, int y, int w, int h)
 
 
 	set_opacity(dpy, win, a);
+	disable_compton_shadow(dpy, win);
 	hint = XAllocClassHint();
 	hint->res_name = "warpd";
 	hint->res_class = "warpd";
