@@ -23,22 +23,20 @@
 #include "warpd.h"
 
 #ifdef __APPLE__
-const int factor = 1;
+#define factor 1
 #else
-const int factor = 50;
+#define factor 50
 #endif
 
-int fling_velocity = 2000/factor;
-
-static long last_tick = 0;
+#define fling_velocity	(2000.0/factor);
 
 /* terminal velocity */
-const float vt = 9000/factor;
-const float v0 = 300/factor;
+#define vt	(9000.0/factor)
+#define v0	(300.0/factor)
+#define da0	(-3400.0/factor) /* deceleration */
+#define a0	(1600.0/factor)
 
-const float da0 = -3400/factor; /* deceleration */
-
-const float a0 = 1600/factor;
+static long last_tick = 0;
 
 /* in scroll units per second. */
 static float v = 0;

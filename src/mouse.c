@@ -21,6 +21,7 @@
  */
 
 #include "warpd.h"
+#include <time.h>
 
 /* constants */
 

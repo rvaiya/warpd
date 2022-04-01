@@ -23,9 +23,14 @@
 #ifndef WARPD
 #define WARPD
 
+#ifndef _POSIX_C_SOURCE
+#define _POSIX_C_SOURCE 200809L
+#endif
+
 #include "cfg.h"
 #include "platform.h"
 #include <time.h>
+#include <string.h>
 #include <stdio.h>
 
 extern struct cfg *cfg;

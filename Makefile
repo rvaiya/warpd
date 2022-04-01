@@ -7,6 +7,7 @@ CFLAGS=-g\
 	-Wall\
 	-Wextra\
 	-pedantic\
+	-std=c99\
 	-Wno-unused-function\
 	-Wno-unused-parameter\
 	-Wno-deprecated-declarations\
