@@ -257,7 +257,7 @@ void xgrab_key(uint8_t code, uint8_t mods)
 
 	XGrabKey(dpy,
 		 xcode,
-		 xmods, /* numlock */
+		 xmods | Mod2Mask, /* numlock */
 		 DefaultRootWindow(dpy),
 		 False,
 		 GrabModeAsync, GrabModeAsync);
