@@ -1,35 +1,19 @@
-/* Copyright © 2019 Raheman Vaiya.
+/*
+ * warpd - A keyboard-driven modal pointer.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the "Software"),
- * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense,
- * and/or sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice (including the next
- * paragraph) shall be included in all copies or substantial portions of the
- * Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
- * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
+ * © 2019 Raheman Vaiya (see: LICENSE).
  */
 
 #include "warpd.h"
 
-#include <sys/stat.h>
-#include <sys/file.h>
-#include <stdio.h>
 #include <fcntl.h>
+#include <stdio.h>
+#include <sys/file.h>
+#include <sys/stat.h>
 
 struct cfg *cfg;
-static int dragging = 0;
-char config_dir[512];
+static int  dragging = 0;
+char	    config_dir[512];
 
 void toggle_drag()
 {
@@ -48,28 +32,28 @@ static void activation_loop(int mode)
 
 	while (1) {
 		switch (mode) {
-			case MODE_NORMAL:
-				ev = normal_mode(ev);
+		case MODE_NORMAL:
+			ev = normal_mode(ev);
 
-				if (input_event_eq(ev, cfg->hint))
-					mode = MODE_HINT;
-				else if (input_event_eq(ev, cfg->grid))
-					mode = MODE_GRID;
-				else if (input_event_eq(ev, cfg->exit) || !ev)
-					goto exit;
+			if (input_event_eq(ev, cfg->hint))
+				mode = MODE_HINT;
+			else if (input_event_eq(ev, cfg->grid))
+				mode = MODE_GRID;
+			else if (input_event_eq(ev, cfg->exit) || !ev)
+				goto exit;
 
-				break;
-			case MODE_HINT:
-				if (hint_mode() < 0)
-					goto exit;
+			break;
+		case MODE_HINT:
+			if (hint_mode() < 0)
+				goto exit;
 
-				ev = NULL;
-				mode = MODE_NORMAL;
-				break;
-			case MODE_GRID:
-				ev = grid_mode();
-				mode = MODE_NORMAL;
-				break;
+			ev = NULL;
+			mode = MODE_NORMAL;
+			break;
+		case MODE_GRID:
+			ev = grid_mode();
+			mode = MODE_NORMAL;
+			break;
 		}
 	}
 
@@ -85,11 +69,11 @@ static void normalize_dimensions()
 
 	screen_get_dimensions(&sw, &sh);
 
-	cfg->speed = (cfg->speed * sh)/1080;
-	cfg->hint_size = (cfg->hint_size * sh)/1080;
-	cfg->cursor_size = (cfg->cursor_size * sh)/1080;
-	cfg->grid_size = (cfg->grid_size * sh)/1080;
-	cfg->grid_border_size = (cfg->grid_border_size * sh)/1080;
+	cfg->speed = (cfg->speed * sh) / 1080;
+	cfg->hint_size = (cfg->hint_size * sh) / 1080;
+	cfg->cursor_size = (cfg->cursor_size * sh) / 1080;
+	cfg->grid_size = (cfg->grid_size * sh) / 1080;
+	cfg->grid_border_size = (cfg->grid_border_size * sh) / 1080;
 }
 
 static void main_loop()
@@ -108,8 +92,8 @@ static void main_loop()
 	input_parse_string(&activation_events[2], cfg->grid_activation_key);
 	input_parse_string(&activation_events[3], cfg->hint_oneshot_key);
 
-	while(1) {
-		int mode = 0;
+	while (1) {
+		int		    mode = 0;
 		struct input_event *ev = input_wait(activation_events, 4);
 
 		if (input_event_eq(ev, cfg->activation_key))
@@ -130,7 +114,7 @@ static void main_loop()
 static void lock()
 {
 	char path[1024];
-	int fd;
+	int  fd;
 	sprintf(path, "%s/lock", config_dir);
 
 	if ((fd = open(path, O_CREAT | O_RDWR, 0600)) == -1) {
@@ -139,7 +123,9 @@ static void lock()
 	}
 
 	if (flock(fd, LOCK_EX | LOCK_NB) == -1) {
-		fprintf(stderr, "ERROR: Another instance of warpd is already running.\n");
+		fprintf(
+		    stderr,
+		    "ERROR: Another instance of warpd is already running.\n");
 		exit(-1);
 	}
 }
@@ -148,8 +134,10 @@ static void daemonize()
 {
 	char path[1024];
 
-	if (fork()) exit(0);
-	if (fork()) exit(0);
+	if (fork())
+		exit(0);
+	if (fork())
+		exit(0);
 
 	sprintf(path, "%s/warpd.log", config_dir);
 	printf("daemonizing, log output stored in %s.\n", path);
@@ -158,7 +146,6 @@ static void daemonize()
 	if (fd < 0) {
 		perror("open");
 		exit(-1);
-
 	}
 
 	close(1);
@@ -181,17 +168,18 @@ static void print_keys()
 
 static void print_version()
 {
-	printf("warpd v"VERSION" (built from: "COMMIT")\n");
+	printf("warpd v" VERSION " (built from: " COMMIT ")\n");
 }
 
 int main(int argc, char *argv[])
 {
-	int foreground_flag = 0;
-	char config_path[1024];
+	int	    foreground_flag = 0;
+	char	    config_path[1024];
 	const char *home = getenv("HOME");
 
 	if (!home) {
-		fprintf(stderr, "ERROR: Could not resolve home directory, aborting...");
+		fprintf(stderr,
+			"ERROR: Could not resolve home directory, aborting...");
 		exit(-1);
 	}
 
@@ -219,7 +207,7 @@ int main(int argc, char *argv[])
 		daemonize();
 
 	setvbuf(stdout, NULL, _IOLBF, 0);
-	printf("Starting warpd: "VERSION"\n");
+	printf("Starting warpd: " VERSION "\n");
 
 	start_main_loop(main_loop);
 }

@@ -1,23 +1,7 @@
-/* Copyright © 2019 Raheman Vaiya.
+/*
+ * warpd - A keyboard-driven modal pointer.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the "Software"),
- * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense,
- * and/or sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice (including the next
- * paragraph) shall be included in all copies or substantial portions of the
- * Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
- * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
- * DEALINGS IN THE SOFTWARE.
+ * © 2019 Raheman Vaiya (see: LICENSE).
  */
 
 #include "warpd.h"
@@ -28,13 +12,13 @@
 #define factor 50
 #endif
 
-#define fling_velocity	(2000.0/factor);
+#define fling_velocity (2000.0 / factor);
 
 /* terminal velocity */
-#define vt	(9000.0/factor)
-#define v0	(300.0/factor)
-#define da0	(-3400.0/factor) /* deceleration */
-#define a0	(1600.0/factor)
+#define vt  (9000.0 / factor)
+#define v0  (300.0 / factor)
+#define da0 (-3400.0 / factor) /* deceleration */
+#define a0  (1600.0 / factor)
 
 static long last_tick = 0;
 
@@ -47,12 +31,11 @@ static int direction = 0;
 
 static long traveled = 0; /* scroll units emitted. */
 
-
 static long get_time_ms()
 {
 	struct timespec ts;
 	clock_gettime(CLOCK_MONOTONIC, &ts);
-	return ts.tv_nsec/1E6 + ts.tv_sec*1E3;
+	return ts.tv_nsec / 1E6 + ts.tv_sec * 1E3;
 }
 
 void scroll_tick()
@@ -60,12 +43,14 @@ void scroll_tick()
 	int i;
 	/* Non zero to provide the illusion of continuous scrolling */
 
-	const float t = (float)(get_time_ms()-last_tick); //time elapsed since last tick in ms
+	const float t =
+	    (float)(get_time_ms() -
+		    last_tick); // time elapsed since last tick in ms
 	last_tick = get_time_ms();
 
 	/* distance traveled since the last tick */
-	d += v*(t/1000) + .5 * a * (t/1000) * (t/1000);
-	v += a * (t/1000);
+	d += v * (t / 1000) + .5 * a * (t / 1000) * (t / 1000);
+	v += a * (t / 1000);
 
 	if (v < 0) {
 		v = 0;
@@ -78,10 +63,10 @@ void scroll_tick()
 		a = 0;
 	}
 
-	for (i = 0; i < (long)d-traveled; i++)
+	for (i = 0; i < (long)d - traveled; i++)
 		scroll(direction);
 
-	traveled = (long) d;
+	traveled = (long)d;
 }
 
 void scroll_stop()
@@ -92,10 +77,7 @@ void scroll_stop()
 	d = 0;
 }
 
-void scroll_decelerate()
-{
-	a = da0;
-}
+void scroll_decelerate() { a = da0; }
 
 void scroll_accelerate(int _direction)
 {
@@ -109,7 +91,4 @@ void scroll_accelerate(int _direction)
 	}
 }
 
-void scroll_impart_impulse()
-{
-	v += fling_velocity;
-}
+void scroll_impart_impulse() { v += fling_velocity; }

@@ -41,6 +41,8 @@ OBJECTS=$(FILES:.c=.o) $(PLATFORM_OBJECTS)
 all: $(OBJECTS)
 	-mkdir bin
 	$(CC)  $(CFLAGS) -o bin/warpd $(OBJECTS) $(PLATFORM_FLAGS)
+fmt:
+	find . -name '*.[chm]' ! -name 'cfg.[ch]'|xargs clang-format -i
 assets:
 	./gen_assets.py 
 clean:
