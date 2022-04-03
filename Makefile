@@ -4,15 +4,15 @@ DESTDIR=
 PREFIX=/usr
 
 CFLAGS=-g\
-	-Wall\
-	-Wextra\
-	-pedantic\
-	-std=c99\
-	-Wno-unused-function\
-	-Wno-unused-parameter\
-	-Wno-deprecated-declarations\
-	-DVERSION=\"$(VERSION)\"\
-	-DCOMMIT=\"$(COMMIT)\"
+       -Wall\
+       -Wextra\
+       -std=c99\
+       -pedantic\
+       -Wno-unused-function\
+       -Wno-unused-parameter\
+       -Wno-deprecated-declarations\
+       -DVERSION=\"$(VERSION)\"\
+       -DCOMMIT=\"$(COMMIT)\"
 
 ifeq ($(shell uname), Darwin)
 	PLATFORM_FLAGS=-framework cocoa

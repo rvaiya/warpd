@@ -6,18 +6,15 @@
 
 #include "warpd.h"
 
-#include <fcntl.h>
-#include <stdio.h>
-#include <sys/file.h>
-#include <sys/stat.h>
+struct cfg	*cfg;
+char		config_dir[512];
 
-struct cfg *cfg;
-static int  dragging = 0;
-char	    config_dir[512];
+static int	dragging = 0;
 
 void toggle_drag()
 {
 	dragging = !dragging;
+
 	if (dragging)
 		mouse_down(1);
 	else
@@ -123,9 +120,7 @@ static void lock()
 	}
 
 	if (flock(fd, LOCK_EX | LOCK_NB) == -1) {
-		fprintf(
-		    stderr,
-		    "ERROR: Another instance of warpd is already running.\n");
+		fprintf(stderr, "ERROR: Another instance of warpd is already running.\n");
 		exit(-1);
 	}
 }

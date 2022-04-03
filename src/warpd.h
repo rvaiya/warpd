@@ -4,11 +4,13 @@
  * © 2019 Raheman Vaiya (see: LICENSE).
  */
 
-#ifndef WARPD
-#define WARPD
+#ifndef WARPD_H
+#define WARPD_H
 
+#ifndef __APPLE__
 #ifndef _POSIX_C_SOURCE
 #define _POSIX_C_SOURCE 200809L
+#endif
 #endif
 
 #include "cfg.h"
@@ -16,6 +18,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include <sys/stat.h>
+#include <sys/file.h>
+#include <fcntl.h>
 
 extern struct cfg *cfg;
 

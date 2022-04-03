@@ -78,8 +78,9 @@ struct cfg *parse_cfg(const char *fname)
 	FILE		*fp = fopen(fname, "r");
 
 	line = NULL;
+    ln = 0;
 
-		cfg->hint_activation_key = strdup("A-M-x");
+	cfg->hint_activation_key = strdup("A-M-x");
 	cfg->grid_activation_key = strdup("A-M-g");
 	cfg->activation_key = strdup("A-M-c");
 	cfg->hint_oneshot_key = strdup("A-M-l");
