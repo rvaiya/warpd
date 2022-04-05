@@ -122,6 +122,8 @@ will be scaled according to the current dimensions.
 
 *oneshot_timeout*: The length of time in miliseconds to wait for a second click after a oneshot key has been pressed. (default: 300).
 
+*grid_exit*: Exit grid mode and return to normal mode. (default: c).
+
 *exit*: Exit the currently active warpd session. (default: esc).
 
 *drag*: Toggle drag mode (mneominc (v)isual mode). (default: v).
@@ -140,7 +142,7 @@ will be scaled according to the current dimensions.
 
 *right*: Move the cursor right in normal mode. (default: l).
 
-*cursor_color*: The color of the pointer in normal mode (rgba hex value). (default: #00ff00).
+*cursor_color*: The color of the pointer in normal mode (rgba hex value). (default: #FF4500).
 
 *cursor_size*: The height of the pointer in normal mode. (default: 7).
 
@@ -172,7 +174,7 @@ will be scaled according to the current dimensions.
 
 *grid_keys*: A sequence of comma delimited keybindings which are ordered bookwise with respect to grid position. (default: u,i,j,k).
 
-*grid_color*: The color of the grid. (default: #ff0000).
+*grid_color*: The color of the grid. (default: #1c1c1e).
 
 *grid_size*: The thickness of grid lines in pixels. (default: 4).
 
@@ -186,7 +188,7 @@ will be scaled according to the current dimensions.
 
 *hint_fgcolor*: The foreground hint color. (default: #a1aba7).
 
-*hint_border_radius*: Border radius. (default: 3).
+*hint_border_radius*: Border radius (note: this may incur a performance penalty). (default: 3).
 
 *scroll_down*: Scroll down key. (default: e).
 
@@ -211,9 +213,12 @@ first be less intuitive).
 
 # Limitations/Bugs
 
-- No multi monitor support (it may still work by treating the entire display as
-  one giant screen, I haven't tried this). If you desire this feature feel free
-  to lobby for it in a github issue.
+- Multiscreen support currently does not support hotplugging. This means that
+  you must restart warpd after making any changes to your screen configuration.
+
+- For implementation reasons, the cursor position is not horizontally centered,
+  but to the right of the actual pointer. This generally isn't an issue,
+  but may become more noticeable as you increase _cursor_size_.
 
 - Programs which use Xinput to directly manipulate input devices may misbehave.
   See [Issue #3](https://github.com/rvaiya/warpd/issues/3#issuecomment-628936249) 
@@ -228,3 +233,6 @@ first be less intuitive).
   work (e.g xcape). If you are in the habit of making unorthodox changes to
   your keymap (like remapping capslock to control/escape) you may want to try
   an evdev based remapper like keyd (https://github.com/rvaiya/keyd).
+
+- Cursor hiding on macOS relies on a hack that some programs ignore (e.g iTerm).
+  Consequently the original cursor will sometimes overlap warpd's.

@@ -1,24 +1,11 @@
 /*
- * warpd - A keyboard-driven modal pointer.
+ * warpd - A modal keyboard-driven pointing system.
  *
  * © 2019 Raheman Vaiya (see: LICENSE).
  */
 
-#include <X11/Xlib.h>
-#include <X11/extensions/XInput2.h>
-#include <X11/extensions/XTest.h>
-#include <X11/keysym.h>
-#include <assert.h>
-#include <ctype.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/time.h>
-#include <unistd.h>
-
-#include "impl.h"
 #include "input.h"
+#include "X.h"
 
 static int nr_grabbed_device_ids = 0;
 static int grabbed_device_ids[64];
@@ -191,7 +178,7 @@ static int	   input_xerr(Display *dpy, XErrorEvent *ev)
 	return 0;
 }
 
-void xgrab_key(uint8_t code, uint8_t mods)
+static void xgrab_key(uint8_t code, uint8_t mods)
 {
 	XSetErrorHandler(input_xerr);
 	int xcode = code + 8;
@@ -246,8 +233,7 @@ void input_grab_keyboard()
 		}
 	}
 
-	/* send a key up event for any depressed keys to avoid infinite repeat.
-	 */
+	/* send a key up event for any depressed keys to avoid infinite repeat. */
 	reset_keyboard();
 	XIFreeDeviceInfo(devices);
 
@@ -276,7 +262,7 @@ void input_ungrab_keyboard()
 		 * https://gitlab.freedesktop.org/xorg/lib/libxi/-/issues/11).
 		 *
 		 * This generally shouldn't happen unless the user
-		 * switches virtual terminals while keyd is running. We
+		 * switches virtual terminals while warpd is running. We
 		 * used to explicitly check for this and perform weird
 		 * hacks to mitigate against it, but now we only grab
 		 * the keyboard when the program is in one if its

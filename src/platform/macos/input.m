@@ -1,17 +1,11 @@
 /*
- * warpd - A keyboard-driven modal pointer.
+ * warpd - A modal keyboard-driven pointing system.
  *
  * © 2019 Raheman Vaiya (see: LICENSE).
  */
 
-#include <stddef.h>
-#include <stdio.h>
-
-#include "impl.h"
+#include "macos.h"
 #include "input.h"
-
-#import <ApplicationServices/ApplicationServices.h>
-#import <Cocoa/Cocoa.h>
 
 static int  grabbed = 0;
 static long grabbed_time;
@@ -49,7 +43,7 @@ static void write_message(int fd, void *msg, ssize_t sz)
 	assert(write(fd, msg, sz) == sz);
 }
 
-/* returns -1 if the timeout expires before a message is available. */
+/* Returns -1 if the timeout expires before a message is available. */
 static int read_message(int fd, void *msg, ssize_t sz, int timeout)
 {
 	fd_set fds;
@@ -100,29 +94,26 @@ static CGEventRef eventTapCallback(CGEventTapProxy proxy, CGEventType type,
 		pressed = !(nsev.data1 & 0x100);
 
 		/*
-		 * pass other system events through, things like sticky keys
-		 * rely on this for visual notifications
+		 * Pass other system events through, things like sticky keys
+		 * rely on NX_SYSDEFINED events for visual notifications.
 		 */
 		if (nsev.subtype == NX_SUBTYPE_AUX_CONTROL_BUTTONS)
 			is_key_event = 1;
 
 		break;
 	case kCGEventFlagsChanged: /* modifier codes */
-		code = CGEventGetIntegerValueField(event,
-						   kCGKeyboardEventKeycode) +
-		       1;
-
+		code = CGEventGetIntegerValueField(event, kCGKeyboardEventKeycode) + 1;
 		pressed = !keystate[code];
 
 		is_key_event = 1;
 		break;
 	case kCGEventKeyDown:
 	case kCGEventKeyUp:
-		/* We shift codes up by 1 so 0 is not a valid code. This is
-		 * accounted for in the name table. */
-		code = CGEventGetIntegerValueField(event,
-						   kCGKeyboardEventKeycode) +
-		       1;
+		/* 
+		 * We shift codes up by 1 so 0 is not a valid code. This is
+		 * accounted for in the name table. 
+		 */
+		code = CGEventGetIntegerValueField(event, kCGKeyboardEventKeycode) + 1;
 		pressed = type == kCGEventKeyDown;
 
 		is_key_event = 1;
@@ -145,7 +136,7 @@ static CGEventRef eventTapCallback(CGEventTapProxy proxy, CGEventType type,
 		return event;
 	}
 
-	/* compute the active mod set */
+	/* Compute the active mod set. */
 	for (i = 0; i < sizeof modifiers / sizeof modifiers[0]; i++) {
 		struct mod *mod = &modifiers[i];
 
@@ -157,7 +148,7 @@ static CGEventRef eventTapCallback(CGEventTapProxy proxy, CGEventType type,
 		}
 	}
 
-	/* ensure mods are consistent across keydown/up events. */
+	/* Ensure mods are consistent across keydown/up events. */
 	if (pressed == 0) {
 		mods = keymods[code];
 	} else if (pressed == 1) {
@@ -165,7 +156,7 @@ static CGEventRef eventTapCallback(CGEventTapProxy proxy, CGEventType type,
 		keymods[code] = mods;
 	}
 
-	/* report all non-repeat events */
+	/* Report all non-repeat events */
 	if (pressed != 2) {
 		struct input_event ev;
 
@@ -187,8 +178,7 @@ static CGEventRef eventTapCallback(CGEventTapProxy proxy, CGEventType type,
 		}
 
 	if (grabbed) {
-		/* if the keydown occurred before the grab, allow the keyup to
-		 * pass through. */
+		/* If the keydown occurred before the grab, allow the keyup to pass through. */
 		if (pressed || pressed_timestamps[code] > grabbed_time) {
 			return nil;
 		}
@@ -196,7 +186,10 @@ static CGEventRef eventTapCallback(CGEventTapProxy proxy, CGEventType type,
 	return event;
 }
 
-const char *input_lookup_name(uint8_t code) { return input_code_names[code]; }
+const char *input_lookup_name(uint8_t code) 
+{ 
+	return input_code_names[code]; 
+}
 
 uint8_t input_lookup_code(const char *name)
 {
@@ -223,8 +216,7 @@ static void _send_key(uint8_t code, int pressed)
 	passthrough_keys[code]++;
 	CGEventRef ev = CGEventCreateKeyboardEvent(NULL, code - 1, pressed);
 
-	/* quartz inspects the event flags instead of maintaining its own state
-	 */
+	/* quartz inspects the event flags instead of maintaining its own state */
 	if (command_down)
 		CGEventSetFlags(ev, kCGEventFlagMaskCommand);
 
@@ -235,14 +227,14 @@ static void _send_key(uint8_t code, int pressed)
 void send_key(uint8_t code, int pressed)
 {
 	dispatch_sync(dispatch_get_main_queue(), ^{
-	  _send_key(code, pressed);
+		_send_key(code, pressed);
 	});
 }
 
 void input_ungrab_keyboard()
 {
 	dispatch_sync(dispatch_get_main_queue(), ^{
-	  grabbed = 0;
+		grabbed = 0;
 	});
 }
 
@@ -252,8 +244,8 @@ void input_grab_keyboard()
 		return;
 
 	dispatch_sync(dispatch_get_main_queue(), ^{
-	  grabbed = 1;
-	  grabbed_time = get_time_ms();
+		grabbed = 1;
+		grabbed_time = get_time_ms();
 	});
 }
 
@@ -287,7 +279,7 @@ struct input_event *input_wait(struct input_event *keys, size_t sz)
 	}
 }
 
-/* called by the main thread to set up event stream. */
+/* Called by the main thread to set up event stream. */
 void macos_init_input()
 {
 	/* Request accessibility access if not present. */
@@ -307,8 +299,10 @@ void macos_init_input()
 
 	CFRunLoopSourceRef runLoopSource =
 	    CFMachPortCreateRunLoopSource(kCFAllocatorDefault, tap, 0);
+
 	CFRunLoopAddSource(CFRunLoopGetCurrent(), runLoopSource,
 			   kCFRunLoopCommonModes);
+
 	CGEventTapEnable(tap, true);
 
 	if (pipe(input_fds) < 0) {

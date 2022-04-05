@@ -1,15 +1,15 @@
 /*
- * warpd - A keyboard-driven modal pointer.
+ * warpd - A modal keyboard-driven pointing system.
  *
  * © 2019 Raheman Vaiya (see: LICENSE).
  */
 
 #include "warpd.h"
 
-struct cfg	*cfg;
-char		config_dir[512];
+struct cfg *cfg;
+char	    config_dir[512];
 
-static int	dragging = 0;
+static int dragging = 0;
 
 void toggle_drag()
 {
@@ -49,6 +49,8 @@ static void activation_loop(int mode)
 			break;
 		case MODE_GRID:
 			ev = grid_mode();
+			if (input_event_eq(ev, cfg->grid_exit))
+				ev = NULL;
 			mode = MODE_NORMAL;
 			break;
 		}
@@ -62,12 +64,14 @@ exit:
 
 static void normalize_dimensions()
 {
-	int sw, sh;
+	int	 sw, sh;
+	screen_t scr;
 
-	screen_get_dimensions(&sw, &sh);
+	// TODO: fixme (account for multi-screen setups)
+	mouse_get_position(&scr, NULL, NULL);
+	screen_get_dimensions(scr, &sw, &sh);
 
 	cfg->speed = (cfg->speed * sh) / 1080;
-	cfg->hint_size = (cfg->hint_size * sh) / 1080;
 	cfg->cursor_size = (cfg->cursor_size * sh) / 1080;
 	cfg->grid_size = (cfg->grid_size * sh) / 1080;
 	cfg->grid_border_size = (cfg->grid_border_size * sh) / 1080;
@@ -120,7 +124,9 @@ static void lock()
 	}
 
 	if (flock(fd, LOCK_EX | LOCK_NB) == -1) {
-		fprintf(stderr, "ERROR: Another instance of warpd is already running.\n");
+		fprintf(
+		    stderr,
+		    "ERROR: Another instance of warpd is already running.\n");
 		exit(-1);
 	}
 }

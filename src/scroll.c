@@ -1,5 +1,5 @@
 /*
- * warpd - A keyboard-driven modal pointer.
+ * warpd - A modal keyboard-driven pointing system.
  *
  * © 2019 Raheman Vaiya (see: LICENSE).
  */
@@ -77,7 +77,10 @@ void scroll_stop()
 	d = 0;
 }
 
-void scroll_decelerate() { a = da0; }
+void scroll_decelerate()
+{
+	a = da0;
+}
 
 void scroll_accelerate(int _direction)
 {
@@ -91,4 +94,7 @@ void scroll_accelerate(int _direction)
 	}
 }
 
-void scroll_impart_impulse() { v += fling_velocity; }
+void scroll_impart_impulse()
+{
+	v += fling_velocity;
+}

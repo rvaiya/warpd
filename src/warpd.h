@@ -1,7 +1,19 @@
 /*
- * warpd - A keyboard-driven modal pointer.
+ * warpd - A modal keyboard-driven pointing system.
  *
  * © 2019 Raheman Vaiya (see: LICENSE).
+ */
+
+/*
+ * DISCLAIMER: This was a small one off c file that ballooned into a small
+ * project, I did not originally plan to publish it. Consequently the code is
+ * ugly/will eat your face.
+ *
+ * I have subsequently tried to abstract away most of the platform specific
+ * ugliness with mixed results. Bits of the code may still make
+ * baby Jesus cry out in terror.
+ *
+ * You have been warned.
  */
 
 #ifndef WARPD_H
@@ -13,14 +25,15 @@
 #endif
 #endif
 
+#include <time.h>
 #include "cfg.h"
 #include "platform.h"
+#include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
-#include <time.h>
-#include <sys/stat.h>
 #include <sys/file.h>
-#include <fcntl.h>
+#include <sys/stat.h>
+#include <time.h>
 
 extern struct cfg *cfg;
 
@@ -31,8 +44,6 @@ enum {
 	MODE_GRID,
 	MODE_NORMAL,
 };
-
-void screen_get_dimensions(int *x, int *y);
 
 struct input_event *normal_mode(struct input_event *start_ev);
 struct input_event *grid_mode();

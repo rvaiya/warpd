@@ -1,8 +1,6 @@
-# Overview
+# What
 
-A small X program which provides a modal keyboard driven interface for cursor
-manipulation. The program was originally inspired by the mousekeys feature of
-Kaleidoscope, the firmware for the Keyboardio.
+A modal keyboard driven interface for mouse manipulation.
 
 # Demo
 
@@ -28,7 +26,7 @@ Kaleidoscope, the firmware for the Keyboardio.
 
 # Dependencies
 
-## Linux:
+## Linux (X only):
 
 The usual array of X libraries:
 
@@ -39,10 +37,12 @@ The usual array of X libraries:
  - libxtst
  - libx11
 
+Wayland is currently unsupported and may or may not be in
+the pipeline :P.
+
 ## MacOS:
 
  - The standard Xcode command line developer tools.
-
 
 # Installation
 
@@ -114,18 +114,13 @@ If you are interesting in adding warpd to your distribution's repository please 
 
 # Limitations/Bugs
 
-- No multi monitor support (it may still work by treating the entire display as
-  one giant screen, I haven't tried this). If you use this program and desire
-  this feature feel free to harass me via email or file an issue.
-
 - Programs which use Xinput and or Xtest for keyboard may not work correctly
   (e.g synergy). If a specific program which you feel should be working does
   not please file an [issue](https://github.com/rvaiya/warpd/issue).
 
-- This was a small one off c file that ballooned into a small project, I did
-  not originally plan to publish it. Consequently the code is ugly/will eat
-  your face. You have been warned.
-
+- The hack used for pointer hiding on OSX doesn't work on some programs (e.g
+  iTerm). The original cursor will consequently be visible in such cases,
+  though functionality should be otherwise unaffected.
 
 # Contributions
 

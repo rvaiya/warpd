@@ -1,143 +1,146 @@
 /*
- * warpd - A keyboard-driven modal pointer.
+ * warpd - A modal keyboard-driven pointing system.
  *
  * © 2019 Raheman Vaiya (see: LICENSE).
  */
 
-#include "impl.h"
-#include <Cocoa/Cocoa.h>
+#include "macos.h"
+
+struct drawing_hook {
+	void (*hook)(void *arg, NSView *view);
+	void *arg;
+
+	struct drawing_hook *next;
+};
 
 struct window {
 	NSWindow *win;
 
-	int visible;
-
-	int x;
-	int y;
-	int w;
-	int h;
+	struct drawing_hook *hooks;
 };
 
 @interface MainView : NSView
-@property void (*draw_fn)(NSView *view);
+@property struct window	*win;
 @end
 
 @implementation MainView
 /* Called by cocoa when the view needs to be redrawn. */
 - (void)drawRect:(NSRect)dirtyRect
 {
-	if (self.draw_fn)
-		self.draw_fn(self);
+	struct drawing_hook *hook;
+	struct window *win = self.win;
+
+	for (hook = win->hooks; hook; hook = hook->next)
+		hook->hook(hook->arg, self);
 }
 @end
 
-void window_show(struct window *win) { win->visible = 1; }
-
-void window_commit(struct window *win)
+/* 
+ * Wrap NSWindow in a nice C API, with a coordinate scheme based on the top
+ * left, where God (and the X developers) intended it :)
+ */
+void window_show(struct window *win) 
 {
-	dispatch_sync(dispatch_get_main_queue(), ^{
-	  NSRect fr = [[NSScreen mainScreen] frame];
-
-	  if (win->visible) {
-		  [win->win makeKeyAndOrderFront:nil];
-
-		  /* Adjust window coordinates from top/left */
-		  const int sh = fr.size.height;
-		  const int sw = fr.size.width;
-		  const int wh = [win->win frame].size.height;
-
-		  int y = sh - win->y - wh;
-		  int x = win->x;
-
-		  y = y < 0 ? 0 : y;
-		  x = win->x > sw - wh ? sw - wh : win->x;
-
-		  /* move */
-		  [win->win setFrameOrigin:NSMakePoint(x, y)];
-
-		  /* show */
-		  [win->win makeKeyAndOrderFront:nil];
-
-		  /* update (force redraw) */
-		  [[win->win contentView] setNeedsDisplay:TRUE];
-	  } else {
-		  [win->win orderOut:nil];
-	  }
-	});
+	[win->win makeKeyAndOrderFront:nil];
+	[[win->win contentView] setNeedsDisplay:TRUE];
 }
 
-void window_move(struct window *win, int x, int y)
+void window_unregister_draw_fn(struct window *win, void (*draw)(void *arg, NSView *view), void *arg)
 {
-	win->x = x;
-	win->y = y;
+
+	struct drawing_hook **h = &win->hooks;
+	while (*h) {
+		if ((*h)->hook == draw && (*h)->arg == arg) {
+			struct drawing_hook *tmp = *h;
+			*h = (*h)->next;
+			free(tmp);
+
+			return;
+		}
+		h = &(*h)->next;
+	}
 }
 
-void window_hide(struct window *win) { win->visible = 0; }
-
-struct window *create_overlay_window(void (*draw_fn)(NSView *view))
+void window_register_draw_fn(struct window *win, void (*draw)(void *arg, NSView *view), void *arg)
 {
-	struct window *win = malloc(sizeof(struct window));
+	struct drawing_hook **h = &win->hooks;
 
-	dispatch_sync(dispatch_get_main_queue(), ^{
-	  NSScreen *scr = [NSScreen mainScreen];
+	while (*h) {
+		if ((*h)->hook == draw && (*h)->arg == arg) {
+			struct drawing_hook *tmp = *h;
+			*h = (*h)->next;
+			free(tmp);
+		} else {
+			h = &(*h)->next;
+		}
+	}
 
-	  int sw = [scr frame].size.width;
-	  int sh = [scr frame].size.height;
+	*h = malloc(sizeof(struct drawing_hook));
+	(*h)->hook = draw;
+	(*h)->arg = arg;
+	(*h)->next = NULL;
+}
 
-	  NSWindow *nsWin = [[NSWindow alloc]
-	      initWithContentRect:NSMakeRect(0, 0, sw,
-					     sh) // Initial size and position
-			styleMask:NSWindowStyleMaskBorderless
-			  backing:NSBackingStoreBuffered
-			    defer:FALSE];
-	  /*
-	   * Make our custom view the main content view for the window.
-	   * Doing this will create an instance of the view and give it
-	   * the the frame (bounds) to that of the window. We can then use
-	   * our overloaded drawRect method to draw to the window using
-	   * the implicitly provided graphics context.
-	   */
+void window_move(struct window *win, struct screen *scr, int x, int y)
+{
+	const int wh = win->win.frame.size.height;
+	[win->win setFrameOrigin:NSMakePoint(scr->x + x, scr->y + scr->h - wh - y)];
+}
 
-	  MainView *view = [[MainView alloc] init];
-	  view.draw_fn = draw_fn;
+void window_hide(struct window *win) 
+{
+	[win->win orderOut:nil];
+}
 
-	  [nsWin setContentView:view];
+/* A fixed position, transparent, borderless window with the given dimensions and offset. */
+struct window *create_overlay_window(int x, int y, int w, int h)
+{
+	struct window *win = calloc(1, sizeof(struct window));
 
-	  [nsWin setBackgroundColor:[NSColor clearColor]];
-	  [nsWin makeKeyAndOrderFront:nil];
-	  [nsWin setLevel:NSMainMenuWindowLevel + 999];
+	NSWindow *nsWin = [[NSWindow alloc]
+	    initWithContentRect:NSMakeRect((float)x, (float)y, (float)w, (float)h) // Initial size and position
+		      styleMask:NSWindowStyleMaskBorderless
+			backing:NSBackingStoreBuffered
+			  defer:FALSE];
 
-	  win->win = nsWin;
+	/*
+	 * Make our custom view the main content view for the window.
+	 * Doing this will create an instance of the view and give it
+	 * the the frame (bounds) to that of the window. We can then use
+	 * our overloaded drawRect method to draw to the window using
+	 * the implicitly provided graphics context.
+	 */
 
-	  win->x = 0;
-	  win->y = 0;
-	  win->w = sw;
-	  win->h = sh;
-	});
+	MainView *view = [[MainView alloc] init];
+	view.win = win;
+
+	[nsWin setContentView:view];
+
+	[nsWin setBackgroundColor:[NSColor clearColor]];
+	[nsWin makeKeyAndOrderFront:nil];
+	[nsWin setLevel:NSMainMenuWindowLevel + 999];
+
+	win->win = nsWin;
 
 	return win;
 }
 
-struct window *create_window(const char *color, size_t sz)
+struct window *create_window(const char *color, size_t w, size_t h)
 {
-	struct window *win;
-	NSRect	       rect = NSMakeRect(0, 0, sz, sz);
-	NSColor *      _color = parse_color(color);
-	win = malloc(sizeof(struct window));
+	struct window	*win = calloc(1, sizeof(struct window));
+	NSRect		rect = NSMakeRect(0, 0, (float)w, (float)h);
 
-	dispatch_sync(dispatch_get_main_queue(), ^{
-	  NSWindow *nsWin =
-	      [[NSWindow alloc] initWithContentRect:rect
-					  styleMask:NSWindowStyleMaskBorderless
-					    backing:NSBackingStoreBuffered
-					      defer:FALSE];
+	NSWindow *nsWin = [[NSWindow alloc]
+	    initWithContentRect:rect
+		      styleMask:NSWindowStyleMaskBorderless
+			backing:NSBackingStoreBuffered
+			  defer:FALSE];
 
-	  [nsWin setBackgroundColor:_color];
-	  [nsWin setLevel:NSMainMenuWindowLevel + 9000];
-	  [nsWin makeKeyAndOrderFront:nil];
+	[nsWin setBackgroundColor:nscolor_from_hex(color)];
+	[nsWin setLevel:NSMainMenuWindowLevel + 9000];
+	[nsWin makeKeyAndOrderFront:nil];
 
-	  win->win = nsWin;
-	});
+	win->win = nsWin;
 
 	return win;
 }

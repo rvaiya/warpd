@@ -1,16 +1,14 @@
 COMMIT=$(shell git rev-parse --short HEAD)
-VERSION=1.0.3-beta
+VERSION=1.1.0-beta
 DESTDIR=
 PREFIX=/usr
 
 CFLAGS=-g\
        -Wall\
        -Wextra\
-       -std=c99\
        -pedantic\
-       -Wno-unused-function\
        -Wno-unused-parameter\
-       -Wno-deprecated-declarations\
+       -std=c99\
        -DVERSION=\"$(VERSION)\"\
        -DCOMMIT=\"$(COMMIT)\"
 
@@ -26,6 +24,7 @@ else
 
 	PLATFORM_FLAGS=-lXfixes\
 			-lXext\
+			-lXinerama\
 			-lXi\
 			-lXtst\
 			-lX11\
@@ -38,7 +37,7 @@ endif
 FILES=$(shell find src/*.c)
 OBJECTS=$(FILES:.c=.o) $(PLATFORM_OBJECTS)
 
-all: $(OBJECTS)
+all: clean $(OBJECTS)
 	-mkdir bin
 	$(CC)  $(CFLAGS) -o bin/warpd $(OBJECTS) $(PLATFORM_FLAGS)
 fmt:
@@ -46,7 +45,7 @@ fmt:
 assets:
 	./gen_assets.py 
 clean:
-	rm $(OBJECTS)
+	-rm $(OBJECTS)
 install:
 	install -m644 warpd.1.gz $(DESTDIR)/$(PREFIX)/share/man/man1/
 	install -m755 bin/warpd $(DESTDIR)/$(PREFIX)/bin/

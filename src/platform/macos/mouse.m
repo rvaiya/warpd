@@ -1,16 +1,10 @@
 /*
- * warpd - A keyboard-driven modal pointer.
+ * warpd - A modal keyboard-driven pointing system.
  *
  * © 2019 Raheman Vaiya (see: LICENSE).
  */
 
-#include <stddef.h>
-#include <stdio.h>
-
-#include "impl.h"
-
-#import <ApplicationServices/ApplicationServices.h>
-#import <Cocoa/Cocoa.h>
+#include "macos.h"
 
 static NSTimer *hider_timer = NULL;
 static int	hide_depth = 0;
@@ -111,72 +105,101 @@ void mouse_down(int btn)
 	do_mouse_click(btn, 1, 1);
 }
 
-void mouse_get_position(int *x, int *y)
+void mouse_get_position(struct screen **_scr, int *_x, int *_y)
 {
-	CGEventRef CGEv = CGEventCreate(NULL);
-	CGPoint	   current_pos = CGEventGetLocation(CGEv);
+	size_t i;
+	NSPoint loc = [NSEvent mouseLocation];
+	int x = loc.x;
+	int y = loc.y;
 
-	*x = current_pos.x;
-	*y = current_pos.y;
 
-	CFRelease(CGEv);
+	for (i = 0; i < nr_screens; i++) {
+		struct screen *scr = &screens[i];
+
+		if (x >= scr->x &&
+		    x <= scr->x+scr->w &&
+		    y >= scr->y &&
+		    y <= scr->y+scr->h) {
+			x -= scr->x;
+			y -= scr->y;
+
+			y = scr->h - y;
+
+			if (_x)
+				*_x = x;
+			if (_y)
+				*_y = y;
+			if (_scr)
+				*_scr = scr;
+			return;
+		}
+	}
+
+	fprintf(stderr, "Could not find active screen within (%d, %d)\n", x, y);
+	exit(-1);
 }
 
-void mouse_move(int x, int y)
+void mouse_move(struct screen *scr, int x, int y)
 {
-	const int type =
-	    dragging ? kCGEventLeftMouseDragged : kCGEventMouseMoved;
-	int sw, sh;
+	const int	type = dragging ? kCGEventLeftMouseDragged : kCGEventMouseMoved;
+	int		cgx, cgy;
 
-	screen_get_dimensions(&sw, &sh);
+	x += scr->x;
+	y = scr->y + scr->h - y;
 
-	if (y > sh)
-		y = sh;
-	if (x > sw)
-		x = sw;
-	if (x < 0)
-		x = 0;
-	if (y < 0)
-		y = 0;
+	/* 
+	 * CGEvents use a different coordinate system, so we have to convert between the
+	 * two.
+	 */
+
+	NSPoint		nspos = [NSEvent mouseLocation];	//LLO global coordinate system
+	CGEventRef	CGEv = CGEventCreate(NULL);
+	CGPoint		cgpos = CGEventGetLocation(CGEv);	//ULO global coordinate system :(
+
+	cgx = x - nspos.x + cgpos.x;
+	cgy = cgpos.y - (y - nspos.y);
 
 	CGEventRef ev =
-	    CGEventCreateMouseEvent(NULL, type, CGPointMake(x, y), 0);
+	    CGEventCreateMouseEvent(NULL, type, CGPointMake(cgx, cgy), 0);
 	CGEventPost(kCGHIDEventTap, ev);
 	CFRelease(ev);
 }
 
 void mouse_hide()
 {
-	/* Our kludge only works until the mouse is placed over the dock or
-	 * system toolbar, so we have to keep hiding the cursor :(. */
 	dispatch_sync(dispatch_get_main_queue(), ^{
-	  if (hider_timer)
-		  return;
-	  hider_timer =
-	      [NSTimer scheduledTimerWithTimeInterval:0.001
-					       target:[CursorHider alloc]
-					     selector:@selector(hide)
-					     userInfo:nil
-					      repeats:true];
+		if (hider_timer)
+			return;
+
+		/*
+		 * Our kludge only works until the mouse is placed over the dock
+		 * or system toolbar, so we have to keep hiding the cursor :(.
+		 */
+		hider_timer =
+		    [NSTimer scheduledTimerWithTimeInterval:0.001
+						     target:[CursorHider alloc]
+						   selector:@selector(hide)
+						   userInfo:nil
+						    repeats:true];
 	});
 }
 
 void mouse_show()
 {
 	dispatch_sync(dispatch_get_main_queue(), ^{
-	  int i;
+		int i;
 
-	  if (!hider_timer)
-		  return;
+		if (!hider_timer)
+			return;
 
-	  [hider_timer invalidate];
-	  hider_timer = NULL;
+		[hider_timer invalidate];
+		hider_timer = NULL;
 
-	  /* :( */
-	  for (i = 0; i < hide_depth; i++)
-		  CGDisplayShowCursor(kCGDirectMainDisplay);
+		/* :( */
+		for (i = 0; i < hide_depth; i++)
+			CGDisplayShowCursor(kCGDirectMainDisplay);
 
-	  hide_depth = 0;
+		hide_depth = 0;
 	});
 }
 

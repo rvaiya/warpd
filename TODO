@@ -1,16 +1,15 @@
-- update docs (emphasize vi-*like* (but not vi) nature)
+- update docs (emphasize vi-*like* (but non-vi) nature)
+- improve demos
 - cleanup gen_assets.py
-- better default colours.
-- make cursor size consistent across platforms.
-- tune default scroll constants.
+- screen hotplugging
+- accelerator key
+- insert mode
+- cursor centering hacks
+- screen selection mode
 
 maybe:
 
+- config hot reloading
 - visual grab indicator
-- pointer acceleration
 - grid undo/history
 - wayland port
-- non linear scroll acceleration
-
-bugs:
-	macos dock autohide isn't very responsive

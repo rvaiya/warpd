@@ -6,3 +6,4 @@ AlignConsecutiveMacros: true
 AlignConsecutiveAssignments: false
 AlignConsecutiveDeclarations: true
 PointerAlignment: Right
+ObjCBlockIndentWidth: 8

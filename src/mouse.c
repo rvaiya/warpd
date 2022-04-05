@@ -1,5 +1,5 @@
 /*
- * warpd - A keyboard-driven modal pointer.
+ * warpd - A modal keyboard-driven pointing system.
  *
  * © 2019 Raheman Vaiya (see: LICENSE).
  */
@@ -20,7 +20,14 @@ static int right = 0;
 static int up = 0;
 static int down = 0;
 
-static int opnum = 0;
+static int resting = 1;
+
+static screen_t scr = 0;
+static double	cx = 0;
+static double	cy = 0;
+
+static double v = 0;
+static int    opnum = 0;
 
 static long get_time_us()
 {
@@ -42,24 +49,20 @@ static int tonum(uint8_t code)
 	return name[0] - '0';
 }
 
-static void get_mouse_position(double *x, double *y)
+static void update_cursor_position()
 {
-	int ix, iy;
+	int	 ix, iy;
 
-	mouse_get_position(&ix, &iy);
+	mouse_get_position(&scr, &ix, &iy);
+	screen_get_dimensions(scr, &sw, &sh);
 
-	*x = (double)ix;
-	*y = (double)iy;
+	cx = (double)ix;
+	cy = (double)iy;
 }
 
-static void process_tick()
+static void tick()
 {
 	static long last_update = 0;
-	static int  resting = 1;
-
-	static double cx = 0;
-	static double cy = 0;
-	static double v = 0;
 
 	const long   t = get_time_us();
 	const double elapsed = (double)(t - last_update) / 1E3;
@@ -74,7 +77,7 @@ static void process_tick()
 	}
 
 	if (resting) {
-		get_mouse_position(&cx, &cy);
+		update_cursor_position();
 		v = v0;
 		resting = 0;
 	}
@@ -88,13 +91,24 @@ static void process_tick()
 
 	cx = cx < 0 ? 0 : cx;
 	cy = cy < 0 ? 0 : cy;
-	cy = cy > sh ? sh : cy;
-	cx = cx > sw ? sw : cx;
+	cy = cy >= sh ? sh : cy;
+	cx = cx >= sw ? sw : cx;
 
-	mouse_move(cx, cy);
+	cursor_draw(scr, cx, cy);
+	mouse_move(scr, cx, cy);
 }
 
-/* returns 1 if handled */
+/*
+ * The function to which continuous cursor movement is delegated
+ * for grid and normal mode. Expects to be called every
+ * 10ms or so.
+ *
+ * mouse_reset() should be called at the beginning of
+ * the containing event loop.
+ *
+ * Returns 1 if the event was handled, or 0 if it
+ * should be handled by the calling logic.
+ */
 int mouse_process_key(struct input_event *ev, const char *up_key,
 		      const char *down_key, const char *left_key,
 		      const char *right_key)
@@ -104,8 +118,8 @@ int mouse_process_key(struct input_event *ev, const char *up_key,
 
 	/* timeout */
 	if (!ev) {
-		process_tick();
-		return 0;
+		tick();
+		return 1;
 	}
 
 	if ((n = tonum(ev->code)) != -1 && ev->mods == 0) {
@@ -134,17 +148,16 @@ int mouse_process_key(struct input_event *ev, const char *up_key,
 	}
 
 	if (opnum && ret) {
-		double cx, cy;
-
 		const int x = right - left;
 		const int y = down - up;
 
-		get_mouse_position(&cx, &cy);
+		update_cursor_position();
 
 		cx += inc * opnum * x;
 		cy += inc * opnum * y;
 
-		mouse_move(cx, cy);
+		cursor_draw(scr, cx, cy);
+		mouse_move(scr, cx, cy);
 
 		opnum = 0;
 
@@ -156,7 +169,7 @@ int mouse_process_key(struct input_event *ev, const char *up_key,
 		return 1;
 	}
 
-	process_tick();
+	tick();
 	return ret;
 }
 
@@ -168,14 +181,14 @@ void mouse_reset()
 	up = 0;
 	down = 0;
 
-	process_tick();
+	update_cursor_position();
+
+	tick();
 }
 
 void init_mouse()
 {
-	screen_get_dimensions(&sw, &sh);
-
-	inc = sh / 100;
+	inc = 15; // TODO: make this configurable
 
 	/* pixels/ms */
 

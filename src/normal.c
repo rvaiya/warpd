@@ -1,21 +1,30 @@
 /*
- * warpd - A keyboard-driven modal pointer.
+ * warpd - A modal keyboard-driven pointing system.
  *
  * © 2019 Raheman Vaiya (see: LICENSE).
  */
 
 #include "warpd.h"
 
+static void move(screen_t scr, int x, int y)
+{
+	cursor_draw(scr, x, y);
+	mouse_move(scr, x, y);
+}
+
 struct input_event *normal_mode(struct input_event *start_ev)
 {
 	struct input_event *ev;
+	screen_t	    scr;
 	int		    sh, sw;
 	int		    cy, cx;
 
 	input_grab_keyboard();
 
-	screen_get_dimensions(&sw, &sh);
-	mouse_get_position(&cx, &cy);
+	mouse_get_position(&scr, &cx, &cy);
+	screen_get_dimensions(scr, &sw, &sh);
+	cursor_draw(scr, cx, cy);
+
 	mouse_hide();
 	mouse_reset();
 
@@ -29,13 +38,12 @@ struct input_event *normal_mode(struct input_event *start_ev)
 			start_ev = NULL;
 		}
 
-		if (mouse_process_key(ev, cfg->up, cfg->down, cfg->left,
-				      cfg->right))
-			goto next;
-		if (!ev)
-			goto next;
+		scroll_tick();
+		if (mouse_process_key(ev, cfg->up, cfg->down, cfg->left, cfg->right)) {
+			continue;
+		}
 
-		mouse_get_position(&cx, &cy);
+		mouse_get_position(&scr, &cx, &cy);
 
 		if (input_event_eq(ev, cfg->scroll_down)) {
 			if (ev->pressed) {
@@ -54,26 +62,26 @@ struct input_event *normal_mode(struct input_event *start_ev)
 		}
 
 		if (input_event_eq(ev, cfg->top))
-			mouse_move(cx, 0);
+			move(scr, cx, 0);
 		else if (input_event_eq(ev, cfg->bottom))
-			mouse_move(cx, sh - cursz);
+			move(scr, cx, sh - cursz);
 		else if (input_event_eq(ev, cfg->middle))
-			mouse_move(cx, sh / 2);
+			move(scr, cx, sh / 2);
 		else if (input_event_eq(ev, cfg->start))
-			mouse_move(0, cy);
+			move(scr, 0, cy);
 		else if (input_event_eq(ev, cfg->end))
-			mouse_move(sw - cursz, cy);
+			move(scr, sw - cursz, cy);
 		else if (input_event_eq(ev, cfg->hist_back)) {
 			hist_add(cx, cy);
 			hist_prev();
 			hist_get(&cx, &cy);
 
-			mouse_move(cx, cy);
+			move(scr, cx, cy);
 		} else if (input_event_eq(ev, cfg->hist_forward)) {
 			hist_next();
 			hist_get(&cx, &cy);
 
-			mouse_move(cx, cy);
+			move(scr, cx, cy);
 		} else if (input_event_eq(ev, cfg->drag)) {
 			toggle_drag();
 		} else if (input_event_eq(ev, cfg->copy_and_exit)) {
@@ -105,22 +113,15 @@ struct input_event *normal_mode(struct input_event *start_ev)
 					mouse_click(btn);
 
 					if (oneshot) {
-						const int timeout =
-						    cfg->oneshot_timeout;
+						const int timeout = cfg->oneshot_timeout;
 						int timeleft = timeout;
 
 						while (timeleft--) {
-							struct input_event *ev =
-							    input_next_event(1);
+							struct input_event *ev = input_next_event(1);
 							if (ev && ev->pressed &&
-							    input_event_eq(
-								ev,
-								cfg->oneshot_buttons
-								    [i])) {
-								mouse_click(
-								    btn);
-								timeleft =
-								    timeout;
+							    input_event_eq(ev,cfg->oneshot_buttons [i])) {
+								mouse_click(btn);
+								timeleft = timeout;
 							}
 						}
 
@@ -131,9 +132,7 @@ struct input_event *normal_mode(struct input_event *start_ev)
 			}
 		}
 	next:
-		mouse_get_position(&cx, &cy);
-		cursor_show(cx + 1, cy + 1);
-		scroll_tick();
+		mouse_get_position(&scr, &cx, &cy);
 
 		platform_commit();
 	}

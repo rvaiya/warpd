@@ -91,6 +91,7 @@ struct cfg *parse_cfg(const char *fname)
 	parse_list("m, comma, .", &cfg->buttons, &cfg->buttons_sz);
 	parse_list("n, -, /", &cfg->oneshot_buttons, &cfg->oneshot_buttons_sz);
 	cfg->oneshot_timeout = atoi("300");
+	cfg->grid_exit = strdup("c");
 	cfg->exit = strdup("esc");
 	cfg->drag = strdup("v");
 	cfg->copy_and_exit = strdup("c");
@@ -100,7 +101,7 @@ struct cfg *parse_cfg(const char *fname)
 	cfg->down = strdup("j");
 	cfg->up = strdup("k");
 	cfg->right = strdup("l");
-	cfg->cursor_color = strdup("#00ff00");
+	cfg->cursor_color = strdup("#FF4500");
 	cfg->cursor_size = atoi("7");
 	cfg->top = strdup("S-h");
 	cfg->middle = strdup("S-m");
@@ -116,7 +117,7 @@ struct cfg *parse_cfg(const char *fname)
 	cfg->grid_down = strdup("s");
 	cfg->grid_right = strdup("d");
 	parse_list("u,i,j,k", &cfg->grid_keys, &cfg->grid_keys_sz);
-	cfg->grid_color = strdup("#ff0000");
+	cfg->grid_color = strdup("#1c1c1e");
 	cfg->grid_size = atoi("4");
 	cfg->grid_border_size = atoi("0");
 	cfg->grid_border_color = strdup("#ffffff");
@@ -167,6 +168,8 @@ struct cfg *parse_cfg(const char *fname)
             parse_list(val, &cfg->oneshot_buttons, &cfg->oneshot_buttons_sz);
         else if(!strcmp(key, "oneshot_timeout"))
             cfg->oneshot_timeout = atoi(val);
+        else if(!strcmp(key, "grid_exit"))
+            cfg->grid_exit = strdup(val);
         else if(!strcmp(key, "exit"))
             cfg->exit = strdup(val);
         else if(!strcmp(key, "drag"))

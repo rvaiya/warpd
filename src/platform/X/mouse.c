@@ -1,0 +1,85 @@
+#include "X.h"
+
+static int hidden = 0;
+
+void mouse_up(int btn)
+{
+	XTestFakeButtonEvent(dpy, btn, False, CurrentTime);
+	XSync(dpy, False);
+}
+
+void mouse_down(int btn)
+{
+	XTestFakeButtonEvent(dpy, btn, True, CurrentTime);
+	XSync(dpy, False);
+}
+
+void mouse_click(int btn)
+{
+	XTestFakeButtonEvent(dpy, btn, True, CurrentTime);
+	XTestFakeButtonEvent(dpy, btn, False, CurrentTime);
+
+	XSync(dpy, False);
+}
+
+void mouse_move(struct screen *scr, int x, int y)
+{
+	XTestFakeMotionEvent(dpy,
+			     DefaultScreen(dpy),
+			     scr->x + x, scr->y + y, 0);
+
+	XSync(dpy, False);
+}
+
+void mouse_get_position(struct screen **_scr, int *_x, int *_y)
+{
+	size_t	     i;
+	Window	     chld, root;
+	int	     _;
+	unsigned int _u;
+	int	     x, y;
+
+	/* Obtain absolute pointer coordinates */
+	XQueryPointer(dpy, DefaultRootWindow(dpy), &root, &chld, &x, &y, &_, &_,
+		      &_u);
+
+	for (i = 0; i < nr_screens; i++) {
+		struct screen *scr = &screens[i];
+
+		if ((x >= scr->x) && (x <= (scr->x + scr->w)) &&
+		    (y >= scr->y) && (y <= (scr->y + scr->h))) {
+			if (_scr)
+				*_scr = scr;
+
+			if (_x)
+				*_x = x - scr->x;
+
+			if (_y)
+				*_y = y - scr->y;
+
+			return;
+		}
+	}
+
+	assert(0);
+}
+
+void mouse_hide()
+{
+	if (hidden)
+		return;
+
+	XFixesHideCursor(dpy, DefaultRootWindow(dpy));
+	XSync(dpy, False);
+	hidden = 1;
+}
+
+void mouse_show()
+{
+	if (!hidden)
+		return;
+
+	XFixesShowCursor(dpy, DefaultRootWindow(dpy));
+	XSync(dpy, False);
+	hidden = 0;
+}

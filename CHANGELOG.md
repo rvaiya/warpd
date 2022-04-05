@@ -1,3 +1,9 @@
+# v1.1.0-beta
+
+ - Add Multiscreen support
+ - Make the default colour scheme less appalling
+ - Make other modes accessible from grid mode
+
 # v1.0.3-beta
 
  - macos: solicit accessibility whitelisting on initialization (#64)
