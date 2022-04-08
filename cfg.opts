@@ -1,5 +1,6 @@
 hint_activation_key	string		"A-M-x"			"Activates hint mode."
 grid_activation_key	string		"A-M-g"			"Activates grid mode and allows for further manipulation of the pointer using the mapped keys."
+screen_activation_key	string		"A-M-s"			"Activate (s)creen selection mode."
 activation_key		string		"A-M-c"			"Activate normal movement mode (manual (c)ursor movement)."
 
 hint_oneshot_key	string		"A-M-l"			"Activate hint mode and exit upon selection."
@@ -22,6 +23,7 @@ drag			string		"v"			"Toggle drag mode (mneominc (v)isual mode)."
 copy_and_exit		string		"c"			"Send the copy key and exit (useful in combination with v)."
 hint			string		"x"			"Activate hint mode while in normal mode (mnemonic: x marks the spot?)."
 grid			string		"g"			"Activate (g)rid mode while in normal mode."
+screen			string		"s"			"Activate (s)creen selection while in normal mode."
 
 left			string		"h"			"Move the cursor left in normal mode."
 down			string		"j"			"Move the cursor down in normal mode."
@@ -63,6 +65,7 @@ hint_border_radius	int		3			"Border radius."
 scroll_down		string		"e"			"Scroll down key."
 scroll_up		string		"r"			"Scroll up key."
 
+screen_chars		string		"jkl;asdfg"	"The characters used for screen selection."
 hint_chars		string		"abcdefghijklmnopqrstuvwxyz"	"The character set from which hints are generated. The total number of hints is the square of the size of this string. It may be desirable to increase this for larger screens or trim it to increase gaps between hints."
 
 hint_font		string		"Arial"			"The font name used by hints. Note: This is platform specific, in X it corresponds to a valid xft font name, on macos it corresponds to a postscript name."

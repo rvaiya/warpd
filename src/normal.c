@@ -99,6 +99,7 @@ struct input_event *normal_mode(struct input_event *start_ev)
 			goto exit;
 		} else if (input_event_eq(ev, cfg->exit) ||
 			   input_event_eq(ev, cfg->grid) ||
+			   input_event_eq(ev, cfg->screen) ||
 			   input_event_eq(ev, cfg->hint)) {
 			goto exit;
 		} else { /* Mouse Buttons. */

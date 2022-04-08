@@ -82,6 +82,7 @@ struct cfg *parse_cfg(const char *fname)
 
 	cfg->hint_activation_key = strdup("A-M-x");
 	cfg->grid_activation_key = strdup("A-M-g");
+	cfg->screen_activation_key = strdup("A-M-s");
 	cfg->activation_key = strdup("A-M-c");
 	cfg->hint_oneshot_key = strdup("A-M-l");
 	cfg->repeat_interval = atoi("20");
@@ -97,6 +98,7 @@ struct cfg *parse_cfg(const char *fname)
 	cfg->copy_and_exit = strdup("c");
 	cfg->hint = strdup("x");
 	cfg->grid = strdup("g");
+	cfg->screen = strdup("s");
 	cfg->left = strdup("h");
 	cfg->down = strdup("j");
 	cfg->up = strdup("k");
@@ -127,6 +129,7 @@ struct cfg *parse_cfg(const char *fname)
 	cfg->hint_border_radius = atoi("3");
 	cfg->scroll_down = strdup("e");
 	cfg->scroll_up = strdup("r");
+	cfg->screen_chars = strdup("jkl;asdfg");
 	cfg->hint_chars = strdup("abcdefghijklmnopqrstuvwxyz");
 	cfg->hint_font = strdup("Arial");
 
@@ -150,6 +153,8 @@ struct cfg *parse_cfg(const char *fname)
             cfg->hint_activation_key = strdup(val);
         else if(!strcmp(key, "grid_activation_key"))
             cfg->grid_activation_key = strdup(val);
+        else if(!strcmp(key, "screen_activation_key"))
+            cfg->screen_activation_key = strdup(val);
         else if(!strcmp(key, "activation_key"))
             cfg->activation_key = strdup(val);
         else if(!strcmp(key, "hint_oneshot_key"))
@@ -180,6 +185,8 @@ struct cfg *parse_cfg(const char *fname)
             cfg->hint = strdup(val);
         else if(!strcmp(key, "grid"))
             cfg->grid = strdup(val);
+        else if(!strcmp(key, "screen"))
+            cfg->screen = strdup(val);
         else if(!strcmp(key, "left"))
             cfg->left = strdup(val);
         else if(!strcmp(key, "down"))
@@ -240,6 +247,8 @@ struct cfg *parse_cfg(const char *fname)
             cfg->scroll_down = strdup(val);
         else if(!strcmp(key, "scroll_up"))
             cfg->scroll_up = strdup(val);
+        else if(!strcmp(key, "screen_chars"))
+            cfg->screen_chars = strdup(val);
         else if(!strcmp(key, "hint_chars"))
             cfg->hint_chars = strdup(val);
         else if(!strcmp(key, "hint_font"))

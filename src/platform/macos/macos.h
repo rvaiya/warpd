@@ -59,10 +59,14 @@ struct screen {
 	int w;
 	int h;
 
+	struct hint hints[MAX_HINTS];
+	size_t nr_hints;
+
 	struct box boxes[MAX_BOXES];
 	size_t nr_boxes;
 
 	struct window *overlay;
+
 };
 
 

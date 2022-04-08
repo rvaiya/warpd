@@ -36,6 +36,8 @@ static void activation_loop(int mode)
 				mode = MODE_HINT;
 			else if (input_event_eq(ev, cfg->grid))
 				mode = MODE_GRID;
+			else if (input_event_eq(ev, cfg->screen))
+				mode = MODE_SCREEN_SELECTION;
 			else if (input_event_eq(ev, cfg->exit) || !ev)
 				goto exit;
 
@@ -53,6 +55,10 @@ static void activation_loop(int mode)
 				ev = NULL;
 			mode = MODE_NORMAL;
 			break;
+		case MODE_SCREEN_SELECTION:
+			screen_selection_mode();
+			mode = MODE_NORMAL;
+			break;
 		}
 	}
 
@@ -61,6 +67,8 @@ exit:
 		toggle_drag();
 	return;
 }
+
+
 
 static void normalize_dimensions()
 {
@@ -84,16 +92,17 @@ static void main_loop()
 	init_mouse();
 	init_hint_mode();
 
-	struct input_event activation_events[4] = {0};
+	struct input_event activation_events[5] = {0};
 
 	input_parse_string(&activation_events[0], cfg->activation_key);
 	input_parse_string(&activation_events[1], cfg->hint_activation_key);
 	input_parse_string(&activation_events[2], cfg->grid_activation_key);
 	input_parse_string(&activation_events[3], cfg->hint_oneshot_key);
+	input_parse_string(&activation_events[4], cfg->screen_activation_key);
 
 	while (1) {
 		int		    mode = 0;
-		struct input_event *ev = input_wait(activation_events, 4);
+		struct input_event *ev = input_wait(activation_events, sizeof(activation_events)/sizeof(activation_events[0]));
 
 		if (input_event_eq(ev, cfg->activation_key))
 			mode = MODE_NORMAL;
@@ -101,6 +110,8 @@ static void main_loop()
 			mode = MODE_GRID;
 		else if (input_event_eq(ev, cfg->hint_activation_key))
 			mode = MODE_HINT;
+		else if (input_event_eq(ev, cfg->screen_activation_key))
+			mode = MODE_SCREEN_SELECTION;
 		else if (input_event_eq(ev, cfg->hint_oneshot_key)) {
 			hint_mode();
 			continue;

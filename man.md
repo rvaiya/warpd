@@ -104,6 +104,8 @@ will be scaled according to the current dimensions.
 
 *grid_activation_key*: Activates grid mode and allows for further manipulation of the pointer using the mapped keys. (default: A-M-g).
 
+*screen_activation_key*: Activate (s)creen selection mode. (default: A-M-s).
+
 *activation_key*: Activate normal movement mode (manual (c)ursor movement). (default: A-M-c).
 
 *hint_oneshot_key*: Activate hint mode and exit upon selection. (default: A-M-l).
@@ -133,6 +135,8 @@ will be scaled according to the current dimensions.
 *hint*: Activate hint mode while in normal mode (mnemonic: x marks the spot?). (default: x).
 
 *grid*: Activate (g)rid mode while in normal mode. (default: g).
+
+*screen*: Activate (s)creen selection while in normal mode. (default: s).
 
 *left*: Move the cursor left in normal mode. (default: h).
 
@@ -188,11 +192,13 @@ will be scaled according to the current dimensions.
 
 *hint_fgcolor*: The foreground hint color. (default: #a1aba7).
 
-*hint_border_radius*: Border radius (note: this may incur a performance penalty). (default: 3).
+*hint_border_radius*: Border radius. (default: 3).
 
 *scroll_down*: Scroll down key. (default: e).
 
 *scroll_up*: Scroll up key. (default: r).
+
+*screen_chars*: The characters used for screen selection. (default: jkl;asdfg).
 
 *hint_chars*: The character set from which hints are generated. The total number of hints is the square of the size of this string. It may be desirable to increase this for larger screens or trim it to increase gaps between hints. (default: abcdefghijklmnopqrstuvwxyz).
 

@@ -1,10 +1,5 @@
 #include "macos.h"
 
-static struct hint	*hints;
-static size_t		 nr_hints;
-
-static struct screen	*scr;
-
 static float		border_radius;
 
 static NSColor		*bgColor;
@@ -15,12 +10,10 @@ const char		*font;
 static void draw_hook(void *arg, NSView *view)
 {
 	size_t i;
+	struct screen *scr = arg;
 
-	if (!hints)
-		return;
-
-	for (i = 0; i < nr_hints; i++) {
-		struct hint *h = &hints[i];
+	for (i = 0; i < scr->nr_hints; i++) {
+		struct hint *h = &scr->hints[i];
 		macos_draw_box(scr, bgColor,
 				h->x, h->y, h->w, h->h, border_radius);
 
@@ -29,12 +22,12 @@ static void draw_hook(void *arg, NSView *view)
 	}
 }
 
-void hint_draw(struct screen *_scr, struct hint *_hints, size_t n)
+void hint_draw(struct screen *scr, struct hint *hints, size_t n)
 {
-	hints = _hints;
-	nr_hints = n;
-	scr = _scr;
-	window_register_draw_hook(scr->overlay, draw_hook, NULL);
+	scr->nr_hints = n;
+	memcpy(scr->hints, hints, sizeof(struct hint)*n);
+
+	window_register_draw_hook(scr->overlay, draw_hook, scr);
 }
 
 void init_hint(const char *bg, const char *fg, int _border_radius,

@@ -21,6 +21,7 @@
 #define SCROLL_UP    4
 
 #define MAX_HINTS 2048
+#define MAX_SCREENS 32
 
 struct input_event {
 	uint8_t code;
@@ -74,6 +75,7 @@ void mouse_hide();
 void screen_get_dimensions(screen_t scr, int *w, int *h);
 void screen_draw_box(screen_t scr, int x, int y, int w, int h, const char *color);
 void screen_clear(screen_t scr);
+void screen_list(screen_t scr[MAX_SCREENS], size_t *n);
 
 void init_hint(const char *bg, const char *fg, int border_radius, const char *font_family);
 

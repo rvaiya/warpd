@@ -30,6 +30,16 @@ void screen_draw_box(struct screen *scr, int x, int y, int w, int h, const char 
 	window_register_draw_hook(scr->overlay, draw_hook, b);
 }
 
+void screen_list(struct screen *rscreens[MAX_SCREENS], size_t *n)
+{
+	size_t i;
+
+	for (i = 0; i < nr_screens; i++)
+		rscreens[i] = &screens[i];
+
+	*n = nr_screens;
+}
+
 void screen_clear(struct screen *scr)
 {
 	scr->nr_boxes = 0;

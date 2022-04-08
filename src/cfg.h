@@ -16,6 +16,7 @@
 struct cfg {
 	char	 *hint_activation_key;
 	char	 *grid_activation_key;
+	char	 *screen_activation_key;
 	char	 *activation_key;
 	char	 *hint_oneshot_key;
 	int	  repeat_interval;
@@ -33,6 +34,7 @@ struct cfg {
 	char	 *copy_and_exit;
 	char	 *hint;
 	char	 *grid;
+	char	 *screen;
 	char	 *left;
 	char	 *down;
 	char	 *up;
@@ -64,6 +66,7 @@ struct cfg {
 	int	  hint_border_radius;
 	char	 *scroll_down;
 	char	 *scroll_up;
+	char	 *screen_chars;
 	char	 *hint_chars;
 	char	 *hint_font;
 };
