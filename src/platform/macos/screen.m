@@ -9,6 +9,33 @@
 struct screen	screens[32];
 size_t		nr_screens;
 
+static void draw_hook(void *arg, NSView *view)
+{
+	struct box *b = arg;
+	macos_draw_box(b->scr, b->color, b->x, b->y, b->w, b->h, 0);
+}
+
+void screen_draw_box(struct screen *scr, int x, int y, int w, int h, const char *color)
+{
+	assert(scr->nr_boxes < MAX_BOXES);
+	struct box *b = &scr->boxes[scr->nr_boxes++];
+
+	b->x = x;
+	b->y = y;
+	b->w = w;
+	b->h = h;
+	b->scr = scr;
+	b->color = nscolor_from_hex(color);
+
+	window_register_draw_hook(scr->overlay, draw_hook, b);
+}
+
+void screen_clear(struct screen *scr)
+{
+	scr->nr_boxes = 0;
+	scr->overlay->nr_hooks = 0;
+}
+
 void screen_get_dimensions(struct screen *scr, int *w, int *h)
 {
 	*w = scr->w;

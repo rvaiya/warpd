@@ -6,19 +6,6 @@
 
 #include "macos.h"
 
-struct drawing_hook {
-	void (*hook)(void *arg, NSView *view);
-	void *arg;
-
-	struct drawing_hook *next;
-};
-
-struct window {
-	NSWindow *win;
-
-	struct drawing_hook *hooks;
-};
-
 @interface MainView : NSView
 @property struct window	*win;
 @end
@@ -27,58 +14,35 @@ struct window {
 /* Called by cocoa when the view needs to be redrawn. */
 - (void)drawRect:(NSRect)dirtyRect
 {
-	struct drawing_hook *hook;
+	size_t i;
 	struct window *win = self.win;
 
-	for (hook = win->hooks; hook; hook = hook->next)
-		hook->hook(hook->arg, self);
+	for (i = 0; i < win->nr_hooks; i++)
+		win->hooks[i].hook(win->hooks[i].arg, self);
 }
 @end
 
 /* 
  * Wrap NSWindow in a nice C API, with a coordinate scheme based on the top
- * left, where God (and the X developers) intended it :)
+ * left, where God (and the X developers) intended it :). Drawing routines
+ * are attached to the window with window_register_draw_hook() and run 
+ * in registration order when rendering. The usual NS/CG* routines
+ * can be used for drawing operations.
  */
+
 void window_show(struct window *win) 
 {
 	[win->win makeKeyAndOrderFront:nil];
 	[[win->win contentView] setNeedsDisplay:TRUE];
 }
 
-void window_unregister_draw_fn(struct window *win, void (*draw)(void *arg, NSView *view), void *arg)
+void window_register_draw_hook(struct window *win, void (*draw)(void *arg, NSView *view), void *arg)
 {
+	assert(win->nr_hooks < MAX_DRAWING_HOOKS);
+	struct drawing_hook *hook = &win->hooks[win->nr_hooks++];
 
-	struct drawing_hook **h = &win->hooks;
-	while (*h) {
-		if ((*h)->hook == draw && (*h)->arg == arg) {
-			struct drawing_hook *tmp = *h;
-			*h = (*h)->next;
-			free(tmp);
-
-			return;
-		}
-		h = &(*h)->next;
-	}
-}
-
-void window_register_draw_fn(struct window *win, void (*draw)(void *arg, NSView *view), void *arg)
-{
-	struct drawing_hook **h = &win->hooks;
-
-	while (*h) {
-		if ((*h)->hook == draw && (*h)->arg == arg) {
-			struct drawing_hook *tmp = *h;
-			*h = (*h)->next;
-			free(tmp);
-		} else {
-			h = &(*h)->next;
-		}
-	}
-
-	*h = malloc(sizeof(struct drawing_hook));
-	(*h)->hook = draw;
-	(*h)->arg = arg;
-	(*h)->next = NULL;
+	hook->hook = draw;
+	hook->arg = arg;
 }
 
 void window_move(struct window *win, struct screen *scr, int x, int y)

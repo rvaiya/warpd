@@ -58,7 +58,7 @@ hint_size		int		28			"Hint size."
 
 hint_bgcolor		string		"#1c1c1e"		"The background hint color."
 hint_fgcolor		string		"#a1aba7"		"The foreground hint color."
-hint_border_radius	int		3			"Border radius (note: this may incur a performance penalty)."
+hint_border_radius	int		3			"Border radius."
 
 scroll_down		string		"e"			"Scroll down key."
 scroll_up		string		"r"			"Scroll up key."

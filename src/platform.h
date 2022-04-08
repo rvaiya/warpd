@@ -52,8 +52,8 @@ void input_grab_keyboard();
 void input_ungrab_keyboard();
 
 struct input_event *input_next_event(int timeout);
-uint8_t		    input_lookup_code(const char *name);
-const char	   *input_lookup_name(uint8_t name);
+uint8_t input_lookup_code(const char *name);
+const char *input_lookup_name(uint8_t name);
 
 /*
  * Efficiently listen for one or more input events before
@@ -71,34 +71,14 @@ void mouse_get_position(screen_t *scr, int *x, int *y);
 void mouse_show();
 void mouse_hide();
 
-/* Cursor (the visual indicator for the mouse) */
-
-void init_cursor(const char *color, size_t sz);
-
-void cursor_hide();
-void cursor_draw(screen_t scr, int x, int y);
-
-/* Grid */
-struct grid;
-
-struct grid *create_grid(const char *color, size_t width, size_t nc, size_t nr);
-
-void grid_draw(struct grid *g, screen_t scr, int x, int y, int w, int h);
-void grid_hide(struct grid *g);
-
-/* Util */
-
 void screen_get_dimensions(screen_t scr, int *w, int *h);
+void screen_draw_box(screen_t scr, int x, int y, int w, int h, const char *color);
+void screen_clear(screen_t scr);
 
-/* Hints */
+void init_hint(const char *bg, const char *fg, int border_radius, const char *font_family);
 
 /* Hints are centered around the provided x,y coordinates. */
-void init_hint(const char *bg, const char *fg, int border_radius,
-	       const char *font_family);
-
-/* indices must be the same size as the initialized hints */
 void hint_draw(struct screen *scr, struct hint *hints, size_t n);
-void hint_hide();
 
 void scroll(int direction);
 

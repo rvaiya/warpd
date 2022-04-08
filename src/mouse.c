@@ -94,7 +94,6 @@ static void tick()
 	cy = cy >= sh ? sh : cy;
 	cx = cx >= sw ? sw : cx;
 
-	cursor_draw(scr, cx, cy);
 	mouse_move(scr, cx, cy);
 }
 
@@ -156,7 +155,6 @@ int mouse_process_key(struct input_event *ev, const char *up_key,
 		cx += inc * opnum * x;
 		cy += inc * opnum * y;
 
-		cursor_draw(scr, cx, cy);
 		mouse_move(scr, cx, cy);
 
 		opnum = 0;

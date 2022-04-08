@@ -6,10 +6,18 @@
 
 #include "warpd.h"
 
+static void redraw(screen_t scr, int x, int y, int force)
+{
+	screen_clear(scr);
+	screen_draw_box(scr, x+1, y-cfg->cursor_size/2, cfg->cursor_size, cfg->cursor_size, cfg->cursor_color);
+
+	platform_commit();
+}
+
 static void move(screen_t scr, int x, int y)
 {
-	cursor_draw(scr, x, y);
 	mouse_move(scr, x, y);
+	redraw(scr, x, y, 0);
 }
 
 struct input_event *normal_mode(struct input_event *start_ev)
@@ -17,13 +25,12 @@ struct input_event *normal_mode(struct input_event *start_ev)
 	struct input_event *ev;
 	screen_t	    scr;
 	int		    sh, sw;
-	int		    cy, cx;
+	int		    mx, my;
 
 	input_grab_keyboard();
 
-	mouse_get_position(&scr, &cx, &cy);
+	mouse_get_position(&scr, &mx, &my);
 	screen_get_dimensions(scr, &sw, &sh);
-	cursor_draw(scr, cx, cy);
 
 	mouse_hide();
 	mouse_reset();
@@ -40,10 +47,12 @@ struct input_event *normal_mode(struct input_event *start_ev)
 
 		scroll_tick();
 		if (mouse_process_key(ev, cfg->up, cfg->down, cfg->left, cfg->right)) {
+			mouse_get_position(&scr, &mx, &my);
+			redraw(scr, mx, my, 0);
 			continue;
 		}
 
-		mouse_get_position(&scr, &cx, &cy);
+		mouse_get_position(&scr, &mx, &my);
 
 		if (input_event_eq(ev, cfg->scroll_down)) {
 			if (ev->pressed) {
@@ -62,26 +71,26 @@ struct input_event *normal_mode(struct input_event *start_ev)
 		}
 
 		if (input_event_eq(ev, cfg->top))
-			move(scr, cx, 0);
+			move(scr, mx, 0);
 		else if (input_event_eq(ev, cfg->bottom))
-			move(scr, cx, sh - cursz);
+			move(scr, mx, sh - cursz);
 		else if (input_event_eq(ev, cfg->middle))
-			move(scr, cx, sh / 2);
+			move(scr, mx, sh / 2);
 		else if (input_event_eq(ev, cfg->start))
-			move(scr, 0, cy);
+			move(scr, 0, my);
 		else if (input_event_eq(ev, cfg->end))
-			move(scr, sw - cursz, cy);
+			move(scr, sw - cursz, my);
 		else if (input_event_eq(ev, cfg->hist_back)) {
-			hist_add(cx, cy);
+			hist_add(mx, my);
 			hist_prev();
-			hist_get(&cx, &cy);
+			hist_get(&mx, &my);
 
-			move(scr, cx, cy);
+			move(scr, mx, my);
 		} else if (input_event_eq(ev, cfg->hist_forward)) {
 			hist_next();
-			hist_get(&cx, &cy);
+			hist_get(&mx, &my);
 
-			move(scr, cx, cy);
+			move(scr, mx, my);
 		} else if (input_event_eq(ev, cfg->drag)) {
 			toggle_drag();
 		} else if (input_event_eq(ev, cfg->copy_and_exit)) {
@@ -108,7 +117,7 @@ struct input_event *normal_mode(struct input_event *start_ev)
 					match = 1;
 
 				if (match) {
-					hist_add(cx, cy);
+					hist_add(mx, my);
 
 					mouse_click(btn);
 
@@ -132,25 +141,19 @@ struct input_event *normal_mode(struct input_event *start_ev)
 			}
 		}
 	next:
-		mouse_get_position(&scr, &cx, &cy);
+		mouse_get_position(&scr, &mx, &my);
 
 		platform_commit();
 	}
 
 exit:
-	hist_add(cx, cy);
+	hist_add(mx, my);
 
 	mouse_show();
-	cursor_hide();
+	screen_clear(scr);
 
 	input_ungrab_keyboard();
 
 	platform_commit();
 	return ev;
-}
-
-void init_normal_mode()
-{
-	init_cursor(cfg->cursor_color, cfg->cursor_size);
-	cursor_hide();
 }

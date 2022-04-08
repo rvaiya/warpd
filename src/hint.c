@@ -12,7 +12,7 @@ struct hint matched[MAX_HINTS];
 static size_t nr_hints;
 static size_t nr_matched;
 
-static void filter(const char *s)
+static void filter(screen_t scr, const char *s)
 {
 	size_t i;
 
@@ -21,6 +21,10 @@ static void filter(const char *s)
 		if (strstr(hints[i].label, s) == hints[i].label)
 			matched[nr_matched++] = hints[i];
 	}
+
+	screen_clear(scr);
+	hint_draw(scr, matched, nr_matched);
+	platform_commit();
 }
 
 size_t generate_hints(screen_t scr, struct hint *hints)
@@ -94,8 +98,7 @@ int hint_mode()
 	mouse_get_position(&scr, NULL, NULL);
 	nr_hints = generate_hints(scr, hints);
 
-	filter("");
-	hint_draw(scr, matched, nr_matched);
+	filter(scr, "");
 
 	int  rc = 0;
 	char buf[32] = {0};
@@ -128,8 +131,7 @@ int hint_mode()
 				buf[len++] = c;
 		}
 
-		filter(buf);
-		platform_commit();
+		filter(scr, buf);
 
 		if (nr_matched == 1) {
 			struct hint *h = &matched[0];
@@ -137,13 +139,13 @@ int hint_mode()
 			break;
 		} else if (nr_matched == 0) {
 			break;
-		} else
-			hint_draw(scr, matched, nr_matched);
+		}
 	}
 
 	input_ungrab_keyboard();
-	hint_hide(scr);
+	screen_clear(scr);
 	mouse_show();
 
+	platform_commit();
 	return rc;
 }

@@ -82,8 +82,6 @@ static void main_loop()
 	normalize_dimensions();
 
 	init_mouse();
-	init_grid_mode();
-	init_normal_mode();
 	init_hint_mode();
 
 	struct input_event activation_events[4] = {0};

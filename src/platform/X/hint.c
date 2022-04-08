@@ -111,7 +111,7 @@ void do_hint_draw(struct screen *scr, Window win, struct hint *hints, size_t n)
 
 	Pixmap	mask = XCreatePixmap(dpy, win, scr->w, scr->h, 1);
 	GC	gc = XCreateGC(dpy, mask, 0, NULL);
-	GC mgc = XCreateGC(dpy, DefaultRootWindow(dpy),
+	GC	mgc = XCreateGC(dpy, DefaultRootWindow(dpy),
 			   GCForeground | GCFillStyle,
 			   &(XGCValues){
 			   .foreground = parse_xcolor(bgcolor, NULL),
@@ -179,13 +179,6 @@ void hint_draw(struct screen *scr, struct hint *hints, size_t n)
 
 
 	do_hint_draw(scr, win, hints, n);
-}
-
-void hint_hide(struct screen *scr) 
-{
-	/* OPT: Mapping shaped windows is expensive, so we merely hide them offscreen. */
-	XMoveWindow(dpy, scr->hintwin, -1E6, -1E6);
-	XMoveWindow(dpy, scr->cached_hintwin, -1E6, -1E6);
 }
 
 void init_hint(const char *bgcol, const char *fgcol, int _border_radius,

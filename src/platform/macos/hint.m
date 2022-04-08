@@ -29,30 +29,12 @@ static void draw_hook(void *arg, NSView *view)
 	}
 }
 
-void hint_hide()
-{
-	size_t i;
-
-	for (i = 0; i < nr_screens; i++) {
-		struct screen *scr = &screens[i];
-		window_unregister_draw_fn(scr->overlay, draw_hook, NULL);
-	}
-
-	dispatch_sync(dispatch_get_main_queue(), ^{
-		window_hide(scr->overlay); 
-	});
-}
-
 void hint_draw(struct screen *_scr, struct hint *_hints, size_t n)
 {
 	hints = _hints;
 	nr_hints = n;
 	scr = _scr;
-	window_register_draw_fn(scr->overlay, draw_hook, NULL);
-
-	dispatch_sync(dispatch_get_main_queue(), ^{
-		window_show(scr->overlay); 
-	});
+	window_register_draw_hook(scr->overlay, draw_hook, NULL);
 }
 
 void init_hint(const char *bg, const char *fg, int _border_radius,

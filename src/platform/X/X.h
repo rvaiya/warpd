@@ -28,6 +28,14 @@
 #include <sys/time.h>
 #include <unistd.h>
 
+#define MAX_BOXES 64
+
+struct box {
+	Window win;
+	char color[32];
+	int mapped;
+};
+
 struct screen {
 	/* Xinerama offset */
 	int	x;
@@ -45,6 +53,9 @@ struct screen {
 
 	struct hint	cached_hints[MAX_HINTS];
 	size_t		nr_cached_hints;
+
+	struct box	boxes[MAX_BOXES];
+	size_t		nr_boxes;
 };
 
 Window	create_window(const char *color);

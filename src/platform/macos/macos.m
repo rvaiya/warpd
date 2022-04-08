@@ -152,6 +152,17 @@ void scroll(int direction)
 
 void platform_commit()
 {
+	dispatch_sync(dispatch_get_main_queue(), ^{
+		size_t i;
+		for (i = 0; i < nr_screens; i++) {
+			struct window *win = screens[i].overlay;
+
+			if (win->nr_hooks)
+				window_show(win);
+			else
+				window_hide(win);
+		}
+	});
 }
 
 void start_main_loop(void (*loop)())

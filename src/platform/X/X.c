@@ -130,6 +130,15 @@ void scroll(int direction)
 	XTestFakeButtonEvent(dpy, btn, False, CurrentTime);
 }
 
+void window_set_color(Window w, const char *color)
+{
+	uint32_t col = parse_xcolor(color, NULL);
+
+	XChangeWindowAttributes(dpy, w,
+				CWBackPixel,
+				&(((XSetWindowAttributes) { .background_pixel = col })));
+}
+
 Window create_window(const char *color)
 {
 	uint32_t    col = 0;
@@ -174,4 +183,7 @@ void start_main_loop(void (*init)(void))
 	init();
 }
 
-void platform_commit() { XSync(dpy, False); }
+void platform_commit() 
+{
+	XSync(dpy, False); 
+}
