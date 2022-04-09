@@ -87,8 +87,10 @@ struct cfg *parse_cfg(const char *fname)
 	cfg->hint_oneshot_key = strdup("A-M-l");
 	cfg->repeat_interval = atoi("20");
 	cfg->speed = atoi("220");
-	cfg->max_speed = atoi("800");
+	cfg->max_speed = atoi("1600");
 	cfg->acceleration = atoi("700");
+	cfg->accelerator_acceleration = atoi("2900");
+	cfg->accelerator = strdup("a");
 	parse_list("m , .", &cfg->buttons, &cfg->buttons_sz);
 	parse_list("n - /", &cfg->oneshot_buttons, &cfg->oneshot_buttons_sz);
 	cfg->oneshot_timeout = atoi("300");
@@ -167,6 +169,10 @@ struct cfg *parse_cfg(const char *fname)
             cfg->max_speed = atoi(val);
         else if(!strcmp(key, "acceleration"))
             cfg->acceleration = atoi(val);
+        else if(!strcmp(key, "accelerator_acceleration"))
+            cfg->accelerator_acceleration = atoi(val);
+        else if(!strcmp(key, "accelerator"))
+            cfg->accelerator = strdup(val);
         else if(!strcmp(key, "buttons"))
             parse_list(val, &cfg->buttons, &cfg->buttons_sz);
         else if(!strcmp(key, "oneshot_buttons"))

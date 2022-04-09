@@ -64,6 +64,11 @@ struct input_event *normal_mode(struct input_event *start_ev)
 				scroll_accelerate(SCROLL_UP);
 			} else
 				scroll_decelerate();
+		} else if (input_event_eq(ev, cfg->accelerator)) {
+			if (ev->pressed)
+				mouse_fast();
+			else
+				mouse_slow();
 		} else if (!ev->pressed) {
 			goto next;
 		}

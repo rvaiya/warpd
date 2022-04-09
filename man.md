@@ -126,9 +126,13 @@ All values which contain more than one key are space delimited.
 
 *speed*: Pointer speed in pixels/second. (default: 220).
 
-*max_speed*: The maximum pointer speed. (default: 800).
+*max_speed*: The maximum pointer speed. (default: 1600).
 
 *acceleration*: Pointer acceleration in pixels/second^2. (default: 700).
+
+*accelerator_acceleration*: Pointer acceleration while the accelerator is depressed. (default: 2900).
+
+*accelerator*: Increase the speed of the pointer while held. (default: a).
 
 *buttons*: Mouse buttons (2 is middle click). (default: m , .).
 

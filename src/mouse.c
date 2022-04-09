@@ -9,7 +9,7 @@
 
 /* constants */
 
-static double v0, vf, a;
+static double v0, vf, a, a0, a1;
 static int inc = 0;
 static int sw, sh;
 
@@ -179,6 +179,17 @@ int mouse_process_key(struct input_event *ev,
 	return ret;
 }
 
+void mouse_fast()
+{
+	a = a1;
+}
+
+void mouse_slow()
+{
+	v = v0;
+	a = a0;
+}
+
 void mouse_reset()
 {
 	opnum = 0;
@@ -186,6 +197,7 @@ void mouse_reset()
 	right = 0;
 	up = 0;
 	down = 0;
+	a = a0;
 
 	update_cursor_position();
 
@@ -200,5 +212,8 @@ void init_mouse()
 
 	v0 = (double)cfg->speed / 1000.0;
 	vf = (double)cfg->max_speed / 1000.0;
-	a = (double)cfg->acceleration / 1000000.0;
+	a0 = (double)cfg->acceleration / 1000000.0;
+	a1 = (double)cfg->accelerator_acceleration / 1000000.0;
+
+	a = a0;
 }

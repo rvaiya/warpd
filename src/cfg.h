@@ -23,6 +23,8 @@ struct cfg {
 	int	  speed;
 	int	  max_speed;
 	int	  acceleration;
+	int	  accelerator_acceleration;
+	char	 *accelerator;
 	char	**buttons;
 	size_t	  buttons_sz;
 	char	**oneshot_buttons;
