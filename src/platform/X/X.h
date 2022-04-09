@@ -4,8 +4,8 @@
  * © 2019 Raheman Vaiya (see: LICENSE).
  */
 
-#ifndef IMPL_H
-#define IMPL_H
+#ifndef X_PLATFORM_H
+#define X_PLATFORM_H
 
 #include "../../platform.h"
 #include "../../warpd.h"
@@ -71,5 +71,6 @@ extern Display *dpy;
 
 extern struct screen screens[32];
 extern size_t nr_screens;
+extern uint8_t active_mods;
 
 #endif

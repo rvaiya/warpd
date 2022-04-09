@@ -7,6 +7,19 @@
 #ifndef X_INPUT_H
 #define X_INPUT_H
 
+#include "X.h"
+
+static uint8_t modmap[256] = {
+	[29] = MOD_CONTROL,
+	[97] = MOD_CONTROL,
+	[125] = MOD_META,
+	[126] = MOD_META,
+	[56] = MOD_ALT,
+	[100] = MOD_ALT,
+	[42] = MOD_SHIFT,
+	[54] = MOD_SHIFT,
+};
+
 static char *keynames[256] = {
     [1] = "esc",
     [2] = "1",

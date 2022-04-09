@@ -16,8 +16,30 @@ void mouse_down(int btn)
 
 void mouse_click(int btn)
 {
+	if (active_mods & MOD_SHIFT)
+		XTestFakeKeyEvent(dpy, XKeysymToKeycode(dpy, XK_Shift_L), 1, CurrentTime);
+	if (active_mods & MOD_CONTROL)
+		XTestFakeKeyEvent(dpy, XKeysymToKeycode(dpy, XK_Control_L), 1, CurrentTime);
+	if (active_mods & MOD_META)
+		XTestFakeKeyEvent(dpy, XKeysymToKeycode(dpy, XK_Meta_L), 1, CurrentTime);
+	if (active_mods & MOD_ALT)
+		XTestFakeKeyEvent(dpy, XKeysymToKeycode(dpy, XK_Alt_L), 1, CurrentTime);
+
+	XSync(dpy, False);
+
 	XTestFakeButtonEvent(dpy, btn, True, CurrentTime);
 	XTestFakeButtonEvent(dpy, btn, False, CurrentTime);
+
+	XSync(dpy, False);
+
+	if (active_mods & MOD_SHIFT)
+		XTestFakeKeyEvent(dpy, XKeysymToKeycode(dpy, XK_Shift_L), 0, CurrentTime);
+	if (active_mods & MOD_CONTROL)
+		XTestFakeKeyEvent(dpy, XKeysymToKeycode(dpy, XK_Control_L), 0, CurrentTime);
+	if (active_mods & MOD_META)
+		XTestFakeKeyEvent(dpy, XKeysymToKeycode(dpy, XK_Meta_L), 0, CurrentTime);
+	if (active_mods & MOD_ALT)
+		XTestFakeKeyEvent(dpy, XKeysymToKeycode(dpy, XK_Alt_L), 0, CurrentTime);
 
 	XSync(dpy, False);
 }

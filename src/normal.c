@@ -104,15 +104,20 @@ struct input_event *normal_mode(struct input_event *start_ev)
 			size_t i;
 
 			for (i = 0; i < 3; i++) {
+				struct input_event ev1;
 				const int btn = i + 1;
 				int oneshot = 0;
 				int match = 0;
 
-				if (input_event_eq(ev,
-						   cfg->oneshot_buttons[i])) {
+				/* Permit any modifiers to be paired with mouse buttons. */
+				input_parse_string(&ev1, cfg->oneshot_buttons[i]);
+				if (ev1.code == ev->code) {
 					match = 1;
 					oneshot = 1;
-				} else if (input_event_eq(ev, cfg->buttons[i]))
+				}
+
+				input_parse_string(&ev1, cfg->buttons[i]);
+				if (ev1.code == ev->code)
 					match = 1;
 
 				if (match) {

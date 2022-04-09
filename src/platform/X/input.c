@@ -10,6 +10,8 @@
 static int nr_grabbed_device_ids = 0;
 static int grabbed_device_ids[64];
 
+uint8_t active_mods = 0;
+
 /* clear the X keyboard state. */
 static void reset_keyboard()
 {
@@ -236,6 +238,7 @@ void input_grab_keyboard()
 	reset_keyboard();
 	XIFreeDeviceInfo(devices);
 
+	active_mods = 0;
 	XSync(dpy, False);
 }
 
@@ -317,6 +320,11 @@ struct input_event *input_next_event(int timeout)
 				ev.pressed = state;
 				ev.code = code;
 				ev.mods = xmods_to_mods(xmods);
+
+				if (state)
+					active_mods |= modmap[code];
+				else
+					active_mods &= ~modmap[code];
 
 				return &ev;
 			}
