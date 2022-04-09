@@ -110,8 +110,7 @@ static void tick()
  * mouse_reset() should be called at the beginning of the containing event
  * loop.
  *
- * Returns 1 if the event was handled, or 0 if it should be handled by the
- * calling logic.
+ * Returns 1 if the cursor position was updated.
  */
 
 int mouse_process_key(struct input_event *ev,
@@ -126,7 +125,7 @@ int mouse_process_key(struct input_event *ev,
 	/* timeout */
 	if (!ev) {
 		tick();
-		return 1;
+		return left || right || up || down;
 	}
 
 	if ((n = tonum(ev->code)) != -1 && ev->mods == 0) {

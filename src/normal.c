@@ -34,6 +34,7 @@ struct input_event *normal_mode(struct input_event *start_ev)
 
 	mouse_hide();
 	mouse_reset();
+	redraw(scr, mx, my, 1);
 
 	while (1) {
 		if (start_ev == NULL) {
@@ -50,15 +51,20 @@ struct input_event *normal_mode(struct input_event *start_ev)
 			continue;
 		}
 
+		if (!ev)
+			continue;
+
 		mouse_get_position(&scr, &mx, &my);
 
 		if (input_event_eq(ev, cfg->scroll_down)) {
+			screen_clear(scr);
 			if (ev->pressed) {
 				scroll_stop();
 				scroll_accelerate(SCROLL_DOWN);
 			} else
 				scroll_decelerate();
 		} else if (input_event_eq(ev, cfg->scroll_up)) {
+			screen_clear(scr);
 			if (ev->pressed) {
 				scroll_stop();
 				scroll_accelerate(SCROLL_UP);
