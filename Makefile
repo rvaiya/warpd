@@ -37,7 +37,7 @@ endif
 FILES=$(shell find src/*.c)
 OBJECTS=$(FILES:.c=.o) $(PLATFORM_OBJECTS)
 
-all: $(OBJECTS)
+all: clean $(OBJECTS)
 	-mkdir bin
 	$(CC)  $(CFLAGS) -o bin/warpd $(OBJECTS) $(PLATFORM_FLAGS)
 fmt:
