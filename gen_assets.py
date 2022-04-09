@@ -67,15 +67,15 @@ c_template = r'''
 
 static void parse_list(const char *_s, char ***arr, size_t *sz)
 {
-	size_t	  n;
-	char	 *s;
-	char	**a;
-	char	 *start;
-	ssize_t	  len, i;
+    size_t n;
+    char *s;
+    char **a;
+    char *start;
+    ssize_t len, i;
 
-	n	= 1;
-	s	= strdup(_s);
-	len	= strlen(s);
+    n = 1;
+    s = strdup(_s);
+    len = strlen(s);
 
 	for (i = 0; i < len; i++)
 		if (s[i] == ' ')
@@ -130,12 +130,12 @@ static int kvp(char *line, char **key, char **val)
 
 struct cfg *parse_cfg(const char *fname)
 {
-	char		*line;
-	size_t		 n, ln;
-	struct cfg	*cfg = malloc(sizeof(struct cfg));
-	FILE		*fp = fopen(fname, "r");
+    char *line;
+    size_t n, ln;
+    struct cfg *cfg = malloc(sizeof(struct cfg));
+    FILE *fp = fopen(fname, "r");
 
-	line = NULL;
+    line = NULL;
     ln = 0;
 
 {field_init}
@@ -144,8 +144,8 @@ struct cfg *parse_cfg(const char *fname)
 		return cfg; // Return defaults if no config file xists..
 
 	while (getline(&line, &n, fp) != -1) {
-		ln++;
-		char *key, *val;
+        ln++;
+        char *key, *val;
 
 		if (line[0] == '\n' || line[0] == '\0')
 			continue;
