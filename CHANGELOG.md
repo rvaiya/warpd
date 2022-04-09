@@ -1,3 +1,8 @@
+# v1.1.2-beta
+
+ - Add support for modified button presses
+ - Add accelerator key
+
 # v1.1.1-beta
 
  - Add support for shifted hint characters
