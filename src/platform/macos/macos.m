@@ -18,7 +18,7 @@ static NSDictionary *get_font_attrs(const char *family, NSColor *color, int h)
 {
 	NSDictionary *attrs;
 
-	int    ptsz = h;
+	int ptsz = h;
 	CGSize size;
 	do {
 		NSFont *font =
@@ -45,9 +45,9 @@ void macos_draw_text(struct screen *scr, NSColor *col, const char *font,
 		     int h, const char *s)
 {
 
-	NSDictionary	*attrs = get_font_attrs(font, col, h);
-	NSString	*str = [NSString stringWithUTF8String:s];
-	CGSize		 size = [str sizeWithAttributes:attrs];
+	NSDictionary *attrs = get_font_attrs(font, col, h);
+	NSString *str = [NSString stringWithUTF8String:s];
+	CGSize size = [str sizeWithAttributes:attrs];
 
 	x += (w - size.width)/2;
 

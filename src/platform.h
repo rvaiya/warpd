@@ -11,14 +11,14 @@
 #include <stdlib.h>
 
 #define MOD_CONTROL 1
-#define MOD_SHIFT   2
-#define MOD_META    4
-#define MOD_ALT	    8
+#define MOD_SHIFT 2
+#define MOD_META 4
+#define MOD_ALT 8
 
-#define SCROLL_DOWN  1
+#define SCROLL_DOWN 1
 #define SCROLL_RIGHT 2
-#define SCROLL_LEFT  3
-#define SCROLL_UP    4
+#define SCROLL_LEFT 3
+#define SCROLL_UP 4
 
 #define MAX_HINTS 2048
 #define MAX_SCREENS 32

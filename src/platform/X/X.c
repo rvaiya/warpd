@@ -6,7 +6,7 @@
 
 #include "X.h"
 
-Display	*dpy = NULL;
+Display *dpy = NULL;
 
 int hex_to_rgba(const char *str, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a)
 {
@@ -132,9 +132,9 @@ void scroll(int direction)
 
 Window create_window(const char *color)
 {
-	uint32_t    col = 0;
+	uint32_t col = 0;
 	XClassHint *hint;
-	uint8_t	    opacity;
+	uint8_t opacity;
 
 	col = parse_xcolor(color, &opacity);
 

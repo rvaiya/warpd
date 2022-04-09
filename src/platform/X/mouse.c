@@ -33,11 +33,11 @@ void mouse_move(struct screen *scr, int x, int y)
 
 void mouse_get_position(struct screen **_scr, int *_x, int *_y)
 {
-	size_t	     i;
-	Window	     chld, root;
-	int	     _;
+	size_t i;
+	Window chld, root;
+	int _;
 	unsigned int _u;
-	int	     x, y;
+	int x, y;
 
 	/* Obtain absolute pointer coordinates */
 	XQueryPointer(dpy, DefaultRootWindow(dpy), &root, &chld, &x, &y, &_, &_,

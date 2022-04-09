@@ -7,7 +7,7 @@
 #include "warpd.h"
 
 struct cfg *cfg;
-char	    config_dir[512];
+char config_dir[512];
 
 static int dragging = 0;
 
@@ -72,7 +72,7 @@ exit:
 
 static void normalize_dimensions()
 {
-	int	 sw, sh;
+	int sw, sh;
 	screen_t scr;
 
 	// TODO: fixme (account for multi-screen setups)
@@ -101,7 +101,7 @@ static void main_loop()
 	input_parse_string(&activation_events[4], cfg->screen_activation_key);
 
 	while (1) {
-		int		    mode = 0;
+		int mode = 0;
 		struct input_event *ev = input_wait(activation_events, sizeof(activation_events)/sizeof(activation_events[0]));
 
 		if (input_event_eq(ev, cfg->activation_key))
@@ -124,7 +124,7 @@ static void main_loop()
 static void lock()
 {
 	char path[1024];
-	int  fd;
+	int fd;
 	sprintf(path, "%s/lock", config_dir);
 
 	if ((fd = open(path, O_CREAT | O_RDWR, 0600)) == -1) {
@@ -183,8 +183,8 @@ static void print_version()
 
 int main(int argc, char *argv[])
 {
-	int	    foreground_flag = 0;
-	char	    config_path[1024];
+	int foreground_flag = 0;
+	char config_path[1024];
 	const char *home = getenv("HOME");
 
 	if (!home) {

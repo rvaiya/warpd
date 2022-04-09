@@ -6,8 +6,8 @@
 
 #include "warpd.h"
 
-static	int	grid_width;
-static	int	grid_height;
+static int grid_width;
+static int grid_height;
 static screen_t scr;
 
 static void draw_grid(screen_t scr,
@@ -32,19 +32,19 @@ static void draw_grid(screen_t scr,
 
 static void redraw(int mx, int my, int force)
 {
-	const int x		= mx - grid_width/2;
-	const int y		= my - grid_height/2;
+	const int x = mx - grid_width/2;
+	const int y = my - grid_height/2;
 
-	const int nc		= cfg->grid_nc;
-	const int nr		= cfg->grid_nr;
-	const int cursz		= cfg->cursor_size;
-	const int gsz		= cfg->grid_size;
-	const int gbsz		= cfg->grid_border_size;
-	const char *gbcol	= cfg->grid_border_color;
-	const char *gcol	= cfg->grid_color;
+	const int nc = cfg->grid_nc;
+	const int nr = cfg->grid_nr;
+	const int cursz = cfg->cursor_size;
+	const int gsz = cfg->grid_size;
+	const int gbsz = cfg->grid_border_size;
+	const char *gbcol = cfg->grid_border_color;
+	const char *gcol = cfg->grid_color;
 
-	const int gh		= grid_height;
-	const int gw		= grid_width;
+	const int gh = grid_height;
+	const int gw = grid_width;
 
 	static int omx, omy;
 
@@ -81,7 +81,7 @@ static void redraw(int mx, int my, int force)
 struct input_event *grid_mode()
 {
 	int mx, my;
-	struct	input_event *ev;
+	struct input_event *ev;
 
 	const int nc = cfg->grid_nc;
 	const int nr = cfg->grid_nr;

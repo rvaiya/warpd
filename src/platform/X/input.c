@@ -14,7 +14,7 @@ static int grabbed_device_ids[64];
 static void reset_keyboard()
 {
 	size_t i;
-	char   keymap[32];
+	char keymap[32];
 
 	XQueryKeymap(dpy, keymap);
 
@@ -56,7 +56,7 @@ static void grab(int device_id)
 /* timeout in ms. */
 static XEvent *get_next_xev(int timeout)
 {
-	static int    xfd = 0;
+	static int xfd = 0;
 	static XEvent ev;
 
 	fd_set fds;
@@ -82,17 +82,17 @@ static XEvent *get_next_xev(int timeout)
 }
 
 static uint8_t sym_table[] = {
-    [XK_q] = 24,     [XK_w] = 25,	  [XK_e] = 26,
-    [XK_r] = 27,     [XK_t] = 28,	  [XK_y] = 29,
-    [XK_u] = 30,     [XK_i] = 31,	  [XK_o] = 32,
-    [XK_p] = 33,     [XK_a] = 38,	  [XK_s] = 39,
-    [XK_d] = 40,     [XK_f] = 41,	  [XK_g] = 42,
-    [XK_h] = 43,     [XK_j] = 44,	  [XK_k] = 45,
-    [XK_l] = 46,     [XK_semicolon] = 47, [XK_apostrophe] = 48,
+    [XK_q] = 24, [XK_w] = 25, [XK_e] = 26,
+    [XK_r] = 27, [XK_t] = 28, [XK_y] = 29,
+    [XK_u] = 30, [XK_i] = 31, [XK_o] = 32,
+    [XK_p] = 33, [XK_a] = 38, [XK_s] = 39,
+    [XK_d] = 40, [XK_f] = 41, [XK_g] = 42,
+    [XK_h] = 43, [XK_j] = 44, [XK_k] = 45,
+    [XK_l] = 46, [XK_semicolon] = 47, [XK_apostrophe] = 48,
     [XK_grave] = 49, [XK_backslash] = 51, [XK_z] = 52,
-    [XK_x] = 53,     [XK_c] = 54,	  [XK_v] = 55,
-    [XK_b] = 56,     [XK_n] = 57,	  [XK_m] = 58,
-    [XK_comma] = 59, [XK_period] = 60,	  [XK_slash] = 61,
+    [XK_x] = 53, [XK_c] = 54, [XK_v] = 55,
+    [XK_b] = 56, [XK_n] = 57, [XK_m] = 58,
+    [XK_comma] = 59, [XK_period] = 60, [XK_slash] = 61,
     [XK_space] = 65,
 };
 
@@ -138,7 +138,7 @@ static uint8_t process_xinput_event(XEvent *ev, int *state, int *mods)
 		return 0;
 
 	switch (cookie->evtype) {
-		uint16_t       code;
+		uint16_t code;
 		XIDeviceEvent *dev;
 
 	case XI_KeyPress:
@@ -210,7 +210,7 @@ static void xgrab_key(uint8_t code, uint8_t mods)
 
 void input_grab_keyboard()
 {
-	int	      i, n;
+	int i, n;
 	XIDeviceInfo *devices;
 
 	if (nr_grabbed_device_ids != 0)
@@ -247,7 +247,7 @@ void input_ungrab_keyboard()
 		return;
 
 	for (i = 0; i < nr_grabbed_device_ids; i++) {
-		int	      n;
+		int n;
 		XIDeviceInfo *info =
 		    XIQueryDevice(dpy, grabbed_device_ids[i], &n);
 
@@ -304,7 +304,7 @@ struct input_event *input_next_event(int timeout)
 	int elapsed = 0;
 
 	while (1) {
-		int	state;
+		int state;
 		uint8_t code;
 		XEvent *xev;
 
@@ -335,7 +335,7 @@ struct input_event *input_next_event(int timeout)
 
 struct input_event *input_wait(struct input_event *events, size_t sz)
 {
-	size_t			  i;
+	size_t i;
 	static struct input_event ev;
 
 	for (i = 0; i < sz; i++) {

@@ -21,7 +21,7 @@
  * to be understood implicitly when reading platform code.
  * 
  * * To compound matters, it seems some of the CG APIs use an ULO coordinate
- *   system :/. When in doubt, consult docs from the high tower.
+ * system :/. When in doubt, consult docs from the high tower.
  */
 
 #define MAX_DRAWING_HOOKS 32
@@ -96,5 +96,5 @@ void send_key(uint8_t code, int pressed);
 NSColor *nscolor_from_hex(const char *str);
 
 extern struct screen screens[32];
-extern size_t	     nr_screens;
+extern size_t nr_screens;
 #endif

@@ -7,8 +7,8 @@
 #include "macos.h"
 
 static NSTimer *hider_timer = NULL;
-static int	hide_depth = 0;
-static int	dragging = 0;
+static int hide_depth = 0;
+static int dragging = 0;
 
 @interface CursorHider : NSObject
 @end
@@ -35,7 +35,7 @@ static long get_time_ms()
 static void do_mouse_click(int btn, int pressed, int nclicks)
 {
 	CGEventRef ev = CGEventCreate(NULL);
-	CGPoint	   current_pos = CGEventGetLocation(ev);
+	CGPoint current_pos = CGEventGetLocation(ev);
 	CFRelease(ev);
 
 	int down = kCGEventLeftMouseDown;
@@ -70,7 +70,7 @@ void mouse_click(int btn)
 	dragging = 0;
 
 	static long last_ts = 0;
-	static int  clicks = 1;
+	static int clicks = 1;
 
 	/*
 	 * Apparently quartz events accrete and encode the number of clicks
@@ -141,8 +141,8 @@ void mouse_get_position(struct screen **_scr, int *_x, int *_y)
 
 void mouse_move(struct screen *scr, int x, int y)
 {
-	const int	type = dragging ? kCGEventLeftMouseDragged : kCGEventMouseMoved;
-	int		cgx, cgy;
+	const int type = dragging ? kCGEventLeftMouseDragged : kCGEventMouseMoved;
+	int cgx, cgy;
 
 	x += scr->x;
 	y = scr->y + scr->h - y;
@@ -152,9 +152,9 @@ void mouse_move(struct screen *scr, int x, int y)
 	 * two.
 	 */
 
-	NSPoint		nspos = [NSEvent mouseLocation];	//LLO global coordinate system
-	CGEventRef	CGEv = CGEventCreate(NULL);
-	CGPoint		cgpos = CGEventGetLocation(CGEv);	//ULO global coordinate system :(
+	NSPoint nspos = [NSEvent mouseLocation]; //LLO global coordinate system
+	CGEventRef CGEv = CGEventCreate(NULL);
+	CGPoint cgpos = CGEventGetLocation(CGEv); //ULO global coordinate system :(
 
 	cgx = x - nspos.x + cgpos.x;
 	cgy = cgpos.y - (y - nspos.y);
@@ -213,7 +213,7 @@ void macos_init_mouse()
 	 */
 
 	void CGSSetConnectionProperty(int, int, CFStringRef, CFBooleanRef);
-	int  _CGSDefaultConnection();
+	int _CGSDefaultConnection();
 	CFStringRef propertyString;
 
 	propertyString = CFStringCreateWithCString(

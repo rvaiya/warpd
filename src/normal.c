@@ -23,9 +23,9 @@ static void move(screen_t scr, int x, int y)
 struct input_event *normal_mode(struct input_event *start_ev)
 {
 	struct input_event *ev;
-	screen_t	    scr;
-	int		    sh, sw;
-	int		    mx, my;
+	screen_t scr;
+	int sh, sw;
+	int mx, my;
 
 	input_grab_keyboard();
 
@@ -105,8 +105,8 @@ struct input_event *normal_mode(struct input_event *start_ev)
 
 			for (i = 0; i < 3; i++) {
 				const int btn = i + 1;
-				int	  oneshot = 0;
-				int	  match = 0;
+				int oneshot = 0;
+				int match = 0;
 
 				if (input_event_eq(ev,
 						   cfg->oneshot_buttons[i])) {

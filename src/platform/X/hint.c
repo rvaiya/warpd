@@ -6,15 +6,15 @@
 
 #include "X.h"
 
-static int	   border_radius;
+static int border_radius;
 static const char *font_family;
 static const char *fgcolor;
 static const char *bgcolor;
 
 static XftColor parse_xft_color(const char *s)
 {
-	uint8_t	     r, g, b, a;
-	XftColor     color;
+	uint8_t r, g, b, a;
+	XftColor color;
 	XRenderColor rc;
 
 	int scr = DefaultScreen(dpy);
@@ -33,12 +33,12 @@ static XftColor parse_xft_color(const char *s)
 
 static XftFont *get_font(const char *name, int height)
 {
-	static XftFont	*font;
-	static char	cached_name[256];
-	static int	cached_height;
+	static XftFont *font;
+	static char cached_name[256];
+	static int cached_height;
 
-	char	 xftname[256];
-	int	 h;
+	char xftname[256];
+	int h;
 
 	if (!strcmp(cached_name, name) && 
 		    cached_height == height)
@@ -61,13 +61,13 @@ static XftFont *get_font(const char *name, int height)
 static int draw_text(Drawable drw, int x, int y, int w, int h,
 		     const char *fontname, const char *s)
 {
-	XftDraw		*xftdrw;
-	XftColor	 col;
+	XftDraw *xftdrw;
+	XftColor col;
 
-	XftFont    *font;
+	XftFont *font;
 
-	XGlyphInfo	e;
-	int		font_height;
+	XGlyphInfo e;
+	int font_height;
 
 	font = get_font(fontname, h - 3);
 	col = parse_xft_color(fgcolor);
@@ -109,9 +109,9 @@ void do_hint_draw(struct screen *scr, Window win, struct hint *hints, size_t n)
 {
 	size_t i = 0;
 
-	Pixmap	mask = XCreatePixmap(dpy, win, scr->w, scr->h, 1);
-	GC	gc = XCreateGC(dpy, mask, 0, NULL);
-	GC	mgc = XCreateGC(dpy, DefaultRootWindow(dpy),
+	Pixmap mask = XCreatePixmap(dpy, win, scr->w, scr->h, 1);
+	GC gc = XCreateGC(dpy, mask, 0, NULL);
+	GC mgc = XCreateGC(dpy, DefaultRootWindow(dpy),
 			   GCForeground | GCFillStyle,
 			   &(XGCValues){
 			   .foreground = parse_xcolor(bgcolor, NULL),
@@ -148,7 +148,7 @@ void do_hint_draw(struct screen *scr, Window win, struct hint *hints, size_t n)
 
 void hint_draw(struct screen *scr, struct hint *hints, size_t n)
 {
-	Window	win = scr->hintwin;
+	Window win = scr->hintwin;
 
 	XMoveWindow(dpy, scr->hintwin, -1E6, -1E6);
 	XMoveWindow(dpy, scr->cached_hintwin, -1E6, -1E6);

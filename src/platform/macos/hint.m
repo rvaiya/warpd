@@ -1,10 +1,10 @@
 #include "macos.h"
 
-static float		border_radius;
+static float border_radius;
 
-static NSColor		*bgColor;
-static NSColor		*fgColor;
-const char		*font;
+static NSColor *bgColor;
+static NSColor *fgColor;
+const char *font;
 
 
 static void draw_hook(void *arg, NSView *view)

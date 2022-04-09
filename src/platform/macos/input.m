@@ -7,16 +7,16 @@
 #include "macos.h"
 #include "input.h"
 
-static int  grabbed = 0;
+static int grabbed = 0;
 static long grabbed_time;
 
-static int		   input_fds[2];
+static int input_fds[2];
 static struct input_event *grabbed_keys;
-static size_t		   grabbed_keys_sz = 0;
+static size_t grabbed_keys_sz = 0;
 
 static uint8_t passthrough_keys[256] = {0};
 
-static int	     keystate[256] = {0};
+static int keystate[256] = {0};
 static CFMachPortRef tap;
 
 struct mod {
@@ -67,7 +67,7 @@ static CGEventRef eventTapCallback(CGEventTapProxy proxy, CGEventType type,
 				   CGEventRef event, void *context)
 {
 	size_t i;
-	int    is_key_event = 0;
+	int is_key_event = 0;
 
 	uint8_t code = 0;
 	uint8_t pressed = 0;
@@ -75,7 +75,7 @@ static CGEventRef eventTapCallback(CGEventTapProxy proxy, CGEventType type,
 
 	static uint8_t active_mods = 0;
 	static uint8_t keymods[256] = {0}; /* Mods active at key down time. */
-	static long    pressed_timestamps[256];
+	static long pressed_timestamps[256];
 
 	/* macOS will timeout the event tap, so we have to re-enable it :/ */
 	if (type == kCGEventTapDisabledByTimeout) {
@@ -265,7 +265,7 @@ struct input_event *input_wait(struct input_event *keys, size_t sz)
 	grabbed_keys_sz = sz;
 
 	while (1) {
-		size_t		    i;
+		size_t i;
 		struct input_event *ev = input_next_event(0);
 
 		for (i = 0; i < sz; i++)

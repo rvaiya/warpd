@@ -6,8 +6,8 @@
 
 #include "macos.h"
 
-struct screen	screens[32];
-size_t		nr_screens;
+struct screen screens[32];
+size_t nr_screens;
 
 static void draw_hook(void *arg, NSView *view)
 {

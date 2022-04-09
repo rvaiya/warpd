@@ -7,7 +7,7 @@
 #include "macos.h"
 
 @interface MainView : NSView
-@property struct window	*win;
+@property struct window *win;
 @end
 
 @implementation MainView
@@ -91,8 +91,8 @@ struct window *create_overlay_window(int x, int y, int w, int h)
 
 struct window *create_window(const char *color, size_t w, size_t h)
 {
-	struct window	*win = calloc(1, sizeof(struct window));
-	NSRect		rect = NSMakeRect(0, 0, (float)w, (float)h);
+	struct window *win = calloc(1, sizeof(struct window));
+	NSRect rect = NSMakeRect(0, 0, (float)w, (float)h);
 
 	NSWindow *nsWin = [[NSWindow alloc]
 	    initWithContentRect:rect

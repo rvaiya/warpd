@@ -29,8 +29,8 @@ static void filter(screen_t scr, const char *s)
 
 size_t generate_hints(screen_t scr, struct hint *hints)
 {
-	int    sw, sh;
-	int    i, j;
+	int sw, sh;
+	int i, j;
 	size_t n = 0;
 
 	const char *chars = cfg->hint_chars;

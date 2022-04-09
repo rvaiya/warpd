@@ -39,37 +39,37 @@ struct box {
 
 struct screen {
 	/* Xinerama offset */
-	int	x;
-	int	y;
+	int x;
+	int y;
 
-	int	w;
-	int	h;
+	int w;
+	int h;
 
-	Pixmap		buf;
+	Pixmap buf;
 
-	Window		hintwin;
+	Window hintwin;
 
-	Window		cached_hintwin;
-	Pixmap		cached_hintbuf;
+	Window cached_hintwin;
+	Pixmap cached_hintbuf;
 
-	struct hint	cached_hints[MAX_HINTS];
-	size_t		nr_cached_hints;
+	struct hint cached_hints[MAX_HINTS];
+	size_t nr_cached_hints;
 
-	struct box	boxes[MAX_BOXES];
-	size_t		nr_boxes;
+	struct box boxes[MAX_BOXES];
+	size_t nr_boxes;
 };
 
-Window	create_window(const char *color);
+Window create_window(const char *color);
 
-int	 hex_to_rgba(const char *str, uint8_t *r, uint8_t *g, uint8_t *b,
+int hex_to_rgba(const char *str, uint8_t *r, uint8_t *g, uint8_t *b,
 		     uint8_t *a);
 uint32_t parse_xcolor(const char *s, uint8_t *opacity);
-void	 init_screens();
+void init_screens();
 
 /* Globals. */
-extern Display		*dpy;
+extern Display *dpy;
 
-extern struct screen	screens[32];
-extern size_t		nr_screens;
+extern struct screen screens[32];
+extern size_t nr_screens;
 
 #endif

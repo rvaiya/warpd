@@ -10,8 +10,8 @@
 /* constants */
 
 static double v0, vf, a;
-static int    inc = 0;
-static int    sw, sh;
+static int inc = 0;
+static int sw, sh;
 
 /* state */
 
@@ -51,7 +51,7 @@ static int tonum(uint8_t code)
 
 static void update_cursor_position()
 {
-	int	 ix, iy;
+	int ix, iy;
 
 	mouse_get_position(&scr, &ix, &iy);
 	screen_get_dimensions(scr, &sw, &sh);

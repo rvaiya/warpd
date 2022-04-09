@@ -11,7 +11,7 @@
 static struct {
 	size_t head;
 	size_t tail;
-	int    full;
+	int full;
 
 	size_t cur;
 

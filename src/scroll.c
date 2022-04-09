@@ -15,10 +15,10 @@
 #define fling_velocity (2000.0 / factor);
 
 /* terminal velocity */
-#define vt  (9000.0 / factor)
-#define v0  (300.0 / factor)
+#define vt (9000.0 / factor)
+#define v0 (300.0 / factor)
 #define da0 (-3400.0 / factor) /* deceleration */
-#define a0  (1600.0 / factor)
+#define a0 (1600.0 / factor)
 
 static long last_tick = 0;
 
