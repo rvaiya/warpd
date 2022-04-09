@@ -97,4 +97,5 @@ NSColor *nscolor_from_hex(const char *str);
 
 extern struct screen screens[32];
 extern size_t nr_screens;
+extern uint8_t active_mods;
 #endif

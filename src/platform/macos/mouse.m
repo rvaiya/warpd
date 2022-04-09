@@ -41,6 +41,7 @@ static void do_mouse_click(int btn, int pressed, int nclicks)
 	int down = kCGEventLeftMouseDown;
 	int up = kCGEventLeftMouseUp;
 	int button = kCGMouseButtonLeft;
+	CGEventFlags mask = 0;
 
 	/* TODO: Add support for middle click. */
 	if (btn == 3) {
@@ -49,14 +50,25 @@ static void do_mouse_click(int btn, int pressed, int nclicks)
 		button = kCGMouseButtonRight;
 	}
 
+	if (active_mods & MOD_META) mask |= kCGEventFlagMaskCommand;
+	if (active_mods & MOD_ALT) mask |= kCGEventFlagMaskAlternate;
+	if (active_mods & MOD_CONTROL) mask |= kCGEventFlagMaskControl;
+	if (active_mods & MOD_SHIFT) mask |= kCGEventFlagMaskShift;
+
 	if (pressed) {
 		ev = CGEventCreateMouseEvent(NULL, down, current_pos, button);
+
+		CGEventSetFlags(ev, mask);
+
 		CGEventSetIntegerValueField(ev, kCGMouseEventClickState,
 					    nclicks);
 		CGEventPost(kCGHIDEventTap, ev);
 		CFRelease(ev);
 	} else {
 		ev = CGEventCreateMouseEvent(NULL, up, current_pos, button);
+
+		CGEventSetFlags(ev, mask);
+
 		CGEventSetIntegerValueField(ev, kCGMouseEventClickState,
 					    nclicks);
 		CGEventPost(kCGHIDEventTap, ev);
@@ -66,27 +78,29 @@ static void do_mouse_click(int btn, int pressed, int nclicks)
 
 void mouse_click(int btn)
 {
-	const int threshold = 300;
-	dragging = 0;
+	dispatch_sync(dispatch_get_main_queue(), ^{
+		const int threshold = 300;
+		dragging = 0;
 
-	static long last_ts = 0;
-	static int clicks = 1;
+		static long last_ts = 0;
+		static int clicks = 1;
 
-	/*
-	 * Apparently quartz events accrete and encode the number of clicks
-	 * rather than leaving this to the application, so we need this ugly
-	 * workaround :/.
-	 */
+		/*
+		 * Apparently quartz events accrete and encode the number of clicks
+		 * rather than leaving this to the application, so we need this ugly
+		 * workaround :/.
+		 */
 
-	if ((get_time_ms() - last_ts) < threshold)
-		clicks++;
-	else
-		clicks = 1;
+		if ((get_time_ms() - last_ts) < threshold)
+			clicks++;
+		else
+			clicks = 1;
 
-	do_mouse_click(btn, 1, clicks);
-	do_mouse_click(btn, 0, clicks);
+		do_mouse_click(btn, 1, clicks);
+		do_mouse_click(btn, 0, clicks);
 
-	last_ts = get_time_ms();
+		last_ts = get_time_ms();
+	});
 }
 
 void mouse_up(int btn)

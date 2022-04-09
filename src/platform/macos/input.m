@@ -19,6 +19,8 @@ static uint8_t passthrough_keys[256] = {0};
 static int keystate[256] = {0};
 static CFMachPortRef tap;
 
+uint8_t active_mods = 0;
+
 struct mod {
 	uint8_t mask;
 	uint8_t code1;
@@ -73,7 +75,6 @@ static CGEventRef eventTapCallback(CGEventTapProxy proxy, CGEventType type,
 	uint8_t pressed = 0;
 	uint8_t mods = 0;
 
-	static uint8_t active_mods = 0;
 	static uint8_t keymods[256] = {0}; /* Mods active at key down time. */
 	static long pressed_timestamps[256];
 
