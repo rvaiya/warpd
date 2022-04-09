@@ -34,25 +34,28 @@ size_t generate_hints(screen_t scr, struct hint *hints)
 	size_t n = 0;
 
 	const char *chars = cfg->hint_chars;
-	const int   nr = strlen(chars);
-	const int   nc = strlen(chars);
+	const int nr = strlen(chars);
+	const int nc = strlen(chars);
 
 	screen_get_dimensions(scr, &sw, &sh);
 
 	const int hint_size = cfg->hint_size * sh / 1080;
 
-	const int colgap = (sw - (hint_size * 2)) / (nc - 1);
-	const int rowgap = (sh - (hint_size * 2)) / (nr - 1);
+	const int w = MIN(hint_size * 1.6, (sw-(5*nc)) / nc);
+	const int h = MIN(hint_size, (sh-(5*nr)) / nr);
 
-	const int w = hint_size * 1.6;
-	const int h = hint_size;
+	const int colgap = (sw - w*nc) / (nc + 1);
+	const int rowgap = (sh - h*nr) / (nr + 1);
 
-	for (i = 0; i < nc; i++)
+	int x = colgap;
+	int y = rowgap;
+
+	for (i = 0; i < nc; i++) {
 		for (j = 0; j < nr; j++) {
 			struct hint *hint = &hints[n++];
 
-			hint->x = i * colgap + hint_size - w / 2;
-			hint->y = j * rowgap + hint_size - h / 2;
+			hint->x = x;
+			hint->y = y;
 
 			hint->w = w;
 			hint->h = h;
@@ -60,7 +63,13 @@ size_t generate_hints(screen_t scr, struct hint *hints)
 			hint->label[0] = chars[i];
 			hint->label[1] = chars[j];
 			hint->label[2] = 0;
+
+			y += rowgap + h;
 		}
+
+		y = rowgap;
+		x += colgap + w;
+	}
 
 	return n;
 }
@@ -69,26 +78,6 @@ void init_hint_mode()
 {
 	init_hint(cfg->hint_bgcolor, cfg->hint_fgcolor, cfg->hint_border_radius,
 		  cfg->hint_font);
-}
-
-static char code_to_char(uint8_t code)
-{
-	const char *s = input_lookup_name(code);
-
-	if (!s)
-		return 0;
-	if (strlen(s) == 1)
-		return s[0];
-	if (!strcmp(s, "comma"))
-		return ',';
-	if (!strcmp(s, "dot"))
-		return '.';
-	if (!strcmp(s, "slash"))
-		return '/';
-	if (!strcmp(s, "semicolon"))
-		return ';';
-
-	return 0;
 }
 
 int hint_mode()
@@ -100,7 +89,7 @@ int hint_mode()
 
 	filter(scr, "");
 
-	int  rc = 0;
+	int rc = 0;
 	char buf[32] = {0};
 	input_grab_keyboard();
 
@@ -108,7 +97,7 @@ int hint_mode()
 
 	while (1) {
 		struct input_event *ev;
-		ssize_t		    len;
+		ssize_t len;
 
 		ev = input_next_event(0);
 
@@ -126,15 +115,19 @@ int hint_mode()
 			if (len)
 				buf[len - 1] = 0;
 		} else {
-			char c = code_to_char(ev->code);
-			if (c)
-				buf[len++] = c;
+			const char *name = input_event_tostr(ev);
+
+			if (!name || name[1])
+				continue;
+
+			buf[len++] = name[0];
 		}
 
 		filter(scr, buf);
 
 		if (nr_matched == 1) {
 			struct hint *h = &matched[0];
+
 			mouse_move(scr, h->x + h->w / 2, h->y + h->h / 2);
 			break;
 		} else if (nr_matched == 0) {

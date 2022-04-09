@@ -8,6 +8,7 @@
 #define IMPL_H
 
 #include "../../platform.h"
+#include "../../warpd.h"
 
 #include <X11/Xatom.h>
 #include <X11/Xft/Xft.h>

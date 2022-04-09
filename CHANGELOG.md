@@ -1,3 +1,12 @@
+# v1.1.1-beta
+
+ - Add support for shifted hint characters
+ - Fix screen boundary issue
+ - Limit maximum hint size for multi-screen/resolution setups
+ - Change the config list delimiter from comma to space
+ - Update man page
+ - Misc bugfixes
+
 # v1.1.0-beta
 
  - Add Multiscreen support

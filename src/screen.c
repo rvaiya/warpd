@@ -2,7 +2,7 @@
 
 void screen_selection_mode()
 {
-	int i;
+	size_t i;
 	size_t n;
 	screen_t screens[MAX_SCREENS];
 	struct input_event *ev;

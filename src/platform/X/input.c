@@ -168,11 +168,10 @@ static uint8_t process_xinput_event(XEvent *ev, int *state, int *mods)
 }
 
 static const char *xerr_key = NULL;
-static int	   input_xerr(Display *dpy, XErrorEvent *ev)
+static int input_xerr(Display *dpy, XErrorEvent *ev)
 {
 	fprintf(stderr,
-		"ERROR: Failed to grab %s (ensure another application hasn't "
-		"mapped it)\n",
+		"ERROR: Failed to grab %s (ensure it isn't mapped by another application)\n",
 		xerr_key);
 	exit(1);
 	return 0;
@@ -196,7 +195,7 @@ static void xgrab_key(uint8_t code, uint8_t mods)
 	if (mods & MOD_ALT)
 		xmods |= Mod1Mask;
 
-	xerr_key = input_lookup_name(code);
+	xerr_key = input_event_tostr(&(struct input_event){code, mods, 0});
 
 	XGrabKey(dpy, xcode, xmods, DefaultRootWindow(dpy), False,
 		 GrabModeAsync, GrabModeAsync);
@@ -362,10 +361,10 @@ uint8_t input_lookup_code(const char *name)
 {
 	size_t code = 0;
 
-	for (code = 0; code < sizeof(keycode_table) / sizeof(keycode_table[0]);
-	     code++) {
-		if (keycode_table[code].name &&
-		    !strcmp(keycode_table[code].name, name))
+	for (code = 0;
+	     code < sizeof(keynames) / sizeof(keynames[0]); code++) {
+		if (keynames[code] &&
+		    !strcmp(keynames[code], name))
 			return code;
 	}
 
@@ -374,5 +373,5 @@ uint8_t input_lookup_code(const char *name)
 
 const char *input_lookup_name(uint8_t code)
 {
-	return keycode_table[code].name ? keycode_table[code].name : NULL;
+	return keynames[code];
 }

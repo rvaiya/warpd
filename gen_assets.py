@@ -78,7 +78,7 @@ static void parse_list(const char *_s, char ***arr, size_t *sz)
 	len	= strlen(s);
 
 	for (i = 0; i < len; i++)
-		if (s[i] == ',')
+		if (s[i] == ' ')
 			n++;
 
 	a = malloc(n * sizeof(char *));
@@ -87,7 +87,7 @@ static void parse_list(const char *_s, char ***arr, size_t *sz)
 	start = s;
 
 	for (i = 0; i < len; i++)
-		if (s[i] == ',') {
+		if (s[i] == ' ') {
 			s[i++] = 0;
 			while (s[i] == ' ')
 				i++;

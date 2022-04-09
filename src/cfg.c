@@ -20,7 +20,7 @@ static void parse_list(const char *_s, char ***arr, size_t *sz)
 	len	= strlen(s);
 
 	for (i = 0; i < len; i++)
-		if (s[i] == ',')
+		if (s[i] == ' ')
 			n++;
 
 	a = malloc(n * sizeof(char *));
@@ -29,7 +29,7 @@ static void parse_list(const char *_s, char ***arr, size_t *sz)
 	start = s;
 
 	for (i = 0; i < len; i++)
-		if (s[i] == ',') {
+		if (s[i] == ' ') {
 			s[i++] = 0;
 			while (s[i] == ' ')
 				i++;
@@ -89,8 +89,8 @@ struct cfg *parse_cfg(const char *fname)
 	cfg->speed = atoi("220");
 	cfg->max_speed = atoi("800");
 	cfg->acceleration = atoi("700");
-	parse_list("m, comma, .", &cfg->buttons, &cfg->buttons_sz);
-	parse_list("n, -, /", &cfg->oneshot_buttons, &cfg->oneshot_buttons_sz);
+	parse_list("m , .", &cfg->buttons, &cfg->buttons_sz);
+	parse_list("n - /", &cfg->oneshot_buttons, &cfg->oneshot_buttons_sz);
 	cfg->oneshot_timeout = atoi("300");
 	cfg->grid_exit = strdup("c");
 	cfg->exit = strdup("esc");
@@ -105,11 +105,11 @@ struct cfg *parse_cfg(const char *fname)
 	cfg->right = strdup("l");
 	cfg->cursor_color = strdup("#FF4500");
 	cfg->cursor_size = atoi("7");
-	cfg->top = strdup("S-h");
-	cfg->middle = strdup("S-m");
-	cfg->bottom = strdup("S-l");
+	cfg->top = strdup("H");
+	cfg->middle = strdup("M");
+	cfg->bottom = strdup("L");
 	cfg->start = strdup("0");
-	cfg->end = strdup("S-4");
+	cfg->end = strdup("$");
 	cfg->hist_back = strdup("C-o");
 	cfg->hist_forward = strdup("C-i");
 	cfg->grid_nr = atoi("2");
@@ -118,7 +118,7 @@ struct cfg *parse_cfg(const char *fname)
 	cfg->grid_left = strdup("a");
 	cfg->grid_down = strdup("s");
 	cfg->grid_right = strdup("d");
-	parse_list("u,i,j,k", &cfg->grid_keys, &cfg->grid_keys_sz);
+	parse_list("u i j k", &cfg->grid_keys, &cfg->grid_keys_sz);
 	cfg->grid_color = strdup("#1c1c1e");
 	cfg->grid_size = atoi("4");
 	cfg->grid_border_size = atoi("0");

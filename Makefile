@@ -1,5 +1,5 @@
 COMMIT=$(shell git rev-parse --short HEAD)
-VERSION=1.1.0-beta
+VERSION=1.1.1-beta
 DESTDIR=
 PREFIX=/usr
 
@@ -37,7 +37,7 @@ endif
 FILES=$(shell find src/*.c)
 OBJECTS=$(FILES:.c=.o) $(PLATFORM_OBJECTS)
 
-all: clean $(OBJECTS)
+all: $(OBJECTS)
 	-mkdir bin
 	$(CC)  $(CFLAGS) -o bin/warpd $(OBJECTS) $(PLATFORM_FLAGS)
 fmt:

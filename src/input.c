@@ -9,7 +9,21 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "platform.h"
+#include "warpd.h"
+
+struct {
+	char *name;
+	char *shifted_name;
+} shift_table[] = {
+    {"1", "!"}, {"2", "@"},	{"3", "#"}, {"4", "$"}, {"5", "%"}, {"6", "^"},
+    {"7", "&"}, {"8", "*"},	{"9", "("}, {"0", ")"}, {"-", "_"}, {"=", "+"},
+    {"q", "Q"}, {"w", "W"},	{"e", "E"}, {"r", "R"}, {"t", "T"}, {"y", "Y"},
+    {"u", "U"}, {"i", "I"},	{"o", "O"}, {"p", "P"}, {"[", "{"}, {"]", "}"},
+    {"a", "A"}, {"s", "S"},	{"d", "D"}, {"f", "F"}, {"g", "G"}, {"h", "H"},
+    {"j", "J"}, {"k", "K"},	{"l", "L"}, {";", ":"}, {"`", "~"}, {"\\", "|"},
+    {"z", "Z"}, {"x", "X"},	{"c", "C"}, {"v", "V"}, {"b", "B"}, {"n", "N"},
+    {"m", "M"}, {",", "<"}, {".", ">"}, {"/", "?"},
+};
 
 int input_parse_string(struct input_event *ev, const char *s)
 {
@@ -42,11 +56,18 @@ int input_parse_string(struct input_event *ev, const char *s)
 	}
 
 	if (s[0]) {
+		size_t i;
+
+		for (i = 0; i < sizeof(shift_table)/sizeof(shift_table[0]); i++)
+			if (!strcmp(shift_table[i].shifted_name, s)) {
+				s = shift_table[i].name;
+				ev->mods |= MOD_SHIFT;
+			}
+
 		ev->code = input_lookup_code(s);
 
 		if (!ev->code) {
-			fprintf(stderr, "WARNING: %s is not a valid code!\n",
-				s);
+			fprintf(stderr, "WARNING: %s is not a valid code!\n", s);
 			return -1;
 		}
 	}
@@ -58,32 +79,45 @@ const char *input_event_tostr(struct input_event *ev)
 {
 	static char s[64];
 	const char *name = input_lookup_name(ev->code);
-	int	    i = 0;
+	int n = 0;
 
 	if (!ev)
 		return "NULL";
 
 	if (ev->mods & MOD_CONTROL) {
-		s[i++] = 'C';
-		s[i++] = '-';
+		s[n++] = 'C';
+		s[n++] = '-';
 	}
 
 	if (ev->mods & MOD_SHIFT) {
-		s[i++] = 'S';
-		s[i++] = '-';
+		size_t i;
+		int shifted = 0;
+
+		for (i = 0; i < sizeof(shift_table) / sizeof(shift_table[0]); i++) {
+			if (!strcmp(shift_table[i].name, name)) {
+				shifted = 1;
+				name = shift_table[i].shifted_name;
+			}
+		}
+
+		if (!shifted) {
+			s[n++] = 'S';
+			s[n++] = '-';
+		}
 	}
 
 	if (ev->mods & MOD_ALT) {
-		s[i++] = 'A';
-		s[i++] = '-';
+		s[n++] = 'A';
+		s[n++] = '-';
 	}
 
 	if (ev->mods & MOD_META) {
-		s[i++] = 'M';
-		s[i++] = '-';
+		s[n++] = 'M';
+		s[n++] = '-';
 	}
 
-	strcpy(s + i, name ? name : "UNDEFINED");
+	strcpy(s + n, name ? name : "UNDEFINED");
+
 	return s;
 }
 

@@ -1,14 +1,14 @@
 warpd(1)
 
-# Overview
+# DESCRIPTION
 
-A modal keyboard driven cursor manipulation program.
+A modal keyboard driven pointer manipulation program.
 
-# Usage
+# SYNOPSIS
 
 warpd [-f] [-l] [-v]
 
-# Args
+# OPTIONS
 
 	*-f*: Run warpd in the foreground (i.e do not daemonize). Mainly useful for debugging.
 
@@ -16,10 +16,10 @@ warpd [-f] [-l] [-v]
 
 	*-v*: Prints the current version.
 
-# Overview
+# DESCRIPTION
 
-warpd has three main modes which can be used to manipulate the cursor. The
-primary mode is called 'normal mode' (A-M-c) and facilitates local cursor
+warpd has three main modes which can be used to manipulate the pointer. The
+primary mode is called 'normal mode' (A-M-c) and facilitates local pointer
 movement using vi-like bindings (_h_ _j_ _k_ _l_). The other two modes, *hint*
 and *grid* mode are used to effect larger movements across the screen and are
 expected to be used in combination with normal mode to achieve the desired end.
@@ -29,9 +29,12 @@ the start of a text region before starting a drag operation (_v_) and
 ultimately using normal mode to complete the selection. If the selection is a
 large body of text, it may be desirable to activate grid (_g_) or hint (_x_)
 mode for a second time to warp the pointer to the desired region's terminal
-point.
+point.  
 
-A comprehensive description of each mode follows:
+See _CONFIG_OPTIONS_ for a comprehensive list of keys and their corresponding
+configuration options (see also _USAGE_NOTES_).
+
+A description of each mode follows:
 
 ## Normal Mode (A-M-c)
 
@@ -39,11 +42,11 @@ This is the default mode (and the endpoint of both grid and normal mode) which
 is designed for short distance pointer manipulation. It is particularly useful
 for manipulating popup menus and selecting text (see _Dragging_). The default
 behaviour is vi-like. Pressing the mapped directional keys (default hjkl) moves
-the cursor by a fixed increment but the pointer can also be warped to the edges
+the cursor in a continuous fashion, but the pointer can also be warped to the edges
 of the screen using the home (_H_), middle (_M_), and last (_L_) mappings (see
-_Config Options_). Finally, a numeric multiplier can be supplied to the
-directional keys as an input prefix in order to magnify movement in the
-corresponding direction (e.g 10j moves 10 units down). 
+_CONFIG OPTIONS_). Finally, a numeric multiplier can be supplied to the
+directional keys as an input prefix in order to move the cursor by a
+proportional increment in the given direction (e.g 10j moves 10 units down). 
 
 ## Hint Mode (A-M-x or simply 'x' within normal mode)
 
@@ -54,9 +57,13 @@ plugins like Vimperator but works outside of the browser and indiscriminately
 covers the entire screen. Once a target has been selected 'normal mode' is
 entered for further manipulation.
 
-After a bit of practice the process becomes second nature and is (in the
-author's opinion) superior to the grid method for quickly pinpointing text and
-UI elements.
+*Note:* While it may at first be tempting to saturate the screen with hints,
+the user is cautioned against this. A balance must be struck between hint size,
+the number of hints and the size of the screen. Enough space must be left to
+provide contextual awareness while enough hints must be present to facilitate
+targetting UI elements without the need for too much adjustment. Once this
+equilibrium has been achieved, using hint mode become second nature and is (in
+the author's opinion) superior to grid mode for quickly pinpointing elements.
 
 ## Grid Mode ('A-M-g' or simply 'g' within normal mode)
 
@@ -81,7 +88,13 @@ E.G
          +--------+--------+            +--------+--------+
 ```
 
-# Dragging
+## Screen Selection Mode ('A-M-s' or simply 's' within normal mode)
+
+This mode is intended for multi-screen setups and provides the user with a
+dedicated set of hints for switching monitors and dropping them into normal
+mode.
+
+## Dragging
 
 Pressing _v_ whilst in normal mode toggles a drag operation. The cursor can
 then be warped around the screen as normal in order to select text or move
@@ -89,16 +102,15 @@ objects until the drag key is hit again or a mouse button is pressed.
 Additionally, the *copy_and_exit* key (_c_) may be used to copy the selected
 text to the system clipboard and terminate the current session.
 
-# Config Options
+# CONFIG OPTIONS
 
-The following configuration options can be placed in *~/.config/warpd/config* to modify the
-behaviour of the program. Each option must be specified on its own line and
-have the format:
+The following configuration options can be placed in *~/.config/warpd/config*
+to modify the behaviour of the program. Each option must be specified on its
+own line and have the format:
 
 <option>: <value>
 
-_Note:_ All pixel based values are relative to a 1920x1080 virtual screen and
-will be scaled according to the current dimensions.
+All values which contain more than one key are space delimited.
 
 *hint_activation_key*: Activates hint mode. (default: A-M-x).
 
@@ -118,9 +130,9 @@ will be scaled according to the current dimensions.
 
 *acceleration*: Pointer acceleration in pixels/second^2. (default: 700).
 
-*buttons*: Mouse buttons (2 is middle click). (default: m, comma, .).
+*buttons*: Mouse buttons (2 is middle click). (default: m , .).
 
-*oneshot_buttons*: Oneshot mouse buttons (deactivate on click). (default: n, -, /).
+*oneshot_buttons*: Oneshot mouse buttons (deactivate on click). (default: n - /).
 
 *oneshot_timeout*: The length of time in miliseconds to wait for a second click after a oneshot key has been pressed. (default: 300).
 
@@ -150,15 +162,15 @@ will be scaled according to the current dimensions.
 
 *cursor_size*: The height of the pointer in normal mode. (default: 7).
 
-*top*: Moves the cursor to the top of the screen in normal mode. (default: S-h).
+*top*: Moves the cursor to the top of the screen in normal mode. (default: H).
 
-*middle*: Moves the cursor to the middle of the screen in normal mode. (default: S-m).
+*middle*: Moves the cursor to the middle of the screen in normal mode. (default: M).
 
-*bottom*: Moves the cursor to the bottom of the screen in normal mode. (default: S-l).
+*bottom*: Moves the cursor to the bottom of the screen in normal mode. (default: L).
 
 *start*: Moves the cursor to the leftmost corner of the screen in normal mode. (default: 0).
 
-*end*: Moves the cursor to the rightmost corner of the screen in normal mode. (default: S-4).
+*end*: Moves the cursor to the rightmost corner of the screen in normal mode. (default: $).
 
 *hist_back*: Move to the last position in the history stack. (default: C-o).
 
@@ -176,7 +188,7 @@ will be scaled according to the current dimensions.
 
 *grid_right*: Move the grid right. (default: d).
 
-*grid_keys*: A sequence of comma delimited keybindings which are ordered bookwise with respect to grid position. (default: u,i,j,k).
+*grid_keys*: A sequence of comma delimited keybindings which are ordered bookwise with respect to grid position. (default: u i j k).
 
 *grid_color*: The color of the grid. (default: #1c1c1e).
 
@@ -206,7 +218,27 @@ will be scaled according to the current dimensions.
 
 
 
-# Notes
+# USAGE NOTES
+
+The key to using warpd effectively is to learn when to exit normal mode. Much
+of one's time at a computer is spent moving the mouse between windows,
+interacting with UI elements, and reading text. It is in this mode of operation
+that it makes sense to remain in normal mode. 
+
+Developing facility with the scroll and oneshot mouse buttons is key to
+achieving this. For example, if you happen to have two documents open and wish
+to switch between them, you can simply type _x fx_ (where _fx_ is a hint) if
+normal mode is active. Scrolling can subsequently be achieved using _e_ and
+_r_. Once you finally wish to type something you can do _x fx n_ to focus on
+the UI element and exit.
+
+Conversely, warpd can complement an input heavy workflow with its oneshot
+functionality and dedicated activation keys (E.G _n_, _A-M-l_, _A-M-x_, etc).  
+
+It is important to note that warpd is not intended to replace mouse heavy
+workflows and is inferior for precise rapid local movements. When confronted
+with an IDE, or some other pointer driven crime against humanity, the author
+still sometimes reach for his mouse.
 
 ## On Dragging
 
@@ -217,7 +249,7 @@ movement is necessarily pixel based, consequently, drag + hint
 mode can be a superior method for surgically selecting text (though it may at
 first be less intuitive).
 
-# Limitations/Bugs
+# CAVEATS
 
 - Multiscreen support currently does not support hotplugging. This means that
   you must restart warpd after making any changes to your screen configuration.
@@ -225,10 +257,6 @@ first be less intuitive).
 - For implementation reasons, the cursor position is not horizontally centered,
   but to the right of the actual pointer. This generally isn't an issue,
   but may become more noticeable as you increase _cursor_size_.
-
-- Programs which use Xinput to directly manipulate input devices may misbehave.
-  See [Issue #3](https://github.com/rvaiya/warpd/issues/3#issuecomment-628936249) 
-  for details.
 
 - Unplugging the keyboard while warpd is one of its active modes will cause
   pandemonium.  If you do this (don't :P), you may need to remotely ssh into
@@ -239,6 +267,10 @@ first be less intuitive).
   work (e.g xcape). If you are in the habit of making unorthodox changes to
   your keymap (like remapping capslock to control/escape) you may want to try
   an evdev based remapper like keyd (https://github.com/rvaiya/keyd).
+
+- Programs which use Xinput to directly manipulate input devices may misbehave.
+  See [Issue #3](https://github.com/rvaiya/warpd/issues/3#issuecomment-628936249) 
+  for details.
 
 - Cursor hiding on macOS relies on a hack that some programs ignore (e.g iTerm).
   Consequently the original cursor will sometimes overlap warpd's.

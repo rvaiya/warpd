@@ -23,11 +23,11 @@ static int down = 0;
 static int resting = 1;
 
 static screen_t scr = 0;
-static double	cx = 0;
-static double	cy = 0;
+static double cx = 0;
+static double cy = 0;
 
 static double v = 0;
-static int    opnum = 0;
+static int opnum = 0;
 
 static long get_time_us()
 {
@@ -64,12 +64,18 @@ static void tick()
 {
 	static long last_update = 0;
 
-	const long   t = get_time_us();
+	const long t = get_time_us();
 	const double elapsed = (double)(t - last_update) / 1E3;
 	last_update = t;
 
 	const double dx = right - left;
 	const double dy = down - up;
+
+	const int maxx = sw - cfg->cursor_size;
+	const int maxy = sh - cfg->cursor_size/2;
+	const int miny = cfg->cursor_size/2;
+	const int minx = 1;
+
 
 	if (!dx && !dy) {
 		resting = 1;
@@ -89,27 +95,29 @@ static void tick()
 	if (v > vf)
 		v = vf;
 
-	cx = cx < 0 ? 0 : cx;
-	cy = cy < 0 ? 0 : cy;
-	cy = cy >= sh ? sh : cy;
-	cx = cx >= sw ? sw : cx;
+	cx = cx < minx ? minx : cx;
+	cy = cy < miny ? miny : cy;
+	cy = cy > maxy ? maxy : cy;
+	cx = cx > maxx ? maxx : cx;
 
 	mouse_move(scr, cx, cy);
 }
 
 /*
- * The function to which continuous cursor movement is delegated
- * for grid and normal mode. Expects to be called every
- * 10ms or so.
+ * The function to which continuous cursor movement is delegated for grid and
+ * normal mode. Expects to be called every 10ms or so.
  *
- * mouse_reset() should be called at the beginning of
- * the containing event loop.
+ * mouse_reset() should be called at the beginning of the containing event
+ * loop.
  *
- * Returns 1 if the event was handled, or 0 if it
- * should be handled by the calling logic.
+ * Returns 1 if the event was handled, or 0 if it should be handled by the
+ * calling logic.
  */
-int mouse_process_key(struct input_event *ev, const char *up_key,
-		      const char *down_key, const char *left_key,
+
+int mouse_process_key(struct input_event *ev,
+		      const char *up_key,
+		      const char *down_key,
+		      const char *left_key,
 		      const char *right_key)
 {
 	int ret = 0;

@@ -1,13 +1,22 @@
 #include "X.h"
 
 struct screen screens[32];
-size_t	      nr_screens = 0;
+size_t nr_screens = 0;
+
+void window_set_color(Window w, const char *color)
+{
+	uint32_t col = parse_xcolor(color, NULL);
+
+	XChangeWindowAttributes(dpy, w,
+				CWBackPixel,
+				&(((XSetWindowAttributes) { .background_pixel = col })));
+}
 
 void init_screens()
 {
-	Window		    chld, root;
-	int		    n, x, y, _;
-	unsigned int	    _u;
+	Window chld, root;
+	int n, x, y, _;
+	unsigned int _u;
 	XineramaScreenInfo *xscreens;
 
 	/* Obtain absolute pointer coordinates */
@@ -74,5 +83,6 @@ void screen_draw_box(struct screen *scr, int x, int y, int w, int h, const char 
 	};
 
 	XMoveResizeWindow(dpy, box->win, scr->x + x, scr->y + y, w, h);
+	XRaiseWindow(dpy, box->win);
 }
 

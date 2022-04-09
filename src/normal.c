@@ -36,8 +36,6 @@ struct input_event *normal_mode(struct input_event *start_ev)
 	mouse_reset();
 
 	while (1) {
-		const int cursz = cfg->cursor_size;
-
 		if (start_ev == NULL) {
 			ev = input_next_event(10);
 		} else {
@@ -71,15 +69,15 @@ struct input_event *normal_mode(struct input_event *start_ev)
 		}
 
 		if (input_event_eq(ev, cfg->top))
-			move(scr, mx, 0);
+			move(scr, mx, cfg->cursor_size / 2);
 		else if (input_event_eq(ev, cfg->bottom))
-			move(scr, mx, sh - cursz);
+			move(scr, mx, sh - cfg->cursor_size / 2);
 		else if (input_event_eq(ev, cfg->middle))
 			move(scr, mx, sh / 2);
 		else if (input_event_eq(ev, cfg->start))
-			move(scr, 0, my);
+			move(scr, 1, my);
 		else if (input_event_eq(ev, cfg->end))
-			move(scr, sw - cursz, my);
+			move(scr, sw - cfg->cursor_size, my);
 		else if (input_event_eq(ev, cfg->hist_back)) {
 			hist_add(mx, my);
 			hist_prev();
