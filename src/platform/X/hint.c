@@ -105,7 +105,7 @@ static void draw_rounded_rectangle(Drawable drw, GC gc, unsigned int x,
 }
 
 /* Draw the hints. */
-void do_hint_draw(struct screen *scr, Window win, struct hint *hints, size_t n)
+void do_hint_draw(struct screen *scr, Window win, struct hint *hints, size_t n, Pixmap buf)
 {
 	size_t i = 0;
 
@@ -122,7 +122,7 @@ void do_hint_draw(struct screen *scr, Window win, struct hint *hints, size_t n)
 	XFillRectangle(dpy, mask, gc, 0, 0, scr->w, scr->h);
 	XSetForeground(dpy, gc, 1);
 
-	XFillRectangle(dpy, scr->buf, mgc, 0, 0, scr->w, scr->h);
+	XFillRectangle(dpy, buf, mgc, 0, 0, scr->w, scr->h);
 
 	for (i = 0; i < n; i++) {
 		struct hint *h = &hints[i];
@@ -130,7 +130,7 @@ void do_hint_draw(struct screen *scr, Window win, struct hint *hints, size_t n)
 		draw_rounded_rectangle(mask, gc, h->x, h->y, h->w, h->h,
 				       border_radius);
 
-		draw_text(scr->buf, h->x, h->y,
+		draw_text(buf, h->x, h->y,
 			  h->w, h->h, font_family, h->label);
 	}
 
@@ -138,7 +138,7 @@ void do_hint_draw(struct screen *scr, Window win, struct hint *hints, size_t n)
 	XShapeCombineMask(dpy, win, ShapeBounding, 0, 0, mask, ShapeSet);
 
 	XMoveWindow(dpy, win, scr->x, scr->y);
-	XCopyArea(dpy, scr->buf, win, mgc, 0, 0, scr->w, scr->h, 0, 0);
+	XCopyArea(dpy, buf, win, mgc, 0, 0, scr->w, scr->h, 0, 0);
 	XRaiseWindow(dpy, win);
 
 	XFreePixmap(dpy, mask);
@@ -149,6 +149,7 @@ void do_hint_draw(struct screen *scr, Window win, struct hint *hints, size_t n)
 void hint_draw(struct screen *scr, struct hint *hints, size_t n)
 {
 	Window win = scr->hintwin;
+	Pixmap buf = scr->buf;
 
 	XMoveWindow(dpy, scr->hintwin, -1E6, -1E6);
 	XMoveWindow(dpy, scr->cached_hintwin, -1E6, -1E6);
@@ -156,9 +157,19 @@ void hint_draw(struct screen *scr, struct hint *hints, size_t n)
 	/* Use the cached window, if it exists. */
 	if (n == scr->nr_cached_hints &&
 	    !memcmp(scr->cached_hints, hints, sizeof(struct hint) * n)) {
+		GC gc = XCreateGC(dpy, DefaultRootWindow(dpy),
+				   GCForeground | GCFillStyle,
+				   &(XGCValues){
+				   .foreground = parse_xcolor(bgcolor, NULL),
+				   .fill_style = FillSolid,
+				   });
+
 		XMoveWindow(dpy, scr->cached_hintwin, scr->x, scr->y);
+		XCopyArea(dpy, scr->cached_hintbuf, scr->cached_hintwin,
+			  gc, 0, 0, scr->w, scr->h, 0, 0);
 		XRaiseWindow(dpy, win);
 
+		XFreeGC(dpy, gc);
 		return;
 	}
 
@@ -172,13 +183,14 @@ void hint_draw(struct screen *scr, struct hint *hints, size_t n)
 
 	if (n > 50) {
 		win = scr->cached_hintwin;
+		buf = scr->cached_hintbuf;
 
 		memcpy(scr->cached_hints, hints, n*sizeof(struct hint));
 		scr->nr_cached_hints = n;
 	}
 
 
-	do_hint_draw(scr, win, hints, n);
+	do_hint_draw(scr, win, hints, n, buf);
 }
 
 void init_hint(const char *bgcol, const char *fgcol, int _border_radius,
@@ -199,6 +211,9 @@ void init_hint(const char *bgcol, const char *fgcol, int _border_radius,
 		scr->cached_hintwin = create_window(bgcol);
 
 		scr->buf =
+		    XCreatePixmap(dpy, DefaultRootWindow(dpy), scr->w, scr->h,
+				  DefaultDepth(dpy, DefaultScreen(dpy)));
+		scr->cached_hintbuf =
 		    XCreatePixmap(dpy, DefaultRootWindow(dpy), scr->w, scr->h,
 				  DefaultDepth(dpy, DefaultScreen(dpy)));
 
