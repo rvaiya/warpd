@@ -1,3 +1,7 @@
+# v1.1.3-beta
+ - Hide cursor when scrolling
+ - Fix full hint drawing issue caused by switching VTs
+
 # v1.1.2-beta
 
  - Add support for modified button presses
