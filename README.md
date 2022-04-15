@@ -116,7 +116,7 @@ If you are interesting in adding warpd to your distribution's repository please 
 
 - Programs which use Xinput and or Xtest for keyboard may not work correctly
   (e.g synergy). If a specific program which you feel should be working does
-  not please file an [issue](https://github.com/rvaiya/warpd/issue).
+  not please file an [issue](https://github.com/rvaiya/warpd/issues).
 
 - The hack used for pointer hiding on OSX doesn't work on some programs (e.g
   iTerm). The original cursor will consequently be visible in such cases,
