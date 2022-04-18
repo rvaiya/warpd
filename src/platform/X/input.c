@@ -100,7 +100,7 @@ static uint8_t sym_table[] = {
 
 static const size_t sym_table_sz = sizeof(sym_table) / sizeof(sym_table[0]);
 
-static uint8_t normalize_keycode(uint8_t code)
+static uint8_t xcode_to_code(int xcode)
 {
 	/*
 	 * NOTE: In theory the X server doesn't encode any information in the
@@ -109,12 +109,24 @@ static uint8_t normalize_keycode(uint8_t code)
 	 * generated the X code + 8. This is the basis for our X code map.
 	 */
 
-	KeySym sym = XKeycodeToKeysym(dpy, code, 0);
+	KeySym sym = XKeycodeToKeysym(dpy, xcode, 0);
 
 	if (sym < sym_table_sz && sym_table[sym])
-		code = sym_table[sym];
+		xcode = sym_table[sym];
 
-	return code - 8;
+	return xcode - 8;
+}
+
+static int code_to_xcode(uint8_t code)
+{
+	size_t sym;
+	int xcode = code+8;
+
+	for(sym = 0; sym < sym_table_sz; sym++)
+		if (sym_table[sym] == xcode)
+			return XKeysymToKeycode(dpy, sym);
+
+	return xcode;
 }
 
 /* returns a key code or 0 on failure. */
@@ -145,7 +157,7 @@ static uint8_t process_xinput_event(XEvent *ev, int *state, int *mods)
 
 	case XI_KeyPress:
 		dev = (XIDeviceEvent *)(cookie->data);
-		code = normalize_keycode(dev->detail);
+		code = xcode_to_code(dev->detail);
 
 		*state = (dev->flags & XIKeyRepeat) ? 2 : 1;
 		*mods = dev->mods.effective;
@@ -155,7 +167,7 @@ static uint8_t process_xinput_event(XEvent *ev, int *state, int *mods)
 		return code;
 	case XI_KeyRelease:
 		dev = (XIDeviceEvent *)(cookie->data);
-		code = normalize_keycode(dev->detail);
+		code = xcode_to_code(dev->detail);
 
 		*state = 0;
 		*mods = dev->mods.effective;
@@ -182,7 +194,7 @@ static int input_xerr(Display *dpy, XErrorEvent *ev)
 static void xgrab_key(uint8_t code, uint8_t mods)
 {
 	XSetErrorHandler(input_xerr);
-	int xcode = code + 8;
+	int xcode = code_to_xcode(code);
 	int xmods = 0;
 
 	if (!code)
@@ -355,7 +367,7 @@ struct input_event *input_wait(struct input_event *events, size_t sz)
 		XEvent *xev = get_next_xev(0);
 
 		if (xev->type == KeyPress || xev->type == KeyRelease) {
-			ev.code = xev->xkey.keycode - 8;
+			ev.code = xcode_to_code(xev->xkey.keycode);
 			ev.mods = xmods_to_mods(xev->xkey.state);
 			ev.pressed = xev->type == KeyPress;
 

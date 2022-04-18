@@ -1,3 +1,6 @@
+# v1.1.4-beta
+ - Fix alternate (english) layout support
+
 # v1.1.3-beta
  - Hide cursor when scrolling
  - Fix full hint drawing issue caused by switching VTs
