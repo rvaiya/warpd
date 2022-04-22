@@ -69,6 +69,9 @@ macos:
 xcode-select --install
 ```
 
+NOTE: Some programs (e.g iTerm) have a 'secure input mode' that may need to be
+disabled in order for warpd to work properly.
+
 Then simply do:
 
 ```
