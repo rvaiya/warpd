@@ -14,7 +14,7 @@ acceleration			int		700			"Pointer acceleration in pixels/second^2."
 accelerator_acceleration	int		2900			"Pointer acceleration while the accelerator is depressed."
 accelerator			string		"a"			"Increase the speed of the pointer while held."
 
-buttons				list		"m , ." 		"Mouse buttons (2 is middle click)."
+buttons				list		"m , ." 		"A space separated list of mouse buttons (2 is middle click)."
 oneshot_buttons			list		"n - /"			"Oneshot mouse buttons (deactivate on click)."
 oneshot_timeout			int		300			"The length of time in miliseconds to wait for a second click after a oneshot key has been pressed."
 

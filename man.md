@@ -134,7 +134,7 @@ All values which contain more than one key are space delimited.
 
 *accelerator*: Increase the speed of the pointer while held. (default: a).
 
-*buttons*: Mouse buttons (2 is middle click). (default: m , .).
+*buttons*: A space separated list of mouse buttons (2 is middle click). (default: m , .).
 
 *oneshot_buttons*: Oneshot mouse buttons (deactivate on click). (default: n - /).
 
