@@ -26,7 +26,9 @@ A modal keyboard driven interface for mouse manipulation.
 
 # Dependencies
 
-## Linux (X only):
+## Linux
+
+# X
 
 The usual array of X libraries:
 
@@ -37,8 +39,16 @@ The usual array of X libraries:
  - libxtst
  - libx11
 
-Wayland is currently unsupported and may or may not be in
-the pipeline :P.
+# Wayland (sway/wlroots only)
+
+ - libwayland-client
+ - cairo
+ - xkbcommon
+
+*Note:* The wayland port has several limitations due
+to the nature of Wayland's architecture.
+
+See the CAVEATS section of the man page for more details.
 
 ## MacOS:
 
@@ -50,7 +60,7 @@ Make sure you have the appropriate dependencies for your system:
 
 E.G 
 
-debian/ubuntu:
+debian/ubuntu (X):
 
 ```
 sudo apt-get install \
@@ -62,6 +72,14 @@ sudo apt-get install \
 	libx11-dev
 ```
 
+debian/ubuntu (Wayland):
+
+```
+sudo apt-get install \
+	libcairo2-dev \
+	libxkbcommon-dev \
+	libwayland-dev
+```
 
 macos:
 
@@ -69,13 +87,19 @@ macos:
 xcode-select --install
 ```
 
-NOTE: Some programs (e.g iTerm) have a 'secure input mode' that may need to be
+*Note:* Some programs (e.g iTerm) have a 'secure input mode' that may need to be
 disabled in order for warpd to work properly.
 
 Then simply do:
 
 ```
 make && sudo make install
+```
+
+or (for wayland)
+
+```
+PLATFORM=wayland make && sudo make install
 ```
 
 # Quickstart
@@ -105,6 +129,21 @@ mode to be activated for selection of the drag target.
 
 A more comprehensive description can be found in the [man page](man.md) (along with a list of options).
 
+## Wayland
+
+*Note:* Wayland does not permit clients to globally bind hotkeys. These must be
+bound within the compositor using warpd's oneshot flags.
+
+E.G
+
+On sway:
+
+```
+bindsym Mod4+Mod1+x exec warpd --hint
+bindsym Mod4+Mod1+c exec warpd --normal
+bindsym Mod4+Mod1+g exec warpd --grid
+```
+
 # Packages:
 
 `warpd` is currently available on the following distributions:
@@ -125,6 +164,8 @@ If you are interesting in adding warpd to your distribution's repository please 
   iTerm). The original cursor will consequently be visible in such cases,
   though functionality should be otherwise unaffected.
 
+- Wayland support has several limitations (see CAVEATS in the man page).
+
 # Contributions
 
 A special thanks to
@@ -132,3 +173,4 @@ A special thanks to
  - Pete Fein - For encouragement and early adoption.
  - Matheus Fillipe - For the original border radius patch as well as numerous bug reports and feature requests.
  - The Kaleidoscope/Vimperator projects - For inspiration.
+ - Drew Devault - For making the Wayland ecosystem inhabitable.

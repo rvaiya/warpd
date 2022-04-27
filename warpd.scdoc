@@ -6,15 +6,21 @@ A modal keyboard driven pointer manipulation program.
 
 # SYNOPSIS
 
-warpd [-f] [-l] [-v]
+warpd [options]
 
 # OPTIONS
 
-	*-f*: Run warpd in the foreground (i.e do not daemonize). Mainly useful for debugging.
+	*-f*, *--foreground*: Run warpd in the foreground (i.e do not daemonize). Mainly useful for debugging.
 
-	*-l*: Prints a list of valid keys which can be used as config values.
+	*-l*, *--list-keys*: Print a list of valid keys which can be used as config values.
 
-	*-v*: Prints the current version.
+	*-v*, *--verbose*: Print the current version.
+
+	*--hint*: Run warpd in oneshot (daemonless) hint mode.
+
+	*--grid*: Run warpd in oneshot grid mode.
+
+	*--normal*: Run warpd in oneshot normal mode.
 
 # DESCRIPTION
 
@@ -59,8 +65,8 @@ entered for further manipulation.
 
 *Note:* While it may at first be tempting to saturate the screen with hints,
 the user is cautioned against this. A balance must be struck between hint size,
-the number of hints and the size of the screen. Enough space must be left to
-provide contextual awareness while enough hints must be present to facilitate
+the number of hints, and the size of the screen. Enough space must be left to
+provide contextual awareness, while enough hints must be present to facilitate
 targetting UI elements without the need for too much adjustment. Once this
 equilibrium has been achieved, using hint mode become second nature and is (in
 the author's opinion) superior to grid mode for quickly pinpointing elements.
@@ -102,6 +108,25 @@ objects until the drag key is hit again or a mouse button is pressed.
 Additionally, the *copy_and_exit* key (_c_) may be used to copy the selected
 text to the system clipboard and terminate the current session.
 
+## Wayland
+
+Wayland's architecture does not allow clients to globally bind hotkeys. In
+order to run warpd, one of the oneshot flags must be used. These can be bound
+the the corresponding hotkeys in your compositor.
+
+E.G
+
+On sway:
+
+```
+bindsym Mod4+Mod1+x exec warpd --hint
+bindsym Mod4+Mod1+c exec warpd --normal
+bindsym Mod4+Mod1+g exec warpd --grid
+```
+
+Non-wayland users should favour the daemon, since it also caches some of the
+draw operations to improve performance.
+
 # CONFIG OPTIONS
 
 The following configuration options can be placed in *~/.config/warpd/config*
@@ -118,23 +143,24 @@ All values which contain more than one key are space delimited.
 
 The key to using warpd effectively is to learn when to exit normal mode. Much
 of one's time at a computer is spent moving the mouse between windows,
-interacting with UI elements, and reading text. It is in this mode of operation
-that it makes sense to remain in normal mode. 
+interacting with UI elements, and reading text. What one might call 'browse
+mode'. It is in this mode of operation that it makes sense to keep warpd
+active.
 
 Developing facility with the scroll and oneshot mouse buttons is key to
 achieving this. For example, if you happen to have two documents open and wish
 to switch between them, you can simply type _x fx_ (where _fx_ is a hint) if
 normal mode is active. Scrolling can subsequently be achieved using _e_ and
-_r_. Once you finally wish to type something you can do _x fx n_ to focus on
-the UI element and exit.
+_r_. Once you finally wish to type something, you can do _x fx n_ to focus on
+the UI element, click, and exit.
 
 Conversely, warpd can complement an input heavy workflow with its oneshot
 functionality and dedicated activation keys (E.G _n_, _A-M-l_, _A-M-x_, etc).  
 
 It is important to note that warpd is not intended to replace mouse heavy
-workflows and is inferior for precise rapid local movements. When confronted
-with an IDE, or some other pointer driven crime against humanity, the author
-still sometimes reach for his mouse.
+workflows, and will likely always be inferior for rapid precise local
+movements. When confronted with an IDE, or some other pointer driven
+abomination, the author still sometimes reaches for his mouse.
 
 ## On Dragging
 
@@ -145,7 +171,21 @@ movement is necessarily pixel based, consequently, drag + hint
 mode can be a superior method for surgically selecting text (though it may at
 first be less intuitive).
 
-# CAVEATS
+# BUGS/LIMITATIONS
+
+warpd uses various platform specific hacks to bypass limitations
+of the display server. All implementations were written by the
+same author, who presently uses X.
+
+Consequently testing on non-X platforms has been minimal.
+
+YMMV
+
+Bugs can be reported here:
+
+https://github.com/rvaiya/warpd/issues/
+
+A list of known limitations follow:
 
 - Multiscreen support currently does not support hotplugging. This means that
   you must restart warpd after making any changes to your screen configuration.
@@ -153,6 +193,8 @@ first be less intuitive).
 - For implementation reasons, the cursor position is not horizontally centered,
   but to the right of the actual pointer. This generally isn't an issue,
   but may become more noticeable as you increase _cursor_size_.
+
+## X
 
 - Unplugging the keyboard while warpd is one of its active modes will cause
   pandemonium.  If you do this (don't :P), you may need to remotely ssh into
@@ -165,8 +207,22 @@ first be less intuitive).
   an evdev based remapper like keyd (https://github.com/rvaiya/keyd).
 
 - Programs which use Xinput to directly manipulate input devices may misbehave.
-  See [Issue #3](https://github.com/rvaiya/warpd/issues/3#issuecomment-628936249) 
-  for details.
+  See [Issue #3](https://github.com/rvaiya/warpd/issues/3#issuecomment-628936249) for details.
 
-- Cursor hiding on macOS relies on a hack that some programs ignore (e.g iTerm).
-  Consequently the original cursor will sometimes overlap warpd's.
+## MacOS
+
+- Cursor hiding relies on a hack that some programs ignore (e.g iTerm).
+- Some programs (e.g iTerm) have a 'secure input mode' (which can usually be
+disabled) that causes interference.
+
+## Wayland
+
+- Cursor hiding doesn't work.
+- Running as a daemon doesn't work (can't listen for hotkeys).
+- UI elements (e.g input fields) which require focus can't be selected.
+- No multi monitor support.
+
+# AUTHORS
+
+Written and maintained by Raheman Vaiya (2019-).
+See https://github.com/rvaiya/warpd for more information.

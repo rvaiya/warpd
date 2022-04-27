@@ -25,6 +25,8 @@ struct {
     {"m", "M"}, {",", "<"}, {".", ">"}, {"/", "?"},
 };
 
+static uint8_t cached_mods[256];
+
 int input_parse_string(struct input_event *ev, const char *s)
 {
 	if (!s || s[0] == 0)
@@ -123,13 +125,26 @@ const char *input_event_tostr(struct input_event *ev)
 
 int input_event_eq(struct input_event *ev, const char *str)
 {
+	uint8_t mods;
 	struct input_event ev1;
 
 	if (!ev)
 		return 0;
 
+	/*
+	 * Cache mods on key down so we can properly detect the
+	 * corresponding key up event in the case of intermittent
+	 * modifier changes.
+	 */
+	if (ev->pressed) {
+		mods = ev->mods;
+		cached_mods[ev->code] = ev->mods;
+	} else {
+		mods = cached_mods[ev->code];
+	}
+
 	if (input_parse_string(&ev1, str) < 0)
 		return 0;
 
-	return ev1.code == ev->code && ev1.mods == ev->mods;
+	return ev1.code == ev->code && ev1.mods == mods;
 }

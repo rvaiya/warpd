@@ -21,6 +21,8 @@ void toggle_drag()
 		mouse_up(1);
 }
 
+static int oneshot_mode;
+
 static void activation_loop(int mode)
 {
 	struct input_event *ev = NULL;
@@ -68,8 +70,6 @@ exit:
 	return;
 }
 
-
-
 static void normalize_dimensions()
 {
 	int sw, sh;
@@ -83,6 +83,16 @@ static void normalize_dimensions()
 	cfg->cursor_size = (cfg->cursor_size * sh) / 1080;
 	cfg->grid_size = (cfg->grid_size * sh) / 1080;
 	cfg->grid_border_size = (cfg->grid_border_size * sh) / 1080;
+}
+
+static void oneshot_loop()
+{
+	normalize_dimensions();
+
+	init_mouse();
+	init_hint_mode();
+
+	activation_loop(oneshot_mode);
 }
 
 static void main_loop()
@@ -165,7 +175,7 @@ static void daemonize()
 	dup2(fd, 2);
 }
 
-static void print_keys()
+static void print_keys_loop()
 {
 	size_t i;
 	for (i = 0; i < 256; i++) {
@@ -193,17 +203,20 @@ int main(int argc, char *argv[])
 		exit(-1);
 	}
 
-	if (argc > 1 && !strcmp(argv[1], "-v")) {
+	if (argc > 1 && (!strcmp(argv[1], "-v") ||
+			 !strcmp(argv[1], "--version"))) {
 		print_version();
 		return 0;
 	}
 
-	if (argc > 1 && !strcmp(argv[1], "-l")) {
-		print_keys();
+	if (argc > 1 && (!strcmp(argv[1], "-l") ||
+			 !strcmp(argv[1], "--list-keys"))) {
+		start_main_loop(print_keys_loop);
 		return 0;
 	}
 
-	if (argc > 1 && !strcmp(argv[1], "-f"))
+	if (argc > 1 && (!strcmp(argv[1], "-f") ||
+			 !strcmp(argv[1], "--foreground")))
 		foreground_flag++;
 
 	sprintf(config_dir, "%s/.config/warpd", home);
@@ -211,6 +224,24 @@ int main(int argc, char *argv[])
 	sprintf(config_path, "%s/config", config_dir);
 
 	cfg = parse_cfg(config_path);
+
+	if (argc > 1 && !strcmp(argv[1], "--hint")) {
+		oneshot_mode = MODE_HINT;
+		start_main_loop(oneshot_loop);
+		exit(0);
+	}
+
+	if (argc > 1 && !strcmp(argv[1], "--normal")) {
+		oneshot_mode = MODE_NORMAL;
+		start_main_loop(oneshot_loop);
+		exit(0);
+	}
+
+	if (argc > 1 && !strcmp(argv[1], "--grid")) {
+		oneshot_mode = MODE_GRID;
+		start_main_loop(oneshot_loop);
+		exit(0);
+	}
 
 	lock();
 	if (!foreground_flag)

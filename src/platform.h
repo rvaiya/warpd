@@ -87,9 +87,9 @@ void scroll(int direction);
 void copy_selection();
 
 /*
- * Draw operations may (or may not) be queued until this function
- * is called.
- */
+* Draw operations may (or may not) be queued until this function
+* is called.
+*/
 void platform_commit();
 
 #endif

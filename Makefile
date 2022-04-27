@@ -1,5 +1,5 @@
 COMMIT=$(shell git rev-parse --short HEAD)
-VERSION=1.1.4-beta
+VERSION=1.2
 DESTDIR=
 PREFIX=/usr
 
@@ -12,16 +12,23 @@ CFLAGS=-g\
        -DVERSION=\"$(VERSION)\"\
        -DCOMMIT=\"$(COMMIT)\"
 
-ifeq ($(shell uname), Darwin)
+ifeq ($(PLATFORM), Darwin)
 	PLATFORM_FLAGS=-framework cocoa
 
 	PLATFORM_FILES=$(shell find src/platform/macos/*.m)
 	PLATFORM_OBJECTS=$(PLATFORM_FILES:.m=.o)
 
 	PREFIX=/usr/local
+else ifeq ($(PLATFORM), wayland)
+	PLATFORM_FLAGS=-lwayland-client\
+			-lxkbcommon\
+			-lcairo\
+			-lrt\
+
+	PLATFORM_FILES=$(shell find src/platform/wayland/ -name '*.c')
+	PLATFORM_OBJECTS=$(PLATFORM_FILES:.c=.o)
 else
 	CFLAGS+=-I/usr/include/freetype2
-
 	PLATFORM_FLAGS=-lXfixes\
 			-lXext\
 			-lXinerama\
@@ -37,7 +44,7 @@ endif
 FILES=$(shell find src/*.c)
 OBJECTS=$(FILES:.c=.o) $(PLATFORM_OBJECTS)
 
-all: clean $(OBJECTS)
+all: $(OBJECTS)
 	-mkdir bin
 	$(CC)  $(CFLAGS) -o bin/warpd $(OBJECTS) $(PLATFORM_FLAGS)
 fmt:

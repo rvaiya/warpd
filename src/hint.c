@@ -126,9 +126,22 @@ int hint_mode()
 		filter(scr, buf);
 
 		if (nr_matched == 1) {
+			int nx, ny;
 			struct hint *h = &matched[0];
 
-			mouse_move(scr, h->x + h->w / 2, h->y + h->h / 2);
+			screen_clear(scr);
+
+			nx = h->x + h->w / 2;
+			ny = h->y + h->h / 2;
+
+			/* 
+			 * Wiggle the cursor a single pixel to accommodate 
+			 * text selection widgets which don't like spontaneous
+			 * cursor warping.
+			 */
+			mouse_move(scr, nx+1, ny+1);
+
+			mouse_move(scr, nx, ny);
 			break;
 		} else if (nr_matched == 0) {
 			break;

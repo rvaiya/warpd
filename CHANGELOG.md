@@ -1,3 +1,8 @@
+# v1.2
+ - Add experimental wayland support
+ - Add --hint/--normal/--grid flags
+ - Fix missing key up bug
+
 # v1.1.4-beta
  - Fix alternate (english) layout support
 
