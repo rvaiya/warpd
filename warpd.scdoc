@@ -77,7 +77,7 @@ By default grid mode divides the screen into a 2x2 grid. Each time a key
 is pressed the grid shrinks to cover the targeted quadrant. The cursor is placed
 in the middle of the grid.
 
-covers the the desired target a mouse button (e.g 'm') can be pressed.
+covers the desired target a mouse button (e.g 'm') can be pressed.
 
 
 E.G
@@ -112,7 +112,7 @@ text to the system clipboard and terminate the current session.
 
 Wayland's architecture does not allow clients to globally bind hotkeys. In
 order to run warpd, one of the oneshot flags must be used. These can be bound
-the the corresponding hotkeys in your compositor.
+to the corresponding hotkeys in your compositor.
 
 E.G
 
