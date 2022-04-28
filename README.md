@@ -96,6 +96,12 @@ Then simply do:
 make && sudo make install
 ```
 
+or (for macos)
+
+```
+PLATFORM=macos make && sudo make install
+```
+
 or (for wayland)
 
 ```

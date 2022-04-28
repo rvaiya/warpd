@@ -12,7 +12,7 @@ CFLAGS=-g\
        -DVERSION=\"$(VERSION)\"\
        -DCOMMIT=\"$(COMMIT)\"
 
-ifeq ($(PLATFORM), Darwin)
+ifeq ($(PLATFORM), macos)
 	PLATFORM_FLAGS=-framework cocoa
 
 	PLATFORM_FILES=$(shell find src/platform/macos/*.m)
