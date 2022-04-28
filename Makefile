@@ -54,10 +54,10 @@ assets:
 clean:
 	-rm $(OBJECTS)
 install:
-	install -m644 warpd.1.gz $(DESTDIR)/$(PREFIX)/share/man/man1/
-	install -m755 bin/warpd $(DESTDIR)/$(PREFIX)/bin/
+	install -m644 warpd.1.gz $(DESTDIR)$(PREFIX)/share/man/man1/
+	install -m755 bin/warpd $(DESTDIR)$(PREFIX)/bin/
 uninstall:
-	rm $(DESTDIR)/$(PREFIX)/share/man/man1/warpd.1.gz\
-		$(DESTDIR)/$(PREFIX)/bin/warpd
+	rm $(DESTDIR)$(PREFIX)/share/man/man1/warpd.1.gz\
+		$(DESTDIR)$(PREFIX)/bin/warpd
 
 .PHONY: all platform assets install uninstall bin
