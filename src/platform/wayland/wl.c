@@ -12,22 +12,22 @@ static void handle_global(void *data,
 	if (!strcmp(interface, "zwlr_virtual_pointer_manager_v1")) {
 		struct zwlr_virtual_pointer_manager_v1 *mgr;
 
-		mgr = wl_registry_bind(registry, name, &zwlr_virtual_pointer_manager_v1_interface, version);
+		mgr = wl_registry_bind(registry, name, &zwlr_virtual_pointer_manager_v1_interface, 1);
 		wl.ptr = zwlr_virtual_pointer_manager_v1_create_virtual_pointer(mgr, NULL);
 	}
 
 	if (!strcmp(interface, "wl_shm"))
 		wl.shm = wl_registry_bind(registry,
-					  name, &wl_shm_interface, version);
+					  name, &wl_shm_interface, 1);
 
 	if (!strcmp(interface, "wl_compositor"))
 		wl.compositor = wl_registry_bind(registry,
-						 name, &wl_compositor_interface, version);
+						 name, &wl_compositor_interface, 4);
 
 	if (!strcmp(interface, "wl_seat")) {
 		struct wl_seat *seat =
 			wl_registry_bind(registry,
-					 name, &wl_seat_interface, version);
+					 name, &wl_seat_interface, 7);
 
 		wl.pointer = wl_seat_get_pointer(seat);
 		wl.keyboard = wl_seat_get_keyboard(seat);
@@ -37,12 +37,12 @@ static void handle_global(void *data,
 	if (!strcmp(interface, "wl_output")) {
 		/* TODO: test this in a multi screen environment. */
 		struct screen *scr = &screens[nr_screens++];
-		scr->wl_output = wl_registry_bind(registry, name, &wl_output_interface, version);
+		scr->wl_output = wl_registry_bind(registry, name, &wl_output_interface, 3);
 	}
 
 	if (!strcmp(interface, "zwlr_layer_shell_v1"))
 		wl.layer_shell = wl_registry_bind(registry,
-					 	  name, &zwlr_layer_shell_v1_interface, version);
+					 	  name, &zwlr_layer_shell_v1_interface, 4);
 }
 
 static struct wl_registry_listener registry_listener = {
