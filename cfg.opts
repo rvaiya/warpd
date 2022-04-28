@@ -5,18 +5,20 @@ activation_key			string		"A-M-c"			"Activate normal movement mode (manual (c)urs
 
 hint_oneshot_key		string		"A-M-l"			"Activate hint mode and exit upon selection."
 
-repeat_interval			int		20			"The number of milliseconds before repeating a movement event."
+repeat_interval			int		20			"The number of miliseconds before repeating a movement event."
 
 speed				int		220			"Pointer speed in pixels/second."
-max_speed			int		1600			"The maximum pointer speed."
-acceleration			int		700			"Pointer acceleration in pixels/second^2."
+max_speed     int		1600			"The maximum pointer speed."
+acceleration      int		700			"Pointer acceleration in pixels/second^2."
 
 accelerator_acceleration	int		2900			"Pointer acceleration while the accelerator is depressed."
+accelerator_deceleration int 100 "Pointer acceleration while the decelerator is depressed."
 accelerator			string		"a"			"Increase the speed of the pointer while held."
+decelerator  string "d" "Decrease the speed of the pointer while held."
 
 buttons				list		"m , ." 		"A space separated list of mouse buttons (2 is middle click)."
 oneshot_buttons			list		"n - /"			"Oneshot mouse buttons (deactivate on click)."
-oneshot_timeout			int		300			"The length of time in milliseconds to wait for a second click after a oneshot key has been pressed."
+oneshot_timeout			int		300			"The length of time in miliseconds to wait for a second click after a oneshot key has been pressed."
 
 grid_exit			string		"c"			"Exit grid mode and return to normal mode."
 

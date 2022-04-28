@@ -147,7 +147,7 @@ All values which contain more than one key are space delimited.
 
 *hint_oneshot_key*: Activate hint mode and exit upon selection. (default: A-M-l).
 
-*repeat_interval*: The number of milliseconds before repeating a movement event. (default: 20).
+*repeat_interval*: The number of miliseconds before repeating a movement event. (default: 20).
 
 *speed*: Pointer speed in pixels/second. (default: 220).
 
@@ -157,13 +157,17 @@ All values which contain more than one key are space delimited.
 
 *accelerator_acceleration*: Pointer acceleration while the accelerator is depressed. (default: 2900).
 
+*accelerator_deceleration*: Pointer acceleration while the decelerator is depressed. (default: 100).
+
 *accelerator*: Increase the speed of the pointer while held. (default: a).
+
+*decelerator*: Decrease the speed of the pointer while held. (default: d).
 
 *buttons*: A space separated list of mouse buttons (2 is middle click). (default: m , .).
 
 *oneshot_buttons*: Oneshot mouse buttons (deactivate on click). (default: n - /).
 
-*oneshot_timeout*: The length of time in milliseconds to wait for a second click after a oneshot key has been pressed. (default: 300).
+*oneshot_timeout*: The length of time in miliseconds to wait for a second click after a oneshot key has been pressed. (default: 300).
 
 *grid_exit*: Exit grid mode and return to normal mode. (default: c).
 
