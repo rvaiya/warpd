@@ -1,5 +1,6 @@
 # v1.2.1
  - Add multi-screen support to wayland
+ - Add dedicated hint_exit key (distinct from exit)
 
 # v1.2
  - Add experimental wayland support
