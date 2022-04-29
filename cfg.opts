@@ -20,6 +20,8 @@ oneshot_timeout			int		300			"The length of time in milliseconds to wait for a s
 
 grid_exit			string		"c"			"Exit grid mode and return to normal mode."
 
+hint_exit			string		"esc"			"The exit key used for hint mode."
+
 exit				string		"esc"			"Exit the currently active warpd session."
 drag				string		"v"			"Toggle drag mode (mneominc (v)isual mode)."
 

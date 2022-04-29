@@ -106,7 +106,7 @@ int hint_mode()
 
 		len = strlen(buf);
 
-		if (input_event_eq(ev, cfg->exit)) {
+		if (input_event_eq(ev, cfg->hint_exit)) {
 			rc = -1;
 			break;
 		} else if (input_event_eq(ev, "C-u")) {

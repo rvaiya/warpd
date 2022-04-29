@@ -31,6 +31,7 @@ struct cfg {
 	size_t	  oneshot_buttons_sz;
 	int	  oneshot_timeout;
 	char	 *grid_exit;
+	char	 *hint_exit;
 	char	 *exit;
 	char	 *drag;
 	char	 *copy_and_exit;

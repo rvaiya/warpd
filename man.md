@@ -167,6 +167,8 @@ All values which contain more than one key are space delimited.
 
 *grid_exit*: Exit grid mode and return to normal mode. (default: c).
 
+*hint_exit*: The exit key used for hint mode. (default: esc).
+
 *exit*: Exit the currently active warpd session. (default: esc).
 
 *drag*: Toggle drag mode (mneominc (v)isual mode). (default: v).

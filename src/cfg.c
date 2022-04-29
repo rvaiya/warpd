@@ -95,6 +95,7 @@ struct cfg *parse_cfg(const char *fname)
 	parse_list("n - /", &cfg->oneshot_buttons, &cfg->oneshot_buttons_sz);
 	cfg->oneshot_timeout = atoi("300");
 	cfg->grid_exit = strdup("c");
+	cfg->hint_exit = strdup("esc");
 	cfg->exit = strdup("esc");
 	cfg->drag = strdup("v");
 	cfg->copy_and_exit = strdup("c");
@@ -181,6 +182,8 @@ struct cfg *parse_cfg(const char *fname)
             cfg->oneshot_timeout = atoi(val);
         else if(!strcmp(key, "grid_exit"))
             cfg->grid_exit = strdup(val);
+        else if(!strcmp(key, "hint_exit"))
+            cfg->hint_exit = strdup(val);
         else if(!strcmp(key, "exit"))
             cfg->exit = strdup(val);
         else if(!strcmp(key, "drag"))
