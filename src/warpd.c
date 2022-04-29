@@ -75,7 +75,6 @@ static void normalize_dimensions()
 	int sw, sh;
 	screen_t scr;
 
-	// TODO: fixme (account for multi-screen setups)
 	mouse_get_position(&scr, NULL, NULL);
 	screen_get_dimensions(scr, &sw, &sh);
 

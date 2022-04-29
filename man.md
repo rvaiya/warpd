@@ -328,7 +328,6 @@ disabled) that causes interference.
 - Cursor hiding doesn't work.
 - Running as a daemon doesn't work (can't listen for hotkeys).
 - UI elements (e.g input fields) which require focus can't be selected.
-- No multi monitor support.
 
 # AUTHORS
 
