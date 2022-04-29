@@ -29,15 +29,16 @@ static void handle_global(void *data,
 			wl_registry_bind(registry,
 					 name, &wl_seat_interface, 7);
 
-		wl.pointer = wl_seat_get_pointer(seat);
-		wl.keyboard = wl_seat_get_keyboard(seat);
-		wl_seat_destroy(seat);
+		add_seat(seat);
 	}
 
 	if (!strcmp(interface, "wl_output")) {
-		/* TODO: test this in a multi screen environment. */
-		struct screen *scr = &screens[nr_screens++];
-		scr->wl_output = wl_registry_bind(registry, name, &wl_output_interface, 3);
+		struct wl_output *output = wl_registry_bind(registry, name, &wl_output_interface, 3);
+		add_screen(output);
+	}
+
+	if (!strcmp(interface, "zxdg_output_manager_v1")) {
+		wl.xdg_output_manager = wl_registry_bind(registry, name, &zxdg_output_manager_v1_interface, 3);
 	}
 
 	if (!strcmp(interface, "zwlr_layer_shell_v1"))
@@ -77,13 +78,8 @@ void init_wl()
 		exit(-1);
 	}
 
-	if (!wl.pointer) {
-		fprintf(stderr, "Could not get pointer object\n");
-		exit(-1);
-	}
-
-	if (!wl.keyboard) {
-		fprintf(stderr, "Could not get keyboard object\n");
+	if (!wl.xdg_output_manager) {
+		fprintf(stderr, "Could not get xdg_output_manager object (unsupported protocol?)\n");
 		exit(-1);
 	}
 
@@ -92,8 +88,5 @@ void init_wl()
 		exit(-1);
 	}
 
-	wl_pointer_set_cursor(wl.pointer, 0, NULL, 0, 0);
-
-	init_input();
-	init_screens();
+	init_screen();
 }

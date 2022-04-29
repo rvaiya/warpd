@@ -145,7 +145,7 @@ void input_grab_keyboard()
 	if (!input_pixel.buf)
 		init_surface(&input_pixel, -1, -1, 1, 1, 1);
 
-	surface_show(&input_pixel);
+	surface_show(&input_pixel, NULL);
 }
 
 struct input_event *input_next_event(int timeout)
@@ -174,7 +174,8 @@ struct input_event *input_next_event(int timeout)
 	}
 }
 
-void init_input()
+void add_seat(struct wl_seat *seat) 
 {
-	wl_keyboard_add_listener(wl.keyboard, &wl_keyboard_listener, NULL);
+	wl_keyboard_add_listener(wl_seat_get_keyboard(seat), &wl_keyboard_listener, NULL);
+	wl_seat_destroy(seat);
 }

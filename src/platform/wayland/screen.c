@@ -5,60 +5,59 @@
  */
 #include "wayland.h"
 
+struct screen *active_screen = NULL;
+
 static void noop() {}
 
-static void output_handle_geometry(void *data, struct wl_output *wl_output,
-				   int32_t x, int32_t y,
-				   int32_t physical_width,
-				   int32_t physical_height,
-				   int32_t subpixel, const char *make,
-				   const char *model, int32_t transform)
+void xdg_output_handle_logical_position(void *data,
+					struct zxdg_output_v1 *zxdg_output_v1,
+					int32_t x,
+					int32_t y)
 {
-	struct screen *s = data;
-	s->x = x;
-	s->y = y;
-	s->state++;
+	struct screen *scr = data;
+
+	scr->x = x;
+	scr->y = y;
+	scr->state++;
 }
 
-static void output_handle_mode(void *data,
-			       struct wl_output *wl_output,
-			       uint32_t flags,
-			       int32_t width, int32_t height,
-			       int32_t refresh)
+void xdg_output_handle_logical_size(void *data,
+				    struct zxdg_output_v1 *zxdg_output_v1,
+				    int32_t w,
+				    int32_t h)
 {
+	struct screen *scr = data;
 
-	struct screen *s = data;
-	s->w = width;
-	s->h = height;
-	s->state++;
+	scr->w = w;
+	scr->h = h;
+	scr->state++;
 }
 
-static struct wl_output_listener output_listener = {
-	.geometry = output_handle_geometry,
-	.scale = noop,
-	.mode = output_handle_mode,
+static struct zxdg_output_v1_listener zxdg_output_v1_listener = {
+	.logical_position = xdg_output_handle_logical_position,
+	.logical_size = xdg_output_handle_logical_size,
 	.done = noop,
+	.name = noop,
+	.description = noop,
 };
 
-
-
-void init_screens()
+void add_screen(struct wl_output *output)
 {
-	int i;
-	for (i = 0; i < nr_screens; i++) {
-		struct screen *scr = &screens[i];
+	struct screen *scr = &screens[nr_screens++];
 
-		wl_output_add_listener(scr->wl_output,
-				       &output_listener, scr);
 
-		while (scr->state != 2)
-			wl_display_dispatch(wl.dpy);
+	scr->wl_output = output;
+	scr->xdg_output = zxdg_output_manager_v1_get_xdg_output(wl.xdg_output_manager, output);
 
-		wl_output_destroy(scr->wl_output);
+	zxdg_output_v1_add_listener(scr->xdg_output, &zxdg_output_v1_listener, scr);
 
-		scr->overlay = calloc(1, sizeof(struct surface));
-		init_surface(scr->overlay, 0, 0, scr->w, scr->h, 0);
-	}
+	scr->state = 0;
+	do {
+		wl_display_dispatch(wl.dpy);
+	} while (scr->state != 2);
+
+	scr->overlay = calloc(1, sizeof(struct surface));
+	init_surface(scr->overlay, 0, 0, scr->w, scr->h, 0);
 }
 
 void screen_draw_box(struct screen *scr, int x, int y, int w, int h, const char *color)
@@ -74,7 +73,7 @@ void screen_draw_box(struct screen *scr, int x, int y, int w, int h, const char 
 	cairo_set_source_rgba(sfc->cr, r / 255.0, g / 255.0, b / 255.0, a / 255.0);
 	cairo_paint(sfc->cr);
 
-	surface_show(sfc);
+	surface_show(sfc, scr->wl_output);
 }
 
 
@@ -95,4 +94,15 @@ void screen_clear(struct screen *scr)
 	surface_hide(scr->overlay);
 }
 
+void init_screen()
+{
+	struct surface sfc;
+	sfc.screen = 0;
+	init_surface(&sfc, 0, 0, 1, 1, 0);
+	surface_show(&sfc, NULL);
+	while(!sfc.screen)
+		wl_display_dispatch(wl.dpy);
 
+	active_screen = sfc.screen;
+	surface_destroy(&sfc);
+}

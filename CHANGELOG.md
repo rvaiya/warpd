@@ -1,3 +1,6 @@
+# v1.2.1
+ - Add multi-screen support to wayland
+
 # v1.2
  - Add experimental wayland support
  - Add --hint/--normal/--grid flags

@@ -35,6 +35,23 @@ static const struct zwlr_layer_surface_v1_listener layer_surface_listener = {
         .closed = noop,
 };
 
+static void surface_handle_enter(void *data,
+				 struct wl_surface *wl_surface,
+				 struct wl_output *output)
+{
+	struct surface *sfc = data;
+
+	int i = 0;
+	for (i = 0; i < nr_screens; i++)
+		if (screens[i].wl_output == output)
+			sfc->screen = &screens[i];
+}
+
+static struct wl_surface_listener wl_surface_listener = {
+	.enter = surface_handle_enter,
+	.leave = noop,
+};
+
 /* TODO: proper cleanup */
 void init_surface(struct surface *sfc, int x, int y, int w, int h, int input_focus)
 {
@@ -49,7 +66,7 @@ void init_surface(struct surface *sfc, int x, int y, int w, int h, int input_foc
 	sfc->w = w;
 	sfc->h = h;
 
-	sfc->input_focus = 1;
+	sfc->input_focus = input_focus;
 
 	sfc->stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, w);
 	sfc->bufsz = h*sfc->stride;
@@ -103,7 +120,7 @@ void surface_hide(struct surface *sfc)
 	}
 }
 
-void surface_show(struct surface *sfc)
+void surface_show(struct surface *sfc, struct wl_output *output)
 {
 	if (sfc->wl_surface)
 		return;
@@ -111,9 +128,11 @@ void surface_show(struct surface *sfc)
 	sfc->wl_surface = wl_compositor_create_surface(wl.compositor);
 	sfc->wl_layer_surface =
 		zwlr_layer_shell_v1_get_layer_surface(wl.layer_shell, sfc->wl_surface,
-						      NULL,
+						      output,
 						      ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY,
 						      "warpd");
+
+	wl_surface_add_listener(sfc->wl_surface, &wl_surface_listener, sfc);
 
 	assert(sfc->wl_layer_surface);
 	zwlr_layer_surface_v1_add_listener(sfc->wl_layer_surface,
@@ -137,4 +156,3 @@ void surface_show(struct surface *sfc)
 
 	wl_display_flush(wl.dpy);
 }
-

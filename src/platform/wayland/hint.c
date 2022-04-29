@@ -60,7 +60,7 @@ void hint_draw(struct screen *scr, struct hint *hints, size_t n)
 				hints[i].w, hints[i].h);
 	}
 
-	surface_show(scr->overlay);
+	surface_show(scr->overlay, scr->wl_output);
 }
 
 void init_hint(const char *bg, const char *fg, int border_radius, const char *font_family)
