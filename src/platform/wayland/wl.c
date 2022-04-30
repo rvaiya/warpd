@@ -43,7 +43,7 @@ static void handle_global(void *data,
 
 	if (!strcmp(interface, "zwlr_layer_shell_v1"))
 		wl.layer_shell = wl_registry_bind(registry,
-					 	  name, &zwlr_layer_shell_v1_interface, 4);
+						  name, &zwlr_layer_shell_v1_interface, 2);
 }
 
 static struct wl_registry_listener registry_listener = {
