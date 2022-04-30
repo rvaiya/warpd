@@ -99,7 +99,7 @@ make && sudo make install
 or (for macos)
 
 ```
-PLATFORM=macos make && sudo make install
+PLATFORM=macos make && sudo PLATFORM=macos make install
 ```
 
 or (for wayland)
