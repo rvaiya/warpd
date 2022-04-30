@@ -229,7 +229,7 @@ All values which contain more than one key are space delimited.
 
 *grid_border_color*: The color of the grid border. (default: #ffffff).
 
-*hint_size*: Hint size. (default: 28).
+*hint_size*: Hint size. Must be a number between 1 and 100 and corresponds to the approximate percentage of horizontal/vertical space occupied by the drawn hints. The default value covers approximately 71% of horizental/vertical space, which corresponds to 50% (the square of 71%) of total screen area. (default: 71).
 
 *hint_bgcolor*: The background hint color. (default: #1c1c1e).
 

@@ -126,7 +126,7 @@ struct cfg *parse_cfg(const char *fname)
 	cfg->grid_size = atoi("4");
 	cfg->grid_border_size = atoi("0");
 	cfg->grid_border_color = strdup("#ffffff");
-	cfg->hint_size = atoi("28");
+	cfg->hint_size = atoi("71");
 	cfg->hint_bgcolor = strdup("#1c1c1e");
 	cfg->hint_fgcolor = strdup("#a1aba7");
 	cfg->hint_border_radius = atoi("3");
