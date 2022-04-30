@@ -39,13 +39,11 @@ size_t generate_hints(screen_t scr, struct hint *hints)
 
 	screen_get_dimensions(scr, &sw, &sh);
 
-	const int hint_size = cfg->hint_size * sh / 1080;
+	const int colgap = 300/cfg->hint_size;
+	const int rowgap = 300/cfg->hint_size;
 
-	const int w = MIN(hint_size * 1.6, (sw-(5*nc)) / nc);
-	const int h = MIN(hint_size, (sh-(5*nr)) / nr);
-
-	const int colgap = (sw - w*nc) / (nc + 1);
-	const int rowgap = (sh - h*nr) / (nr + 1);
+	const int w = sw / nc - colgap;
+	const int h = sh / nr - rowgap;
 
 	int x = colgap;
 	int y = rowgap;
