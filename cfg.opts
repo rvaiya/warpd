@@ -61,7 +61,7 @@ grid_size			int		4			"The thickness of grid lines in pixels."
 grid_border_size		int		0			"The thickness of the grid border in pixels."
 grid_border_color		string		"#ffffff"		"The color of the grid border."
 
-hint_size			int		28			"Hint size."
+hint_size			int		71			"An integer between 1 and 100 corresponding to the approximate percentage of screen width/height used by the widths/heights of all drawn hints in a row/column. The default value results in the drawn hints covering approximately 50% (the square of 71%) of total screen area."
 
 hint_bgcolor			string		"#1c1c1e"		"The background hint color."
 hint_fgcolor			string		"#a1aba7"		"The foreground hint color."
