@@ -35,6 +35,10 @@
 #include <sys/stat.h>
 #include <time.h>
 
+#ifndef PATH_MAX
+#define PATH_MAX 1024
+#endif
+
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 
 extern struct cfg *cfg;

@@ -7,8 +7,6 @@
 #include "warpd.h"
 
 struct cfg *cfg;
-char config_dir[512];
-
 static int dragging = 0;
 
 void toggle_drag()
@@ -130,13 +128,36 @@ static void main_loop()
 	}
 }
 
+static const char *get_config_path(const char *name)
+{
+	static char config_dir[PATH_MAX];
+	static char path[PATH_MAX];
+
+	if (!config_dir[0]) {
+		if (getenv("XDG_CONFIG_HOME")) {
+			sprintf(config_dir, "%s/warpd", getenv("XDG_CONFIG_HOME"));
+			mkdir(config_dir, 0700);
+		} else {
+			sprintf(config_dir, "%s/.config", getenv("HOME"));
+			mkdir(config_dir, 0700);
+			strcat(config_dir, "/warpd");
+			mkdir(config_dir, 0700);
+		}
+	}
+
+	if (snprintf(path, sizeof path, "%s/%s", config_dir, name) < 0)
+		exit(-1);
+
+	return path;
+}
+
+
 static void lock()
 {
-	char path[1024];
 	int fd;
-	sprintf(path, "%s/lock", config_dir);
+	const char *lockfile = get_config_path("warpd.lock");
 
-	if ((fd = open(path, O_CREAT | O_RDWR, 0600)) == -1) {
+	if ((fd = open(lockfile, O_CREAT | O_RDWR, 0600)) == -1) {
 		perror("flock open");
 		exit(1);
 	}
@@ -151,17 +172,16 @@ static void lock()
 
 static void daemonize()
 {
-	char path[1024];
+	const char *logfile = get_config_path("warpd.log");
 
 	if (fork())
 		exit(0);
 	if (fork())
 		exit(0);
 
-	sprintf(path, "%s/warpd.log", config_dir);
-	printf("daemonizing, log output stored in %s.\n", path);
+	printf("daemonizing, log output stored in %s.\n", logfile);
 
-	int fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+	int fd = open(logfile, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
 	if (fd < 0) {
 		perror("open");
 		exit(-1);
@@ -190,29 +210,9 @@ static void print_version()
 	printf("warpd v" VERSION " (built from: " COMMIT ")\n");
 }
 
-const char *resolve_config_path()
-{
-	static char path[1024];
-
-	if (getenv("XDG_CONFIG_HOME")) {
-		sprintf(path, "%s/warpd", getenv("XDG_CONFIG_HOME"));
-		mkdir(path, 0700);
-	} else {
-		sprintf(path, "%s/.config", getenv("HOME"));
-		mkdir(path, 0700);
-		strcat(path, "/warpd");
-		mkdir(path, 0700);
-	}
-
-	strcat(path, "/config");
-
-	return path;
-}
-
 int main(int argc, char *argv[])
 {
-	int foreground_flag = 0;
-	const char *config_path;
+	cfg = parse_cfg(get_config_path("config"));
 
 	if (argc > 1 && (!strcmp(argv[1], "-v") ||
 			 !strcmp(argv[1], "--version"))) {
@@ -226,11 +226,7 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 
-	if (argc > 1 && (!strcmp(argv[1], "-f") ||
-			 !strcmp(argv[1], "--foreground")))
-		foreground_flag++;
-
-	cfg = parse_cfg(resolve_config_path());
+	lock();
 
 	if (argc > 1 && !strcmp(argv[1], "--hint")) {
 		oneshot_mode = MODE_HINT;
@@ -250,8 +246,8 @@ int main(int argc, char *argv[])
 		exit(0);
 	}
 
-	lock();
-	if (!foreground_flag)
+	if (!(argc > 1 && (!strcmp(argv[1], "-f") ||
+			   !strcmp(argv[1], "--foreground"))))
 		daemonize();
 
 	setvbuf(stdout, NULL, _IOLBF, 0);
