@@ -190,17 +190,28 @@ static void print_version()
 	printf("warpd v" VERSION " (built from: " COMMIT ")\n");
 }
 
+const char *resolve_config_path()
+{
+	static char path[1024];
+
+	if (getenv("XDG_CONFIG_HOME")) {
+		strcpy(path, getenv("XDG_CONFIG_HOME"));
+	} else {
+		sprintf(path, "%s/.config", getenv("HOME"));
+		mkdir(path, 0700);
+		strcat(path, "/warpd");
+		mkdir(path, 0700);
+	}
+
+	strcat(path, "/config");
+
+	return path;
+}
+
 int main(int argc, char *argv[])
 {
 	int foreground_flag = 0;
-	char config_path[1024];
-	const char *home = getenv("HOME");
-
-	if (!home) {
-		fprintf(stderr,
-			"ERROR: Could not resolve home directory, aborting...");
-		exit(-1);
-	}
+	const char *config_path;
 
 	if (argc > 1 && (!strcmp(argv[1], "-v") ||
 			 !strcmp(argv[1], "--version"))) {
@@ -218,11 +229,7 @@ int main(int argc, char *argv[])
 			 !strcmp(argv[1], "--foreground")))
 		foreground_flag++;
 
-	sprintf(config_dir, "%s/.config/warpd", home);
-	mkdir(config_dir, 0700);
-	sprintf(config_path, "%s/config", config_dir);
-
-	cfg = parse_cfg(config_path);
+	cfg = parse_cfg(resolve_config_path());
 
 	if (argc > 1 && !strcmp(argv[1], "--hint")) {
 		oneshot_mode = MODE_HINT;

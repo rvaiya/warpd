@@ -281,6 +281,12 @@ movement is necessarily pixel based, consequently, drag + hint
 mode can be a superior method for surgically selecting text (though it may at
 first be less intuitive).
 
+# FILES
+
+*$XDG_CONFIG_HOME/config*++
+*~/.config/warpd/config*
+	The configuration path (in search in order).
+
 # BUGS/LIMITATIONS
 
 warpd uses various platform specific hacks to bypass limitations
