@@ -195,7 +195,8 @@ const char *resolve_config_path()
 	static char path[1024];
 
 	if (getenv("XDG_CONFIG_HOME")) {
-		strcpy(path, getenv("XDG_CONFIG_HOME"));
+		sprintf(path, "%s/warpd", getenv("XDG_CONFIG_HOME"));
+		mkdir(path, 0700);
 	} else {
 		sprintf(path, "%s/.config", getenv("HOME"));
 		mkdir(path, 0700);

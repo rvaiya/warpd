@@ -283,9 +283,9 @@ first be less intuitive).
 
 # FILES
 
-*$XDG_CONFIG_HOME/config*++
+*$XDG_CONFIG_HOME/warpd/config*++
 *~/.config/warpd/config*
-	The configuration path (in search in order).
+	The configuration path (searched in order).
 
 # BUGS/LIMITATIONS
 
