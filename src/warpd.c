@@ -128,25 +128,21 @@ static void main_loop()
 	}
 }
 
-static const char *get_config_path(const char *name)
+static const char *get_config_path()
 {
-	static char config_dir[PATH_MAX];
 	static char path[PATH_MAX];
 
-	if (!config_dir[0]) {
-		if (getenv("XDG_CONFIG_HOME")) {
-			sprintf(config_dir, "%s/warpd", getenv("XDG_CONFIG_HOME"));
-			mkdir(config_dir, 0700);
-		} else {
-			sprintf(config_dir, "%s/.config", getenv("HOME"));
-			mkdir(config_dir, 0700);
-			strcat(config_dir, "/warpd");
-			mkdir(config_dir, 0700);
-		}
+	if (getenv("XDG_CONFIG_HOME")) {
+		sprintf(path, "%s/warpd", getenv("XDG_CONFIG_HOME"));
+		mkdir(path, 0700);
+	} else {
+		sprintf(path, "%s/.config", getenv("HOME"));
+		mkdir(path, 0700);
+		strcat(path, "/warpd");
+		mkdir(path, 0700);
 	}
 
-	if (snprintf(path, sizeof path, "%s/%s", config_dir, name) < 0)
-		exit(-1);
+	strcat(path, "/config");
 
 	return path;
 }
@@ -155,9 +151,12 @@ static const char *get_config_path(const char *name)
 static void lock()
 {
 	int fd;
-	const char *lockfile = get_config_path("warpd.lock");
+	char path[64];
 
-	if ((fd = open(lockfile, O_CREAT | O_RDWR, 0600)) == -1) {
+	sprintf(path, "/tmp/warpd_%d.lock", getuid());
+	fd = open(path, O_RDONLY|O_CREAT, 0600);
+
+	if (fd < 0) {
 		perror("flock open");
 		exit(1);
 	}
@@ -172,16 +171,12 @@ static void lock()
 
 static void daemonize()
 {
-	const char *logfile = get_config_path("warpd.log");
-
 	if (fork())
 		exit(0);
 	if (fork())
 		exit(0);
 
-	printf("daemonizing, log output stored in %s.\n", logfile);
-
-	int fd = open(logfile, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+	int fd = open("/dev/null", O_WRONLY);
 	if (fd < 0) {
 		perror("open");
 		exit(-1);

@@ -48,7 +48,7 @@ The usual array of X libraries:
 *Note:* The wayland port has several limitations due
 to the nature of Wayland's architecture.
 
-See the CAVEATS section of the man page for more details.
+See the LIMITATIONS section of the man page for more details.
 
 ## MacOS:
 
