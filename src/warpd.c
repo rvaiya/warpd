@@ -204,13 +204,13 @@ static void print_usage()
 {
 	const char *usage =
 		"warpd: [options]\n\n"
-		"  -f, --foreground  Run warpd in the foreground (useful for debugging).\n"
-		"  -h, --help        Print this help message.\n"
-		"  -v, --version     Print the version and exit.\n"
-		"  -c, --config      Use the supplied config file.\n"
-		"  --hint            Start warpd in hint mode and exit after the end of the session.\n"
-		"  --normal          Start warpd in normal mode and exit after the end of the session.\n"
-		"  --grid            Start warpd in hint grid and exit after the end of the session.\n"
+		"  -f, --foreground            Run warpd in the foreground (useful for debugging).\n"
+		"  -h, --help                  Print this help message.\n"
+		"  -v, --version               Print the version and exit.\n"
+		"  -c, --config <config file>  Use the supplied config file.\n"
+		"  --hint                      Start warpd in hint mode and exit after the end of the session.\n"
+		"  --normal                    Start warpd in normal mode and exit after the end of the session.\n"
+		"  --grid                      Start warpd in hint grid and exit after the end of the session.\n"
 		;
 
 	printf(usage);

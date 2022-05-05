@@ -16,7 +16,7 @@ warpd [options]
 
 	*-v*, *--verbose*: Print the current version.
 
-	*-c*, *--config*: Use the provided config file.
+	*-c*, *--config* <config file>: Use the provided config file.
 
 	*--hint*: Run warpd in oneshot (daemonless) hint mode.
 
