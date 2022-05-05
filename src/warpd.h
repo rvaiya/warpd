@@ -27,6 +27,8 @@
 
 #include "cfg.h"
 #include "platform.h"
+
+#include <getopt.h>
 #include <assert.h>
 #include <fcntl.h>
 #include <stdio.h>

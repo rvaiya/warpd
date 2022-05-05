@@ -195,9 +195,25 @@ static void print_keys_loop()
 	for (i = 0; i < 256; i++) {
 		const char *name = input_lookup_name(i);
 
-		if (name)
+		if (name && name[0])
 			printf("%s\n", name);
 	}
+}
+
+static void print_usage()
+{
+	const char *usage =
+		"warpd: [options]\n\n"
+		"  -f, --foreground  Run warpd in the foreground (useful for debugging).\n"
+		"  -h, --help        Print this help message.\n"
+		"  -v, --version     Print the version and exit.\n"
+		"  -c, --config      Use the supplied config file.\n"
+		"  --hint            Start warpd in hint mode and exit after the end of the session.\n"
+		"  --normal          Start warpd in normal mode and exit after the end of the session.\n"
+		"  --grid            Start warpd in hint grid and exit after the end of the session.\n"
+		;
+
+	printf(usage);
 }
 
 static void print_version()
@@ -207,42 +223,65 @@ static void print_version()
 
 int main(int argc, char *argv[])
 {
-	cfg = parse_cfg(get_config_path("config"));
+	int c;
+	int foreground = 0;
+	const char *config_path = get_config_path("config");
 
-	if (argc > 1 && (!strcmp(argv[1], "-v") ||
-			 !strcmp(argv[1], "--version"))) {
-		print_version();
-		return 0;
+	struct option opts[] = {
+		{"version", no_argument, NULL, 'v'},
+		{"help", no_argument, NULL, 'h'},
+		{"list-keys", no_argument, NULL, 'l'},
+		{"foreground", no_argument, NULL, 'f'},
+		{"config", required_argument, NULL, 'c'},
+
+		{"hint", no_argument, NULL, 257},
+		{"grid", no_argument, NULL, 258},
+		{"normal", no_argument, NULL, 259},
+		{0}
+	};
+
+	while ((c = getopt_long(argc, argv, "hfvlc:", opts, NULL)) != -1) {
+		switch (c) {
+			case 'v':
+				print_version();
+				return 0;
+			case 'h':
+				print_usage();
+				return 0;
+			case 'l':
+				start_main_loop(print_keys_loop);
+				return 0;
+			case 'c':
+				config_path = optarg;
+				break;
+			case 'f':
+				foreground = 1;
+				break;
+
+			case 257:
+				oneshot_mode = MODE_HINT;
+				break;
+			case 258:
+				oneshot_mode = MODE_GRID;
+				break;
+			case 259:
+				oneshot_mode = MODE_NORMAL;
+				break;
+
+			case '?':
+				return -1;
+		}
 	}
 
-	if (argc > 1 && (!strcmp(argv[1], "-l") ||
-			 !strcmp(argv[1], "--list-keys"))) {
-		start_main_loop(print_keys_loop);
-		return 0;
-	}
-
+	cfg = parse_cfg(config_path);
 	lock();
 
-	if (argc > 1 && !strcmp(argv[1], "--hint")) {
-		oneshot_mode = MODE_HINT;
+	if (oneshot_mode) {
 		start_main_loop(oneshot_loop);
 		exit(0);
 	}
 
-	if (argc > 1 && !strcmp(argv[1], "--normal")) {
-		oneshot_mode = MODE_NORMAL;
-		start_main_loop(oneshot_loop);
-		exit(0);
-	}
-
-	if (argc > 1 && !strcmp(argv[1], "--grid")) {
-		oneshot_mode = MODE_GRID;
-		start_main_loop(oneshot_loop);
-		exit(0);
-	}
-
-	if (!(argc > 1 && (!strcmp(argv[1], "-f") ||
-			   !strcmp(argv[1], "--foreground"))))
+	if (!foreground)
 		daemonize();
 
 	setvbuf(stdout, NULL, _IOLBF, 0);

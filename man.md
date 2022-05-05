@@ -10,11 +10,13 @@ warpd [options]
 
 # OPTIONS
 
-	*-f*, *--foreground*: Run warpd in the foreground (i.e do not daemonize). Mainly useful for debugging.
+	*-f*, *--foreground*: Run warpd in the foreground. Mainly useful for debugging.
 
 	*-l*, *--list-keys*: Print a list of valid keys which can be used as config values.
 
 	*-v*, *--verbose*: Print the current version.
+
+	*-c*, *--config*: Use the provided config file.
 
 	*--hint*: Run warpd in oneshot (daemonless) hint mode.
 
@@ -285,7 +287,7 @@ first be less intuitive).
 
 *$XDG_CONFIG_HOME/warpd/config*++
 *~/.config/warpd/config*
-	The configuration path (searched in order).
+	The path of the configuration file (searched in order).
 
 # BUGS/LIMITATIONS
 

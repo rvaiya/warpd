@@ -1,3 +1,11 @@
+# v1.2.2
+ - Use XDG compliant config paths + eliminate ~/.config pollution
+ - wayland: Lower the required layer_shell version
+ - Eliminate hint asymmetry (alters the unit of hint_size)
+ - Add dedicated `hint_exit` key (#99)
+ - Add --config, and --help
+ - Misc bugfixes
+
 # v1.2.1
  - Add multi-screen support to wayland
  - Add dedicated hint_exit key (distinct from exit)
