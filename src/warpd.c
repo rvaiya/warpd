@@ -213,7 +213,7 @@ static void print_usage()
 		"  --grid                      Start warpd in hint grid and exit after the end of the session.\n"
 		;
 
-	printf(usage);
+	printf("%s", usage);
 }
 
 static void print_version()
@@ -225,7 +225,7 @@ int main(int argc, char *argv[])
 {
 	int c;
 	int foreground = 0;
-	const char *config_path = get_config_path("config");
+	const char *config_path = get_config_path();
 
 	struct option opts[] = {
 		{"version", no_argument, NULL, 'v'},
@@ -285,7 +285,6 @@ int main(int argc, char *argv[])
 		daemonize();
 
 	setvbuf(stdout, NULL, _IOLBF, 0);
-	printf("Starting warpd: " VERSION "\n");
-
+	printf("Starting warpd v" VERSION " (" COMMIT ")\n");
 	start_main_loop(main_loop);
 }
