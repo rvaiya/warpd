@@ -1,4 +1,5 @@
 - update docs (emphasize vi-*like* (but non-vi) nature)
+- create brew formula
 - improve demos
 - cleanup gen_assets.py
 - screen hotplugging
