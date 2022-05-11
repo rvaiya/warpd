@@ -3,14 +3,14 @@ VERSION=1.2.2
 DESTDIR=
 PREFIX=/usr
 
-CFLAGS=-g\
+CFLAGS:=-g\
        -Wall\
        -Wextra\
        -pedantic\
        -Wno-unused-parameter\
        -std=c99\
        -DVERSION=\"$(VERSION)\"\
-       -DCOMMIT=\"$(COMMIT)\"
+       -DCOMMIT=\"$(COMMIT)\" $(CFLAGS)
 
 ifeq ($(PLATFORM), macos)
 	PLATFORM_FLAGS=-framework cocoa
@@ -47,6 +47,10 @@ OBJECTS=$(FILES:.c=.o) $(PLATFORM_OBJECTS)
 all: clean $(OBJECTS)
 	-mkdir bin
 	$(CC)  $(CFLAGS) -o bin/warpd $(OBJECTS) $(PLATFORM_FLAGS)
+macos:
+	 PLATFORM=macos CFLAGS='-target arm64-apple-macos' $(MAKE) && mv bin/warpd bin/warpd-arm
+	 PLATFORM=macos CFLAGS='-target x86_64-apple-macos' $(MAKE) && mv bin/warpd bin/warpd-x86
+	 lipo -create bin/warpd-x86 bin/warpd-arm -output bin/warpd &&  rm bin/warpd-*
 fmt:
 	find . -name '*.[chm]' ! -name 'cfg.[ch]'|xargs clang-format -i
 assets:
