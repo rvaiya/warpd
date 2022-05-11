@@ -26,9 +26,7 @@ A modal keyboard driven interface for mouse manipulation.
 
 # Dependencies
 
-## Linux
-
-# X
+## X
 
 The usual array of X libraries:
 
@@ -39,7 +37,7 @@ The usual array of X libraries:
  - libxtst
  - libx11
 
-# Wayland (sway/wlroots only)
+## Wayland (sway/wlroots only)
 
  - libwayland-client
  - cairo
@@ -60,7 +58,7 @@ Make sure you have the appropriate dependencies for your system:
 
 E.G 
 
-debian/ubuntu (X):
+## debian/ubuntu (X):
 
 ```
 sudo apt-get install \
@@ -73,7 +71,7 @@ sudo apt-get install \
 make && sudo make install
 ```
 
-debian/ubuntu (Wayland):
+## debian/ubuntu (Wayland):
 
 ```
 sudo apt-get install \
@@ -83,7 +81,7 @@ sudo apt-get install \
 PLATFORM=wayland make && sudo make install
 ```
 
-macos:
+## macos:
 
 ```
 sudo curl -Lo /usr/local/bin/warpd https://github.com/rvaiya/warpd/releases/download/v1.2.2/warpd-osx && \
@@ -103,22 +101,6 @@ PLATFORM=macos make && sudo PLATFORM=macos make install
 
 *Note:* Some programs (e.g iTerm) have a 'secure input mode' that may need to be
 disabled in order for warpd to work properly.
-
-Then simply do:
-
-```
-```
-
-or (for macos)
-
-```
-```
-
-or (for wayland)
-
-```
-PLATFORM=wayland make && sudo make install
-```
 
 # Quickstart
 
