@@ -69,7 +69,8 @@ sudo apt-get install \
 	libxft-dev \
 	libxfixes-dev \
 	libxtst-dev \
-	libx11-dev
+	libx11-dev && \
+make && sudo make install
 ```
 
 debian/ubuntu (Wayland):
@@ -78,13 +79,27 @@ debian/ubuntu (Wayland):
 sudo apt-get install \
 	libcairo2-dev \
 	libxkbcommon-dev \
-	libwayland-dev
+	libwayland-dev && \
+PLATFORM=wayland make && sudo make install
 ```
 
 macos:
 
 ```
+sudo curl -Lo /usr/local/bin/warpd https://github.com/rvaiya/warpd/releases/download/v1.2.2/warpd-osx && \
+sudo chmod +x /usr/local/bin/warpd && \
+sudo curl -Lo /usr/local/share/man/man1/warpd.1.gz && \
+https://github.com/rvaiya/warpd/releases/download/v1.2.2/warpd.1.gz
+```
+
+or (from source)
+
+```
+# Install the xcode command line tools if you
+# don't already have them.
 xcode-select --install
+
+PLATFORM=macos make && sudo PLATFORM=macos make install
 ```
 
 *Note:* Some programs (e.g iTerm) have a 'secure input mode' that may need to be
@@ -93,13 +108,11 @@ disabled in order for warpd to work properly.
 Then simply do:
 
 ```
-make && sudo make install
 ```
 
 or (for macos)
 
 ```
-PLATFORM=macos make && sudo PLATFORM=macos make install
 ```
 
 or (for wayland)
