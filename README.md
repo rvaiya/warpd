@@ -88,8 +88,7 @@ macos:
 ```
 sudo curl -Lo /usr/local/bin/warpd https://github.com/rvaiya/warpd/releases/download/v1.2.2/warpd-osx && \
 sudo chmod +x /usr/local/bin/warpd && \
-sudo curl -Lo /usr/local/share/man/man1/warpd.1.gz && \
-https://github.com/rvaiya/warpd/releases/download/v1.2.2/warpd.1.gz
+sudo curl -Lo /usr/local/share/man/man1/warpd.1.gz https://github.com/rvaiya/warpd/releases/download/v1.2.2/warpd.1.gz
 ```
 
 or (from source)
