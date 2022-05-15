@@ -71,6 +71,12 @@ scroll_down			string		"e"			"Scroll down key."
 scroll_up			string		"r"			"Scroll up key."
 
 screen_chars			string		"jkl;asdfg"	"The characters used for screen selection."
+
+scroll_speed			int		300			"Initial scroll speed in units/second (unit varies by platform)."
+scroll_max_speed		int		9000			"Maximum scroll speed."
+scroll_acceleration		int		1600			"Scroll acceleration in units/second^2."
+scroll_deceleration		int		-3400			"Scroll deceleration."
+
 hint_chars			string		"abcdefghijklmnopqrstuvwxyz"	"The character set from which hints are generated. The total number of hints is the square of the size of this string. It may be desirable to increase this for larger screens or trim it to increase gaps between hints."
 
 hint_font			string		"Arial"			"The font name used by hints. Note: This is platform specific, in X it corresponds to a valid xft font name, on macos it corresponds to a postscript name."

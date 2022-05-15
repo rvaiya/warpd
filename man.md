@@ -14,7 +14,7 @@ warpd [options]
 
 	*-l*, *--list-keys*: Print a list of valid keys which can be used as config values.
 
-	*-v*, *--verbose*: Print the current version.
+	*-v*, *--version*: Print the current version.
 
 	*-c*, *--config* <config file>: Use the provided config file.
 
@@ -244,6 +244,14 @@ All values which contain more than one key are space delimited.
 *scroll_up*: Scroll up key. (default: r).
 
 *screen_chars*: The characters used for screen selection. (default: jkl;asdfg).
+
+*scroll_speed*: Initial scroll speed in units/second (unit varies by platform). (default: 300).
+
+*scroll_max_speed*: Maximum scroll speed. (default: 9000).
+
+*scroll_acceleration*: Scroll acceleration in units/second^2. (default: 1600).
+
+*scroll_deceleration*: Scroll deceleration. (default: -3400).
 
 *hint_chars*: The character set from which hints are generated. The total number of hints is the square of the size of this string. It may be desirable to increase this for larger screens or trim it to increase gaps between hints. (default: abcdefghijklmnopqrstuvwxyz).
 

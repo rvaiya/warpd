@@ -14,7 +14,7 @@ warpd [options]
 
 	*-l*, *--list-keys*: Print a list of valid keys which can be used as config values.
 
-	*-v*, *--verbose*: Print the current version.
+	*-v*, *--version*: Print the current version.
 
 	*-c*, *--config* <config file>: Use the provided config file.
 

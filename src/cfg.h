@@ -70,6 +70,10 @@ struct cfg {
 	char	 *scroll_down;
 	char	 *scroll_up;
 	char	 *screen_chars;
+	int	  scroll_speed;
+	int	  scroll_max_speed;
+	int	  scroll_acceleration;
+	int	  scroll_deceleration;
 	char	 *hint_chars;
 	char	 *hint_font;
 };

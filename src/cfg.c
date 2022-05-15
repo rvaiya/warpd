@@ -133,6 +133,10 @@ struct cfg *parse_cfg(const char *fname)
 	cfg->scroll_down = strdup("e");
 	cfg->scroll_up = strdup("r");
 	cfg->screen_chars = strdup("jkl;asdfg");
+	cfg->scroll_speed = atoi("300");
+	cfg->scroll_max_speed = atoi("9000");
+	cfg->scroll_acceleration = atoi("1600");
+	cfg->scroll_deceleration = atoi("-3400");
 	cfg->hint_chars = strdup("abcdefghijklmnopqrstuvwxyz");
 	cfg->hint_font = strdup("Arial");
 
@@ -258,6 +262,14 @@ struct cfg *parse_cfg(const char *fname)
             cfg->scroll_up = strdup(val);
         else if(!strcmp(key, "screen_chars"))
             cfg->screen_chars = strdup(val);
+        else if(!strcmp(key, "scroll_speed"))
+            cfg->scroll_speed = atoi(val);
+        else if(!strcmp(key, "scroll_max_speed"))
+            cfg->scroll_max_speed = atoi(val);
+        else if(!strcmp(key, "scroll_acceleration"))
+            cfg->scroll_acceleration = atoi(val);
+        else if(!strcmp(key, "scroll_deceleration"))
+            cfg->scroll_deceleration = atoi(val);
         else if(!strcmp(key, "hint_chars"))
             cfg->hint_chars = strdup(val);
         else if(!strcmp(key, "hint_font"))
