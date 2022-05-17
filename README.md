@@ -37,7 +37,7 @@ The usual array of X libraries:
  - libxtst
  - libx11
 
-## Wayland (sway/wlroots only)
+## Wayland (sway/wlroots only (**no gnome support**))
 
  - libwayland-client
  - cairo
