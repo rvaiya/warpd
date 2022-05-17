@@ -82,7 +82,7 @@ struct screen {
 };
 
 extern struct screen screens[MAX_SCREENS];
-extern int nr_screens;
+extern size_t nr_screens;
 
 extern char keynames[256][32];
 extern struct wl wl;

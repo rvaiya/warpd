@@ -1,7 +1,7 @@
 #include "wayland.h"
 
 struct screen screens[MAX_SCREENS];
-int nr_screens;
+size_t nr_screens;
 
 struct wl wl;
 
