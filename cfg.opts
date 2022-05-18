@@ -11,8 +11,10 @@ speed				int		220			"Pointer speed in pixels/second."
 max_speed			int		1600			"The maximum pointer speed."
 acceleration			int		700			"Pointer acceleration in pixels/second^2."
 
-accelerator_acceleration	int		2900			"Pointer acceleration while the accelerator is depressed."
+accelerator_speed		int		1600			"Pointer speed while the accelerator is depressed."
+decelerator_speed		int		50			"Pointer speed while the decelerator is depressed."
 accelerator			string		"a"			"Increase the speed of the pointer while held."
+decelerator			string		"z"			"Decrease the speed of the pointer while held."
 
 buttons				list		"m , ." 		"A space separated list of mouse buttons (2 is middle click)."
 oneshot_buttons			list		"n - /"			"Oneshot mouse buttons (deactivate on click)."

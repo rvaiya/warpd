@@ -9,7 +9,7 @@
 
 /* constants */
 
-static double v0, vf, a, a0, a1;
+static double v0, v1, vf, va, vd, a;
 static int inc = 0;
 static int sw, sh;
 
@@ -28,6 +28,8 @@ static double cy = 0;
 
 static double v = 0;
 static int opnum = 0;
+
+static int speed_mod = 0;
 
 static long get_time_us()
 {
@@ -88,8 +90,21 @@ static void tick()
 		resting = 0;
 	}
 
-	cx += v * elapsed * dx;
-	cy += v * elapsed * dy;
+	switch(speed_mod) {
+		case -1:
+		/* decelerator pressed */
+			v1 = vd;
+			break;
+		case 1:
+		/* accelerator pressed */
+			v1 = va;
+			break;
+		default:
+			v1 = v;
+	}
+
+	cx += v1 * elapsed * dx;
+	cy += v1 * elapsed * dy;
 
 	v += elapsed * a;
 	if (v > vf)
@@ -180,13 +195,17 @@ int mouse_process_key(struct input_event *ev,
 
 void mouse_fast()
 {
-	a = a1;
+	speed_mod = 1;
 }
 
 void mouse_slow()
 {
-	v = v0;
-	a = a0;
+	speed_mod = -1;
+}
+
+void mouse_normal()
+{
+	speed_mod = 0;
 }
 
 void mouse_reset()
@@ -196,7 +215,6 @@ void mouse_reset()
 	right = 0;
 	up = 0;
 	down = 0;
-	a = a0;
 
 	update_cursor_position();
 
@@ -211,8 +229,8 @@ void init_mouse()
 
 	v0 = (double)cfg->speed / 1000.0;
 	vf = (double)cfg->max_speed / 1000.0;
-	a0 = (double)cfg->acceleration / 1000000.0;
-	a1 = (double)cfg->accelerator_acceleration / 1000000.0;
-
-	a = a0;
+	va = (double)cfg->accelerator_speed / 1000.0;
+	vd = (double)cfg->decelerator_speed / 1000.0;
+	a = (double)cfg->acceleration / 1000000.0;
+	speed_mod = 0;
 }

@@ -157,9 +157,13 @@ All values which contain more than one key are space delimited.
 
 *acceleration*: Pointer acceleration in pixels/second^2. (default: 700).
 
-*accelerator_acceleration*: Pointer acceleration while the accelerator is depressed. (default: 2900).
+*accelerator_speed*: Pointer speed while the accelerator is depressed. (default: 1600).
+
+*decelerator_speed*: Pointer speed while the decelerator is depressed. (default: 50).
 
 *accelerator*: Increase the speed of the pointer while held. (default: a).
+
+*decelerator*: Decrease the speed of the pointer while held. (default: z).
 
 *buttons*: A space separated list of mouse buttons (2 is middle click). (default: m , .).
 
