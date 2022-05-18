@@ -42,6 +42,10 @@ struct cfg {
 	char	 *down;
 	char	 *up;
 	char	 *right;
+	char	 *up_left;
+	char	 *up_right;
+	char	 *down_left;
+	char	 *down_right;
 	char	 *cursor_color;
 	int	  cursor_size;
 	char	 *top;

@@ -106,6 +106,10 @@ struct cfg *parse_cfg(const char *fname)
 	cfg->down = strdup("j");
 	cfg->up = strdup("k");
 	cfg->right = strdup("l");
+	cfg->up_left = strdup("u");
+	cfg->up_right = strdup("o");
+	cfg->down_left = strdup("m");
+	cfg->down_right = strdup(">");
 	cfg->cursor_color = strdup("#FF4500");
 	cfg->cursor_size = atoi("7");
 	cfg->top = strdup("H");
@@ -208,6 +212,14 @@ struct cfg *parse_cfg(const char *fname)
             cfg->up = strdup(val);
         else if(!strcmp(key, "right"))
             cfg->right = strdup(val);
+        else if(!strcmp(key, "up_left"))
+            cfg->up_left = strdup(val);
+        else if(!strcmp(key, "up_right"))
+            cfg->up_right = strdup(val);
+        else if(!strcmp(key, "down_left"))
+            cfg->down_left = strdup(val);
+        else if(!strcmp(key, "down_right"))
+            cfg->down_right = strdup(val);
         else if(!strcmp(key, "cursor_color"))
             cfg->cursor_color = strdup(val);
         else if(!strcmp(key, "cursor_size"))

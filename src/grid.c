@@ -105,9 +105,10 @@ struct input_event *grid_mode()
 		ev = input_next_event(10);
 		mouse_get_position(NULL, &mx, &my);
 
-
 		if (mouse_process_key(ev, cfg->grid_up, cfg->grid_down,
-				      cfg->grid_left, cfg->grid_right)) {
+				      cfg->grid_left, cfg->grid_right,
+				      NULL, NULL, NULL, NULL
+				      )) {
 			redraw(mx, my, 0);
 			continue;
 		}

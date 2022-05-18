@@ -45,7 +45,9 @@ struct input_event *normal_mode(struct input_event *start_ev)
 		}
 
 		scroll_tick();
-		if (mouse_process_key(ev, cfg->up, cfg->down, cfg->left, cfg->right)) {
+		if (mouse_process_key(ev,
+			cfg->up, cfg->down, cfg->left, cfg->right,
+			cfg->up_left, cfg->up_right, cfg->down_left, cfg->down_right)) {
 			mouse_get_position(&scr, &mx, &my);
 			redraw(scr, mx, my, 0);
 			continue;

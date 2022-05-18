@@ -71,7 +71,9 @@ void toggle_drag();
 
 int mouse_process_key(struct input_event *ev, const char *up_key,
 		      const char *down_key, const char *left_key,
-		      const char *right_key);
+		      const char *right_key, const char *up_left_key,
+		      const char *up_right_key, const char *down_left_key,
+		      const char *down_right_key);
 
 void mouse_reset();
 void mouse_fast();

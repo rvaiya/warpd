@@ -34,6 +34,11 @@ left				string		"h"			"Move the cursor left in normal mode."
 down				string		"j"			"Move the cursor down in normal mode."
 up				string		"k"			"Move the cursor up in normal mode."
 right				string		"l"			"Move the cursor right in normal mode."
+up_left			string		"u"			"Move the cursor up and left simultaneously in normal mode."
+up_right			string		"o"			"Move the cursor up and right simultaneously in normal mode."
+down_left			string		"m"			"Move the cursor down and left simultaneously in normal mode."
+down_right			string		">"			"Move the cursor down and right simultaneously in normal mode."
+
 cursor_color			string		"#FF4500"		"The color of the pointer in normal mode (rgba hex value)."
 cursor_size			int		7			"The height of the pointer in normal mode."
 

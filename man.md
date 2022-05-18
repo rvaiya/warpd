@@ -191,6 +191,14 @@ All values which contain more than one key are space delimited.
 
 *right*: Move the cursor right in normal mode. (default: l).
 
+*up_left*: Move the cursor up and left simultaneously in normal mode. (default: u).
+
+*up_right*: Move the cursor up and right simultaneously in normal mode. (default: o).
+
+*down_left*: Move the cursor down and left simultaneously in normal mode. (default: m).
+
+*down_right*: Move the cursor down and right simultaneously in normal mode. (default: >).
+
 *cursor_color*: The color of the pointer in normal mode (rgba hex value). (default: #FF4500).
 
 *cursor_size*: The height of the pointer in normal mode. (default: 7).
