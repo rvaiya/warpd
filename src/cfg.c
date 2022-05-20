@@ -139,6 +139,9 @@ struct cfg *parse_cfg(const char *fname)
 	cfg->scroll_deceleration = atoi("-3400");
 	cfg->hint_chars = strdup("abcdefghijklmnopqrstuvwxyz");
 	cfg->hint_font = strdup("Arial");
+	cfg->indicator = strdup("none");
+	cfg->indicator_color = strdup("#00ff00");
+	cfg->indicator_size = atoi("12");
 
 	if (!fp)
 		return cfg; // Return defaults if no config file xists..
@@ -274,6 +277,12 @@ struct cfg *parse_cfg(const char *fname)
             cfg->hint_chars = strdup(val);
         else if(!strcmp(key, "hint_font"))
             cfg->hint_font = strdup(val);
+        else if(!strcmp(key, "indicator"))
+            cfg->indicator = strdup(val);
+        else if(!strcmp(key, "indicator_color"))
+            cfg->indicator_color = strdup(val);
+        else if(!strcmp(key, "indicator_size"))
+            cfg->indicator_size = atoi(val);
 
 		free(line);
 		line = NULL;

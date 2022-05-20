@@ -76,6 +76,9 @@ struct cfg {
 	int	  scroll_deceleration;
 	char	 *hint_chars;
 	char	 *hint_font;
+	char	 *indicator;
+	char	 *indicator_color;
+	int	  indicator_size;
 };
 
 struct cfg* parse_cfg(const char *fname);

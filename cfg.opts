@@ -80,3 +80,7 @@ scroll_deceleration		int		-3400			"Scroll deceleration."
 hint_chars			string		"abcdefghijklmnopqrstuvwxyz"	"The character set from which hints are generated. The total number of hints is the square of the size of this string. It may be desirable to increase this for larger screens or trim it to increase gaps between hints."
 
 hint_font			string		"Arial"			"The font name used by hints. Note: This is platform specific, in X it corresponds to a valid xft font name, on macos it corresponds to a postscript name."
+
+indicator			string		"none"			"Specifies an optional visual indicator to be displayed while normal mode is active, must be one of: topright, topleft, bottomright, bottomleft, none"
+indicator_color			string		"#00ff00"		"The color of the visual indicator color."
+indicator_size			int		12			"The size of the visual indicator in pixels."

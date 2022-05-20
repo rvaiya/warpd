@@ -257,6 +257,12 @@ All values which contain more than one key are space delimited.
 
 *hint_font*: The font name used by hints. Note: This is platform specific, in X it corresponds to a valid xft font name, on macos it corresponds to a postscript name. (default: Arial).
 
+*indicator*: Specifies an optional visual indicator to be displayed while normal mode is active, must be one of: topright, topleft, bottomright, bottomleft, none (default: none).
+
+*indicator_color*: The color of the visual indicator color. (default: #00ff00).
+
+*indicator_size*: The size of the visual indicator in pixels. (default: 12).
+
 
 
 # USAGE NOTES

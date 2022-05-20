@@ -76,6 +76,7 @@ static void normalize_dimensions()
 	mouse_get_position(&scr, NULL, NULL);
 	screen_get_dimensions(scr, &sw, &sh);
 
+	cfg->indicator_size = (cfg->indicator_size * sh) / 1080;
 	cfg->speed = (cfg->speed * sh) / 1080;
 	cfg->cursor_size = (cfg->cursor_size * sh) / 1080;
 	cfg->grid_size = (cfg->grid_size * sh) / 1080;

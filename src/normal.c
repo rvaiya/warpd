@@ -6,10 +6,30 @@
 
 #include "warpd.h"
 
-static void redraw(screen_t scr, int x, int y, int force)
+static void redraw(screen_t scr, int x, int y, int hide_cursor)
 {
+	int sw, sh;
+	const int sz = cfg->indicator_size;
+	const char *color = cfg->indicator_color;
+	const int gap = 10;
+
 	screen_clear(scr);
-	screen_draw_box(scr, x+1, y-cfg->cursor_size/2, cfg->cursor_size, cfg->cursor_size, cfg->cursor_color);
+
+	if (!hide_cursor)
+		screen_draw_box(scr, x+1, y-cfg->cursor_size/2,
+				cfg->cursor_size, cfg->cursor_size,
+				cfg->cursor_color);
+
+	screen_get_dimensions(scr, &sw, &sh);
+
+	if (!strcmp(cfg->indicator, "bottomleft"))
+		screen_draw_box(scr, gap, sh-sz-gap, sz, sz, color);
+	else if (!strcmp(cfg->indicator, "topleft"))
+		screen_draw_box(scr, gap, gap, sz, sz, color);
+	else if (!strcmp(cfg->indicator, "topright"))
+		screen_draw_box(scr, sw-sz-gap, gap, sz, sz, color);
+	else if (!strcmp(cfg->indicator, "bottomright"))
+		screen_draw_box(scr, sw-sz-gap, sh-sz-gap, sz, sz, color);
 
 	platform_commit();
 }
@@ -34,7 +54,7 @@ struct input_event *normal_mode(struct input_event *start_ev)
 
 	mouse_hide();
 	mouse_reset();
-	redraw(scr, mx, my, 1);
+	redraw(scr, mx, my, 0);
 
 	while (1) {
 		if (start_ev == NULL) {
@@ -57,14 +77,16 @@ struct input_event *normal_mode(struct input_event *start_ev)
 		mouse_get_position(&scr, &mx, &my);
 
 		if (input_event_eq(ev, cfg->scroll_down)) {
-			screen_clear(scr);
+			redraw(scr, mx, my, 1);
+
 			if (ev->pressed) {
 				scroll_stop();
 				scroll_accelerate(SCROLL_DOWN);
 			} else
 				scroll_decelerate();
 		} else if (input_event_eq(ev, cfg->scroll_up)) {
-			screen_clear(scr);
+			redraw(scr, mx, my, 1);
+
 			if (ev->pressed) {
 				scroll_stop();
 				scroll_accelerate(SCROLL_UP);
