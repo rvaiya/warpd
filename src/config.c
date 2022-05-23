@@ -123,7 +123,7 @@ void parse_config(const char *path)
 			}
 
 			line[ret-1] = 0;
-			delim = index(line, ':');
+			delim = strchr(line, ':');
 
 			if (!delim) {
 				free(line);
