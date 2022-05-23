@@ -58,7 +58,7 @@ macos:
 fmt:
 	find . -name '*.[chm]' ! -name 'cfg.[ch]'|xargs clang-format -i
 man:
-	scdoc < man.md > warpd.1.gz
+	scdoc < man.md | gzip > warpd.1.gz
 clean:
 	-rm $(OBJECTS)
 install:
