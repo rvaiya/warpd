@@ -6,9 +6,10 @@ void screen_selection_mode()
 	size_t n;
 	screen_t screens[MAX_SCREENS];
 	struct input_event *ev;
+	const char *screen_chars = config_get("screen_chars");
 
 	screen_list(screens, &n);
-	assert(strlen(cfg->screen_chars) >= n);
+	assert(strlen(screen_chars) >= n);
 
 	for (i = 0; i < n; i++) {
 		struct hint hint;
@@ -20,7 +21,7 @@ void screen_selection_mode()
 		hint.w = 50;
 		hint.h = 50;
 
-		hint.label[0] = cfg->screen_chars[i];
+		hint.label[0] = screen_chars[i];
 		hint.label[1] = 0;
 
 		hint_draw(screens[i], &hint, 1);
@@ -37,9 +38,9 @@ void screen_selection_mode()
 	input_ungrab_keyboard();
 
 	for (i = 0; i < n; i++) {
-		char s[2] = {cfg->screen_chars[i], 0};
+		const char *key = input_event_tostr(ev);
 
-		if (input_event_eq(ev, s)) {
+		if (key[0] == screen_chars[i] && key[1] == 0) {
 			int w, h;
 			screen_get_dimensions(screens[i], &w, &h);
 			mouse_move(screens[i], w/2, h/2);

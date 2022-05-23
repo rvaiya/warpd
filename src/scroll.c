@@ -5,7 +5,6 @@
  */
 
 #include "warpd.h"
-#include "cfg.h"
 
 #ifdef __APPLE__
 #define factor 1
@@ -16,10 +15,10 @@
 #define fling_velocity (2000.0 / factor);
 
 /* terminal velocity */
-#define vt ((float)cfg->scroll_max_speed / factor)
-#define v0 ((float)cfg->scroll_speed / factor)
-#define da0 ((float)cfg->scroll_deceleration / factor) /* deceleration */
-#define a0 ((float)cfg->scroll_acceleration / factor)
+#define vt ((float)config_get_int("scroll_max_speed") / factor)
+#define v0 ((float)config_get_int("scroll_speed") / factor)
+#define da0 ((float)config_get_int("scroll_deceleration") / factor) /* deceleration */
+#define a0 ((float)config_get_int("scroll_acceleration") / factor)
 
 static long last_tick = 0;
 

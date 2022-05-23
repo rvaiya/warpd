@@ -7,10 +7,13 @@ CFLAGS:=-g\
        -Wall\
        -Wextra\
        -pedantic\
+       -Wno-deprecated-declarations\
        -Wno-unused-parameter\
        -std=c99\
        -DVERSION=\"$(VERSION)\"\
-       -DCOMMIT=\"$(COMMIT)\" $(CFLAGS)
+       -DCOMMIT=\"$(COMMIT)\"\
+       -D_DEFAULT_SOURCE\
+       -D_XOPEN_SOURCE=700 $(CFLAGS)
 
 ifeq ($(PLATFORM), macos)
 	PLATFORM_FLAGS=-framework cocoa
@@ -53,8 +56,8 @@ macos:
 	 lipo -create bin/warpd-x86 bin/warpd-arm -output bin/warpd &&  rm bin/warpd-*
 fmt:
 	find . -name '*.[chm]' ! -name 'cfg.[ch]'|xargs clang-format -i
-assets:
-	./gen_assets.py 
+man:
+	scdoc < man.md > warpd.1.gz
 clean:
 	-rm $(OBJECTS)
 install:

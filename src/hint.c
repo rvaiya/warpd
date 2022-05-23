@@ -33,21 +33,22 @@ size_t generate_hints(screen_t scr, struct hint *hints)
 	int i, j;
 	size_t n = 0;
 
-	const char *chars = cfg->hint_chars;
+	const char *chars = config_get("hint_chars");
 	const int nr = strlen(chars);
 	const int nc = strlen(chars);
 
 	screen_get_dimensions(scr, &sw, &sh);
 
-	/* hint_size corresponds to the percentage of column/row space
+	/* 
+	 * hint_size corresponds to the percentage of column/row space
 	 * taken up by the hints. At the cost of including math.h, one
-	 * could replace cfg->hint-size / 100 by its square root, so
+	 * could replace config_get("hint-size") / 100 by its square root, so
 	 * that hint_size corresponds to the approximate percentage of
 	 * screen area taken up by the hints
 	 */
 
-	const int w = sw / nc * cfg->hint_size / 100;
-	const int h = sh / nr * cfg->hint_size / 100;
+	const int w = sw / nc * config_get_int("hint_size") / 100;
+	const int h = sh / nr * config_get_int("hint_size") / 100;
 
 	const int colgap = sw / nc - w;
 	const int rowgap = sh / nr - h;
@@ -84,8 +85,10 @@ size_t generate_hints(screen_t scr, struct hint *hints)
 
 void init_hint_mode()
 {
-	init_hint(cfg->hint_bgcolor, cfg->hint_fgcolor, cfg->hint_border_radius,
-		  cfg->hint_font);
+	init_hint(config_get("hint_bgcolor"),
+			config_get("hint_fgcolor"),
+			config_get_int("hint_border_radius"),
+			config_get("hint_font"));
 }
 
 int hint_mode()
@@ -114,12 +117,12 @@ int hint_mode()
 
 		len = strlen(buf);
 
-		if (input_event_eq(ev, cfg->hint_exit)) {
+		if (config_input_match(ev, "hint_exit")) {
 			rc = -1;
 			break;
-		} else if (input_event_eq(ev, "C-u")) {
+		} else if (input_eq(ev, "C-u")) {
 			buf[0] = 0;
-		} else if (input_event_eq(ev, "backspace")) {
+		} else if (input_eq(ev, "backspace")) {
 			if (len)
 				buf[len - 1] = 0;
 		} else {

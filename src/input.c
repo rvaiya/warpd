@@ -123,7 +123,7 @@ const char *input_event_tostr(struct input_event *ev)
 	return s;
 }
 
-int input_event_eq(struct input_event *ev, const char *str)
+int input_eq(struct input_event *ev, const char *str)
 {
 	uint8_t mods;
 	struct input_event ev1;

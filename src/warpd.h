@@ -25,10 +25,11 @@
 #endif
 #endif
 
-#include "cfg.h"
 #include "platform.h"
 
 #include <getopt.h>
+#include <sys/types.h>
+#include <unistd.h>
 #include <assert.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -43,8 +44,6 @@
 
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 
-extern struct cfg *cfg;
-
 enum {
 	MODE_RESERVED,
 
@@ -52,6 +51,13 @@ enum {
 	MODE_GRID,
 	MODE_NORMAL,
 	MODE_SCREEN_SELECTION,
+};
+
+struct config_entry {
+	const char *key;
+	const char *value;
+
+	struct config_entry *next;
 };
 
 int hint_mode();
@@ -64,7 +70,9 @@ void init_normal_mode();
 void init_grid_mode();
 
 const char *input_event_tostr(struct input_event *ev);
-int input_event_eq(struct input_event *ev, const char *str);
+int config_input_match(struct input_event *ev, const char *str);
+int input_eq(struct input_event *ev, const char *str);
+int config_input_match_index(struct input_event *ev, const char *config_name);
 int input_parse_string(struct input_event *ev, const char *s);
 
 void toggle_drag();
@@ -88,4 +96,10 @@ void hist_prev();
 void hist_next();
 void init_mouse();
 
+void parse_config(const char *path);
+const char *config_get(const char *key);
+int config_get_int(const char *key);
+void config_print_options();
+
+extern struct config_entry *config;
 #endif

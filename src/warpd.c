@@ -6,7 +6,6 @@
 
 #include "warpd.h"
 
-struct cfg *cfg;
 static int dragging = 0;
 
 void toggle_drag()
@@ -32,13 +31,13 @@ static void activation_loop(int mode)
 		case MODE_NORMAL:
 			ev = normal_mode(ev);
 
-			if (input_event_eq(ev, cfg->hint))
+			if (config_input_match(ev, "hint"))
 				mode = MODE_HINT;
-			else if (input_event_eq(ev, cfg->grid))
+			else if (config_input_match(ev, "grid"))
 				mode = MODE_GRID;
-			else if (input_event_eq(ev, cfg->screen))
+			else if (config_input_match(ev, "screen"))
 				mode = MODE_SCREEN_SELECTION;
-			else if (input_event_eq(ev, cfg->exit) || !ev)
+			else if (config_input_match(ev, "exit") || !ev)
 				goto exit;
 
 			break;
@@ -51,7 +50,7 @@ static void activation_loop(int mode)
 			break;
 		case MODE_GRID:
 			ev = grid_mode();
-			if (input_event_eq(ev, cfg->grid_exit))
+			if (config_input_match(ev, "grid_exit"))
 				ev = NULL;
 			mode = MODE_NORMAL;
 			break;
@@ -68,25 +67,8 @@ exit:
 	return;
 }
 
-static void normalize_dimensions()
-{
-	int sw, sh;
-	screen_t scr;
-
-	mouse_get_position(&scr, NULL, NULL);
-	screen_get_dimensions(scr, &sw, &sh);
-
-	cfg->indicator_size = (cfg->indicator_size * sh) / 1080;
-	cfg->speed = (cfg->speed * sh) / 1080;
-	cfg->cursor_size = (cfg->cursor_size * sh) / 1080;
-	cfg->grid_size = (cfg->grid_size * sh) / 1080;
-	cfg->grid_border_size = (cfg->grid_border_size * sh) / 1080;
-}
-
 static void oneshot_loop()
 {
-	normalize_dimensions();
-
 	init_mouse();
 	init_hint_mode();
 
@@ -95,32 +77,31 @@ static void oneshot_loop()
 
 static void main_loop()
 {
-	normalize_dimensions();
-
 	init_mouse();
 	init_hint_mode();
 
 	struct input_event activation_events[5] = {0};
 
-	input_parse_string(&activation_events[0], cfg->activation_key);
-	input_parse_string(&activation_events[1], cfg->hint_activation_key);
-	input_parse_string(&activation_events[2], cfg->grid_activation_key);
-	input_parse_string(&activation_events[3], cfg->hint_oneshot_key);
-	input_parse_string(&activation_events[4], cfg->screen_activation_key);
+	input_parse_string(&activation_events[0], config_get("activation_key"));
+	input_parse_string(&activation_events[1], config_get("hint_activation_key"));
+	input_parse_string(&activation_events[2], config_get("grid_activation_key"));
+	input_parse_string(&activation_events[3], config_get("hint_oneshot_key"));
+	input_parse_string(&activation_events[4], config_get("screen_activation_key"));
 
 	while (1) {
 		int mode = 0;
-		struct input_event *ev = input_wait(activation_events, sizeof(activation_events)/sizeof(activation_events[0]));
+		struct input_event *ev = input_wait(activation_events,
+						sizeof(activation_events)/sizeof(activation_events[0]));
 
-		if (input_event_eq(ev, cfg->activation_key))
+		if (config_input_match(ev, "activation_key"))
 			mode = MODE_NORMAL;
-		else if (input_event_eq(ev, cfg->grid_activation_key))
+		else if (config_input_match(ev, "grid_activation_key"))
 			mode = MODE_GRID;
-		else if (input_event_eq(ev, cfg->hint_activation_key))
+		else if (config_input_match(ev, "hint_activation_key"))
 			mode = MODE_HINT;
-		else if (input_event_eq(ev, cfg->screen_activation_key))
+		else if (config_input_match(ev, "screen_activation_key"))
 			mode = MODE_SCREEN_SELECTION;
-		else if (input_event_eq(ev, cfg->hint_oneshot_key)) {
+		else if (config_input_match(ev, "hint_oneshot_key")) {
 			hint_mode();
 			continue;
 		}
@@ -209,6 +190,9 @@ static void print_usage()
 		"  -h, --help                  Print this help message.\n"
 		"  -v, --version               Print the version and exit.\n"
 		"  -c, --config <config file>  Use the supplied config file.\n"
+		"  -l, --list-keys             Print all valid keys.\n"
+		"  --list-options              Print all available config options.\n"
+
 		"  --hint                      Start warpd in hint mode and exit after the end of the session.\n"
 		"  --normal                    Start warpd in normal mode and exit after the end of the session.\n"
 		"  --grid                      Start warpd in hint grid and exit after the end of the session.\n"
@@ -228,6 +212,8 @@ int main(int argc, char *argv[])
 	int foreground = 0;
 	const char *config_path = get_config_path();
 
+	parse_config(config_path);
+
 	struct option opts[] = {
 		{"version", no_argument, NULL, 'v'},
 		{"help", no_argument, NULL, 'h'},
@@ -238,6 +224,7 @@ int main(int argc, char *argv[])
 		{"hint", no_argument, NULL, 257},
 		{"grid", no_argument, NULL, 258},
 		{"normal", no_argument, NULL, 259},
+		{"list-options", no_argument, NULL, 260},
 		{0}
 	};
 
@@ -268,13 +255,14 @@ int main(int argc, char *argv[])
 			case 259:
 				oneshot_mode = MODE_NORMAL;
 				break;
-
+			case 260:
+				config_print_options();
+				return 0;
 			case '?':
 				return -1;
 		}
 	}
 
-	cfg = parse_cfg(config_path);
 	lock();
 
 	if (oneshot_mode) {

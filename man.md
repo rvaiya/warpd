@@ -13,6 +13,7 @@ warpd [options]
 	*-f*, *--foreground*: Run warpd in the foreground. Mainly useful for debugging.
 
 	*-l*, *--list-keys*: Print a list of valid keys which can be used as config values.
+	*--list-options*: Print all configurable options.
 
 	*-v*, *--version*: Print the current version.
 
@@ -39,10 +40,7 @@ large body of text, it may be desirable to activate grid (_g_) or hint (_x_)
 mode for a second time to warp the pointer to the desired region's terminal
 point.  
 
-See _CONFIG_OPTIONS_ for a comprehensive list of keys and their corresponding
-configuration options (see also _USAGE_NOTES_).
-
-A description of each mode follows:
+A description of each mode follows (see also _USAGE_NOTES_):
 
 ## Normal Mode (A-M-c)
 
@@ -51,8 +49,8 @@ is designed for short distance pointer manipulation. It is particularly useful
 for manipulating popup menus and selecting text (see _Dragging_). The default
 behaviour is vi-like. Pressing the mapped directional keys (default hjkl) moves
 the cursor in a continuous fashion, but the pointer can also be warped to the edges
-of the screen using the home (_H_), middle (_M_), and last (_L_) mappings (see
-_CONFIG OPTIONS_). Finally, a numeric multiplier can be supplied to the
+of the screen using the home (_H_), middle (_M_), and last (_L_) mappings.
+Finally, a numeric multiplier can be supplied to the
 directional keys as an input prefix in order to move the cursor by a
 proportional increment in the given direction (e.g 10j moves 10 units down). 
 
@@ -131,139 +129,18 @@ draw operations to improve performance.
 
 # CONFIG OPTIONS
 
-The following configuration options can be placed in *~/.config/warpd/config*
-to modify the behaviour of the program. Each option must be specified on its
-own line and have the format:
+The program can be modified by placing configuration options in 
+*~/.config/warpd/config*, a complete list of which can be obtained
+with _--list-options_.
+
+Each option must be specified on its own line and have the format:
 
 <option>: <value>
 
-All values which contain more than one key are space delimited.
-
-*hint_activation_key*: Activates hint mode. (default: A-M-x).
-
-*grid_activation_key*: Activates grid mode and allows for further manipulation of the pointer using the mapped keys. (default: A-M-g).
-
-*screen_activation_key*: Activate (s)creen selection mode. (default: A-M-s).
-
-*activation_key*: Activate normal movement mode (manual (c)ursor movement). (default: A-M-c).
-
-*hint_oneshot_key*: Activate hint mode and exit upon selection. (default: A-M-l).
-
-*repeat_interval*: The number of milliseconds before repeating a movement event. (default: 20).
-
-*speed*: Pointer speed in pixels/second. (default: 220).
-
-*max_speed*: The maximum pointer speed. (default: 1600).
-
-*acceleration*: Pointer acceleration in pixels/second^2. (default: 700).
-
-*accelerator_acceleration*: Pointer acceleration while the accelerator is depressed. (default: 2900).
-
-*accelerator*: Increase the speed of the pointer while held. (default: a).
-
-*buttons*: A space separated list of mouse buttons (2 is middle click). (default: m , .).
-
-*oneshot_buttons*: Oneshot mouse buttons (deactivate on click). (default: n - /).
-
-*oneshot_timeout*: The length of time in milliseconds to wait for a second click after a oneshot key has been pressed. (default: 300).
-
-*grid_exit*: Exit grid mode and return to normal mode. (default: c).
-
-*hint_exit*: The exit key used for hint mode. (default: esc).
-
-*exit*: Exit the currently active warpd session. (default: esc).
-
-*drag*: Toggle drag mode (mneominc (v)isual mode). (default: v).
-
-*copy_and_exit*: Send the copy key and exit (useful in combination with v). (default: c).
-
-*hint*: Activate hint mode while in normal mode (mnemonic: x marks the spot?). (default: x).
-
-*grid*: Activate (g)rid mode while in normal mode. (default: g).
-
-*screen*: Activate (s)creen selection while in normal mode. (default: s).
-
-*left*: Move the cursor left in normal mode. (default: h).
-
-*down*: Move the cursor down in normal mode. (default: j).
-
-*up*: Move the cursor up in normal mode. (default: k).
-
-*right*: Move the cursor right in normal mode. (default: l).
-
-*cursor_color*: The color of the pointer in normal mode (rgba hex value). (default: #FF4500).
-
-*cursor_size*: The height of the pointer in normal mode. (default: 7).
-
-*top*: Moves the cursor to the top of the screen in normal mode. (default: H).
-
-*middle*: Moves the cursor to the middle of the screen in normal mode. (default: M).
-
-*bottom*: Moves the cursor to the bottom of the screen in normal mode. (default: L).
-
-*start*: Moves the cursor to the leftmost corner of the screen in normal mode. (default: 0).
-
-*end*: Moves the cursor to the rightmost corner of the screen in normal mode. (default: $).
-
-*hist_back*: Move to the last position in the history stack. (default: C-o).
-
-*hist_forward*: Move to the next position in the history stack. (default: C-i).
-
-*grid_nr*: The number of rows in the grid. (default: 2).
-
-*grid_nc*: The number of columns in the grid. (default: 2).
-
-*grid_up*: Move the grid up. (default: w).
-
-*grid_left*: Move the grid left. (default: a).
-
-*grid_down*: Move the grid down. (default: s).
-
-*grid_right*: Move the grid right. (default: d).
-
-*grid_keys*: A sequence of comma delimited keybindings which are ordered bookwise with respect to grid position. (default: u i j k).
-
-*grid_color*: The color of the grid. (default: #1c1c1e).
-
-*grid_size*: The thickness of grid lines in pixels. (default: 4).
-
-*grid_border_size*: The thickness of the grid border in pixels. (default: 0).
-
-*grid_border_color*: The color of the grid border. (default: #ffffff).
-
-*hint_size*: An integer between 1 and 100 corresponding to the approximate percentage of screen width/height used by the widths/heights of all drawn hints in a row/column. The default value results in the drawn hints covering approximately 50% (the square of 71%) of total screen area. (default: 71).
-
-*hint_bgcolor*: The background hint color. (default: #1c1c1e).
-
-*hint_fgcolor*: The foreground hint color. (default: #a1aba7).
-
-*hint_border_radius*: Border radius. (default: 3).
-
-*scroll_down*: Scroll down key. (default: e).
-
-*scroll_up*: Scroll up key. (default: r).
-
-*screen_chars*: The characters used for screen selection. (default: jkl;asdfg).
-
-*scroll_speed*: Initial scroll speed in units/second (unit varies by platform). (default: 300).
-
-*scroll_max_speed*: Maximum scroll speed. (default: 9000).
-
-*scroll_acceleration*: Scroll acceleration in units/second^2. (default: 1600).
-
-*scroll_deceleration*: Scroll deceleration. (default: -3400).
-
-*hint_chars*: The character set from which hints are generated. The total number of hints is the square of the size of this string. It may be desirable to increase this for larger screens or trim it to increase gaps between hints. (default: abcdefghijklmnopqrstuvwxyz).
-
-*hint_font*: The font name used by hints. Note: This is platform specific, in X it corresponds to a valid xft font name, on macos it corresponds to a postscript name. (default: Arial).
-
-*indicator*: Specifies an optional visual indicator to be displayed while normal mode is active, must be one of: topright, topleft, bottomright, bottomleft, none (default: none).
-
-*indicator_color*: The color of the visual indicator color. (default: #00ff00).
-
-*indicator_size*: The size of the visual indicator in pixels. (default: 12).
-
-
+Options which accept multiple keys (e.g _grid_keys_) expect each key to
+be separated by a space. Options which accept one or more keys
+may be specified mulitple times, in which case all supplied mappings
+are interchangeable.
 
 # USAGE NOTES
 
@@ -276,7 +153,7 @@ active.
 Developing facility with the scroll and oneshot mouse buttons is key to
 achieving this. For example, if you happen to have two documents open and wish
 to switch between them, you can simply type _x fx_ (where _fx_ is a hint) if
-normal mode is active. Scrolling can subsequently be achieved using _e_ and
+normal mode is already active. Scrolling can subsequently be achieved using _e_ and
 _r_. Once you finally wish to type something, you can do _x fx n_ to focus on
 the UI element, click, and exit.
 

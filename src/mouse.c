@@ -29,6 +29,8 @@ static double cy = 0;
 static double v = 0;
 static int opnum = 0;
 
+static int cursor_size;
+
 static long get_time_us()
 {
 	struct timespec ts;
@@ -71,9 +73,9 @@ static void tick()
 	const double dx = right - left;
 	const double dy = down - up;
 
-	const int maxx = sw - cfg->cursor_size;
-	const int maxy = sh - cfg->cursor_size/2;
-	const int miny = cfg->cursor_size/2;
+	const int maxx = sw - cursor_size;
+	const int maxy = sh - cursor_size/2;
+	const int miny = cursor_size/2;
 	const int minx = 1;
 
 
@@ -139,16 +141,16 @@ int mouse_process_key(struct input_event *ev,
 			return 1;
 	}
 
-	if (input_event_eq(ev, down_key)) {
+	if (config_input_match(ev, down_key)) {
 		down = ev->pressed;
 		ret = 1;
-	} else if (input_event_eq(ev, left_key)) {
+	} else if (config_input_match(ev, left_key)) {
 		left = ev->pressed;
 		ret = 1;
-	} else if (input_event_eq(ev, right_key)) {
+	} else if (config_input_match(ev, right_key)) {
 		right = ev->pressed;
 		ret = 1;
-	} else if (input_event_eq(ev, up_key)) {
+	} else if (config_input_match(ev, up_key)) {
 		up = ev->pressed;
 		ret = 1;
 	}
@@ -209,10 +211,12 @@ void init_mouse()
 
 	/* pixels/ms */
 
-	v0 = (double)cfg->speed / 1000.0;
-	vf = (double)cfg->max_speed / 1000.0;
-	a0 = (double)cfg->acceleration / 1000000.0;
-	a1 = (double)cfg->accelerator_acceleration / 1000000.0;
+	cursor_size = (config_get_int("cursor_size") * sh) / 1080;
+
+	v0 = (double)config_get_int("speed") / 1000.0;
+	vf = (double)config_get_int("max_speed") / 1000.0;
+	a0 = (double)config_get_int("acceleration") / 1000000.0;
+	a1 = (double)config_get_int("accelerator_acceleration") / 1000000.0;
 
 	a = a0;
 }
