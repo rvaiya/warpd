@@ -9,7 +9,7 @@
 { "decelerator_speed", "50", "Pointer speed while decelerator is depressed." },
 { "acceleration", "700", "Pointer acceleration in pixels/second^2." },
 { "accelerator_acceleration", "2900", "Pointer acceleration while the accelerator is depressed." },
-{ "accelerator", "a", "Increase the speed of the pointer while held." },
+{ "accelerator", "a", "Increase the acceleration of the pointer while held." },
 { "decelerator", "d", "Decrease the speed of the pointer while held." },
 { "buttons", "m , .",  "A space separated list of mouse buttons (2 is middle click)." },
 { "oneshot_buttons", "n - /", "Oneshot mouse buttons (deactivate on click)." },
