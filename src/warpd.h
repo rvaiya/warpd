@@ -82,6 +82,7 @@ int mouse_process_key(struct input_event *ev, const char *up_key,
 
 void mouse_reset();
 void mouse_fast();
+void mouse_normal();
 void mouse_slow();
 
 void scroll_tick();

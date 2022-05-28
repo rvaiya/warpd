@@ -102,7 +102,12 @@ struct input_event *normal_mode(struct input_event *start_ev)
 			if (ev->pressed)
 				mouse_fast();
 			else
+				mouse_normal();
+		} else if (config_input_match(ev, "decelerator")) {
+			if (ev->pressed)
 				mouse_slow();
+			else
+				mouse_normal();
 		} else if (!ev->pressed) {
 			goto next;
 		}

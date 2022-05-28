@@ -9,7 +9,7 @@
 
 /* constants */
 
-static double v0, vf, a, a0, a1;
+static double v0, vf, vd, a, a0, a1;
 static int inc = 0;
 static int sw, sh;
 
@@ -185,10 +185,16 @@ void mouse_fast()
 	a = a1;
 }
 
-void mouse_slow()
+void mouse_normal()
 {
 	v = v0;
 	a = a0;
+}
+
+void mouse_slow()
+{
+	v = vd;
+	a = 0;
 }
 
 void mouse_reset()
@@ -199,6 +205,7 @@ void mouse_reset()
 	up = 0;
 	down = 0;
 	a = a0;
+	v = v0;
 
 	update_cursor_position();
 
@@ -215,6 +222,7 @@ void init_mouse()
 
 	v0 = (double)config_get_int("speed") / 1000.0;
 	vf = (double)config_get_int("max_speed") / 1000.0;
+	vd = (double)config_get_int("decelerator_speed") / 1000.0;
 	a0 = (double)config_get_int("acceleration") / 1000000.0;
 	a1 = (double)config_get_int("accelerator_acceleration") / 1000000.0;
 
