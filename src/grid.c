@@ -113,7 +113,7 @@ struct input_event *grid_mode()
 		if (!ev || !ev->pressed)
 			continue;
 
-		if ((idx = config_input_match(ev, "grid_keys")) && idx <= nc * nr) {
+		if ((idx = config_input_match(ev, "grid_keys", 1)) && idx <= nc * nr) {
 			my = (my - grid_height / 2) + (grid_height / nr) * ((idx-1) / nc);
 			mx = (mx - grid_width / 2) + (grid_width / nc) * ((idx-1) % nc);
 
@@ -126,15 +126,15 @@ struct input_event *grid_mode()
 			redraw(mx, my, 0);
 		}
 
-		if (config_input_match(ev, "buttons") ||
-			config_input_match(ev, "oneshot_buttons"))
+		if (config_input_match(ev, "buttons", 0) ||
+			config_input_match(ev, "oneshot_buttons", 0))
 			goto exit;
 
-		if (config_input_match(ev, "grid") ||
-		    config_input_match(ev, "hint") ||
-		    config_input_match(ev, "exit") ||
-		    config_input_match(ev, "drag") ||
-		    config_input_match(ev, "grid_exit"))
+		if (config_input_match(ev, "grid", 1) ||
+		    config_input_match(ev, "hint", 1) ||
+		    config_input_match(ev, "exit", 1) ||
+		    config_input_match(ev, "drag", 1) ||
+		    config_input_match(ev, "grid_exit", 1))
 			goto exit;
 
 		redraw(mx, my, 0);

@@ -123,7 +123,7 @@ const char *input_event_tostr(struct input_event *ev)
 	return s;
 }
 
-int input_eq(struct input_event *ev, const char *str)
+int input_eq(struct input_event *ev, const char *str, int strict)
 {
 	uint8_t mods;
 	struct input_event ev1;
@@ -146,5 +146,5 @@ int input_eq(struct input_event *ev, const char *str)
 	if (input_parse_string(&ev1, str) < 0)
 		return 0;
 
-	return ev1.code == ev->code && ev1.mods == mods;
+	return ev1.code == ev->code && (!strict || ev1.mods == mods);
 }

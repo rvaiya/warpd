@@ -82,7 +82,7 @@ struct input_event *normal_mode(struct input_event *start_ev)
 
 		mouse_get_position(&scr, &mx, &my);
 
-		if (config_input_match(ev, "scroll_down")) {
+		if (config_input_match(ev, "scroll_down", 1)) {
 			redraw(scr, mx, my, 1);
 
 			if (ev->pressed) {
@@ -90,7 +90,7 @@ struct input_event *normal_mode(struct input_event *start_ev)
 				scroll_accelerate(SCROLL_DOWN);
 			} else
 				scroll_decelerate();
-		} else if (config_input_match(ev, "scroll_up")) {
+		} else if (config_input_match(ev, "scroll_up", 1)) {
 			redraw(scr, mx, my, 1);
 
 			if (ev->pressed) {
@@ -98,12 +98,12 @@ struct input_event *normal_mode(struct input_event *start_ev)
 				scroll_accelerate(SCROLL_UP);
 			} else
 				scroll_decelerate();
-		} else if (config_input_match(ev, "accelerator")) {
+		} else if (config_input_match(ev, "accelerator", 1)) {
 			if (ev->pressed)
 				mouse_fast();
 			else
 				mouse_normal();
-		} else if (config_input_match(ev, "decelerator")) {
+		} else if (config_input_match(ev, "decelerator", 1)) {
 			if (ev->pressed)
 				mouse_slow();
 			else
@@ -112,45 +112,45 @@ struct input_event *normal_mode(struct input_event *start_ev)
 			goto next;
 		}
 
-		if (config_input_match(ev, "top"))
+		if (config_input_match(ev, "top", 1))
 			move(scr, mx, cursz / 2);
-		else if (config_input_match(ev, "bottom"))
+		else if (config_input_match(ev, "bottom", 1))
 			move(scr, mx, sh - cursz / 2);
-		else if (config_input_match(ev, "middle"))
+		else if (config_input_match(ev, "middle", 1))
 			move(scr, mx, sh / 2);
-		else if (config_input_match(ev, "start"))
+		else if (config_input_match(ev, "start", 1))
 			move(scr, 1, my);
-		else if (config_input_match(ev, "end"))
+		else if (config_input_match(ev, "end", 1))
 			move(scr, sw - cursz, my);
-		else if (config_input_match(ev, "hist_back")) {
+		else if (config_input_match(ev, "hist_back", 1)) {
 			hist_add(mx, my);
 			hist_prev();
 			hist_get(&mx, &my);
 
 			move(scr, mx, my);
-		} else if (config_input_match(ev, "hist_forward")) {
+		} else if (config_input_match(ev, "hist_forward", 1)) {
 			hist_next();
 			hist_get(&mx, &my);
 
 			move(scr, mx, my);
-		} else if (config_input_match(ev, "drag")) {
+		} else if (config_input_match(ev, "drag", 1)) {
 			toggle_drag();
-		} else if (config_input_match(ev, "copy_and_exit")) {
+		} else if (config_input_match(ev, "copy_and_exit", 1)) {
 			copy_selection();
 			ev = NULL;
 			goto exit;
-		} else if (config_input_match(ev, "exit") ||
-			   config_input_match(ev, "grid") ||
-			   config_input_match(ev, "screen") ||
-			   config_input_match(ev, "hint")) {
+		} else if (config_input_match(ev, "exit", 1) ||
+			   config_input_match(ev, "grid", 1) ||
+			   config_input_match(ev, "screen", 1) ||
+			   config_input_match(ev, "hint", 1)) {
 			goto exit;
 		} else { /* Mouse Buttons. */
 			int btn;
 
-			if ((btn = config_input_match(ev, "buttons"))) {
+			if ((btn = config_input_match(ev, "buttons", 0))) {
 				hist_add(mx, my);
 				mouse_click(btn);
-			} else if ((btn = config_input_match(ev, "oneshot_buttons"))) {
+			} else if ((btn = config_input_match(ev, "oneshot_buttons", 0))) {
 				hist_add(mx, my);
 				mouse_click(btn);
 
@@ -160,7 +160,7 @@ struct input_event *normal_mode(struct input_event *start_ev)
 				while (timeleft--) {
 					struct input_event *ev = input_next_event(1);
 					if (ev && ev->pressed && 
-						config_input_match(ev, "oneshot_buttons")) {
+						config_input_match(ev, "oneshot_buttons", 0)) {
 						mouse_click(btn);
 						timeleft = timeout;
 					}

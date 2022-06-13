@@ -159,7 +159,7 @@ void parse_config(const char *path)
  * (if any).
  */
 
-int config_input_match(struct input_event *ev, const char *config_key)
+int config_input_match(struct input_event *ev, const char *config_key, int strict)
 {
 	char *tok;
 	struct config_entry *ent;
@@ -171,7 +171,7 @@ int config_input_match(struct input_event *ev, const char *config_key)
 			snprintf(buf, sizeof buf, "%s", ent->value);
 
 			for (tok = strtok(buf, " "); tok; tok = strtok(NULL, " ")) {
-				if (input_eq(ev, tok))
+				if (input_eq(ev, tok, strict))
 					return i;
 				i++;
 			}

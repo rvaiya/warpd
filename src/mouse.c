@@ -141,16 +141,16 @@ int mouse_process_key(struct input_event *ev,
 			return 1;
 	}
 
-	if (config_input_match(ev, down_key)) {
+	if (config_input_match(ev, down_key, 1)) {
 		down = ev->pressed;
 		ret = 1;
-	} else if (config_input_match(ev, left_key)) {
+	} else if (config_input_match(ev, left_key, 1)) {
 		left = ev->pressed;
 		ret = 1;
-	} else if (config_input_match(ev, right_key)) {
+	} else if (config_input_match(ev, right_key, 1)) {
 		right = ev->pressed;
 		ret = 1;
-	} else if (config_input_match(ev, up_key)) {
+	} else if (config_input_match(ev, up_key, 1)) {
 		up = ev->pressed;
 		ret = 1;
 	}

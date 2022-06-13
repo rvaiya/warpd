@@ -31,13 +31,13 @@ static void activation_loop(int mode)
 		case MODE_NORMAL:
 			ev = normal_mode(ev);
 
-			if (config_input_match(ev, "hint"))
+			if (config_input_match(ev, "hint", 1))
 				mode = MODE_HINT;
-			else if (config_input_match(ev, "grid"))
+			else if (config_input_match(ev, "grid", 1))
 				mode = MODE_GRID;
-			else if (config_input_match(ev, "screen"))
+			else if (config_input_match(ev, "screen", 1))
 				mode = MODE_SCREEN_SELECTION;
-			else if (config_input_match(ev, "exit") || !ev)
+			else if (config_input_match(ev, "exit", 1) || !ev)
 				goto exit;
 
 			break;
@@ -50,7 +50,7 @@ static void activation_loop(int mode)
 			break;
 		case MODE_GRID:
 			ev = grid_mode();
-			if (config_input_match(ev, "grid_exit"))
+			if (config_input_match(ev, "grid_exit", 1))
 				ev = NULL;
 			mode = MODE_NORMAL;
 			break;
@@ -93,15 +93,15 @@ static void main_loop()
 		struct input_event *ev = input_wait(activation_events,
 						sizeof(activation_events)/sizeof(activation_events[0]));
 
-		if (config_input_match(ev, "activation_key"))
+		if (config_input_match(ev, "activation_key", 1))
 			mode = MODE_NORMAL;
-		else if (config_input_match(ev, "grid_activation_key"))
+		else if (config_input_match(ev, "grid_activation_key", 1))
 			mode = MODE_GRID;
-		else if (config_input_match(ev, "hint_activation_key"))
+		else if (config_input_match(ev, "hint_activation_key", 1))
 			mode = MODE_HINT;
-		else if (config_input_match(ev, "screen_activation_key"))
+		else if (config_input_match(ev, "screen_activation_key", 1))
 			mode = MODE_SCREEN_SELECTION;
-		else if (config_input_match(ev, "hint_oneshot_key")) {
+		else if (config_input_match(ev, "hint_oneshot_key", 1)) {
 			hint_mode();
 			continue;
 		}

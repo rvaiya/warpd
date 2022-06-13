@@ -117,12 +117,12 @@ int hint_mode()
 
 		len = strlen(buf);
 
-		if (config_input_match(ev, "hint_exit")) {
+		if (config_input_match(ev, "hint_exit", 1)) {
 			rc = -1;
 			break;
-		} else if (input_eq(ev, "C-u")) {
+		} else if (input_eq(ev, "C-u", 1)) {
 			buf[0] = 0;
-		} else if (input_eq(ev, "backspace")) {
+		} else if (input_eq(ev, "backspace", 1)) {
 			if (len)
 				buf[len - 1] = 0;
 		} else {
