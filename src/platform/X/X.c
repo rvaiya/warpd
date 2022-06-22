@@ -91,7 +91,7 @@ static void set_opacity(Display *dpy, Window w, uint8_t _opacity)
 			(unsigned char *)&opacity, 1L);
 }
 
-void copy_selection()
+void platform_copy_selection()
 {
 	XTestFakeKeyEvent(dpy, XKeysymToKeycode(dpy, XK_Control_L), True,
 			  CurrentTime);
@@ -107,7 +107,7 @@ void copy_selection()
 	system("xclip -o|xclip -selection CLIPBOARD");
 }
 
-void scroll(int direction)
+void platform_scroll(int direction)
 {
 	int btn = 0;
 

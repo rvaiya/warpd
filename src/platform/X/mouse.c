@@ -2,19 +2,19 @@
 
 static int hidden = 0;
 
-void mouse_up(int btn)
+void platform_mouse_up(int btn)
 {
 	XTestFakeButtonEvent(dpy, btn, False, CurrentTime);
 	XSync(dpy, False);
 }
 
-void mouse_down(int btn)
+void platform_mouse_down(int btn)
 {
 	XTestFakeButtonEvent(dpy, btn, True, CurrentTime);
 	XSync(dpy, False);
 }
 
-void mouse_click(int btn)
+void platform_mouse_click(int btn)
 {
 	if (active_mods & MOD_SHIFT)
 		XTestFakeKeyEvent(dpy, XKeysymToKeycode(dpy, XK_Shift_L), 1, CurrentTime);
@@ -44,7 +44,7 @@ void mouse_click(int btn)
 	XSync(dpy, False);
 }
 
-void mouse_move(struct screen *scr, int x, int y)
+void platform_mouse_move(struct screen *scr, int x, int y)
 {
 	XTestFakeMotionEvent(dpy,
 			     DefaultScreen(dpy),
@@ -53,7 +53,7 @@ void mouse_move(struct screen *scr, int x, int y)
 	XSync(dpy, False);
 }
 
-void mouse_get_position(struct screen **_scr, int *_x, int *_y)
+void platform_mouse_get_position(struct screen **_scr, int *_x, int *_y)
 {
 	size_t i;
 	Window chld, root;
@@ -86,7 +86,7 @@ void mouse_get_position(struct screen **_scr, int *_x, int *_y)
 	assert(0);
 }
 
-void mouse_hide()
+void platform_mouse_hide()
 {
 	if (hidden)
 		return;
@@ -96,7 +96,7 @@ void mouse_hide()
 	hidden = 1;
 }
 
-void mouse_show()
+void platform_mouse_show()
 {
 	if (!hidden)
 		return;

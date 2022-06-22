@@ -64,7 +64,7 @@ void scroll_tick()
 	}
 
 	for (i = 0; i < (long)d - traveled; i++)
-		scroll(direction);
+		platform_scroll(direction);
 
 	traveled = (long)d;
 }

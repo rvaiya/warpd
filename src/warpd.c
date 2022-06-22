@@ -13,9 +13,9 @@ void toggle_drag()
 	dragging = !dragging;
 
 	if (dragging)
-		mouse_down(1);
+		platform_mouse_down(1);
 	else
-		mouse_up(1);
+		platform_mouse_up(1);
 }
 
 static int oneshot_mode;
@@ -90,7 +90,7 @@ static void main_loop()
 
 	while (1) {
 		int mode = 0;
-		struct input_event *ev = input_wait(activation_events,
+		struct input_event *ev = platform_input_wait(activation_events,
 						sizeof(activation_events)/sizeof(activation_events[0]));
 
 		if (config_input_match(ev, "activation_key", 1))
@@ -175,7 +175,7 @@ static void print_keys_loop()
 {
 	size_t i;
 	for (i = 0; i < 256; i++) {
-		const char *name = input_lookup_name(i);
+		const char *name = platform_input_lookup_name(i);
 
 		if (name && name[0])
 			printf("%s\n", name);

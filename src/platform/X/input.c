@@ -222,7 +222,7 @@ static void xgrab_key(uint8_t code, uint8_t mods)
 	XSetErrorHandler(NULL);
 }
 
-void input_grab_keyboard()
+void platform_input_grab_keyboard()
 {
 	int i, n;
 	XIDeviceInfo *devices;
@@ -254,7 +254,7 @@ void input_grab_keyboard()
 	XSync(dpy, False);
 }
 
-void input_ungrab_keyboard()
+void platform_input_ungrab_keyboard()
 {
 	int i;
 
@@ -310,7 +310,7 @@ uint8_t xmods_to_mods(int xmods)
 }
 
 /* returns 0 on timeout. */
-struct input_event *input_next_event(int timeout)
+struct input_event *platform_input_next_event(int timeout)
 {
 	static struct input_event ev;
 
@@ -353,7 +353,7 @@ struct input_event *input_next_event(int timeout)
 	}
 }
 
-struct input_event *input_wait(struct input_event *events, size_t sz)
+struct input_event *platform_input_wait(struct input_event *events, size_t sz)
 {
 	size_t i;
 	static struct input_event ev;
@@ -371,13 +371,13 @@ struct input_event *input_wait(struct input_event *events, size_t sz)
 			ev.mods = xmods_to_mods(xev->xkey.state);
 			ev.pressed = xev->type == KeyPress;
 
-			input_grab_keyboard();
+			platform_input_grab_keyboard();
 			return &ev;
 		}
 	}
 }
 
-uint8_t input_lookup_code(const char *name)
+uint8_t platform_input_lookup_code(const char *name)
 {
 	size_t code = 0;
 
@@ -391,7 +391,7 @@ uint8_t input_lookup_code(const char *name)
 	return 0;
 }
 
-const char *input_lookup_name(uint8_t code)
+const char *platform_input_lookup_name(uint8_t code)
 {
 	return keynames[code];
 }

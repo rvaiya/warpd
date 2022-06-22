@@ -49,42 +49,42 @@ void start_main_loop(void (*init)(void));
 
 /* Input */
 
-void input_grab_keyboard();
-void input_ungrab_keyboard();
+void platform_input_grab_keyboard();
+void platform_input_ungrab_keyboard();
 
-struct input_event *input_next_event(int timeout);
-uint8_t input_lookup_code(const char *name);
-const char *input_lookup_name(uint8_t name);
+struct input_event *platform_input_next_event(int timeout);
+uint8_t platform_input_lookup_code(const char *name);
+const char *platform_input_lookup_name(uint8_t name);
 
 /*
  * Efficiently listen for one or more input events before
  * grabbing the keyboard (including the event itself)
  * and returning the matched event.
  */
-struct input_event *input_wait(struct input_event *events, size_t sz);
+struct input_event *platform_input_wait(struct input_event *events, size_t sz);
 
-void mouse_move(screen_t scr, int x, int y);
-void mouse_down(int btn);
+void platform_mouse_move(screen_t scr, int x, int y);
+void platform_mouse_down(int btn);
 
-void mouse_up(int btn);
-void mouse_click(int btn);
-void mouse_get_position(screen_t *scr, int *x, int *y);
-void mouse_show();
-void mouse_hide();
+void platform_mouse_up(int btn);
+void platform_mouse_click(int btn);
+void platform_mouse_get_position(screen_t *scr, int *x, int *y);
+void platform_mouse_show();
+void platform_mouse_hide();
 
-void screen_get_dimensions(screen_t scr, int *w, int *h);
-void screen_draw_box(screen_t scr, int x, int y, int w, int h, const char *color);
-void screen_clear(screen_t scr);
-void screen_list(screen_t scr[MAX_SCREENS], size_t *n);
+void platform_screen_get_dimensions(screen_t scr, int *w, int *h);
+void platform_screen_draw_box(screen_t scr, int x, int y, int w, int h, const char *color);
+void platform_screen_clear(screen_t scr);
+void platform_screen_list(screen_t scr[MAX_SCREENS], size_t *n);
 
-void init_hint(const char *bg, const char *fg, int border_radius, const char *font_family);
+void platform_init_hint(const char *bg, const char *fg, int border_radius, const char *font_family);
 
 /* Hints are centered around the provided x,y coordinates. */
-void hint_draw(struct screen *scr, struct hint *hints, size_t n);
+void platform_hint_draw(struct screen *scr, struct hint *hints, size_t n);
 
-void scroll(int direction);
+void platform_scroll(int direction);
 
-void copy_selection();
+void platform_copy_selection();
 
 /*
 * Draw operations may (or may not) be queued until this function

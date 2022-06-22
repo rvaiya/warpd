@@ -40,7 +40,7 @@ static long get_time_us()
 
 static int tonum(uint8_t code)
 {
-	const char *name = input_lookup_name(code);
+	const char *name = platform_input_lookup_name(code);
 
 	if (!name)
 		return -1;
@@ -55,8 +55,8 @@ static void update_cursor_position()
 {
 	int ix, iy;
 
-	mouse_get_position(&scr, &ix, &iy);
-	screen_get_dimensions(scr, &sw, &sh);
+	platform_mouse_get_position(&scr, &ix, &iy);
+	platform_screen_get_dimensions(scr, &sw, &sh);
 
 	cx = (double)ix;
 	cy = (double)iy;
@@ -102,7 +102,7 @@ static void tick()
 	cy = cy > maxy ? maxy : cy;
 	cx = cx > maxx ? maxx : cx;
 
-	mouse_move(scr, cx, cy);
+	platform_mouse_move(scr, cx, cy);
 }
 
 /*
@@ -164,7 +164,7 @@ int mouse_process_key(struct input_event *ev,
 		cx += inc * opnum * x;
 		cy += inc * opnum * y;
 
-		mouse_move(scr, cx, cy);
+		platform_mouse_move(scr, cx, cy);
 
 		opnum = 0;
 

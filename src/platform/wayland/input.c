@@ -16,7 +16,7 @@ static void noop() {}
 
 void update_mods(uint8_t code, uint8_t pressed)
 {
-	const char *name = input_lookup_name(code);
+	const char *name = platform_input_lookup_name(code);
 
 	if (strstr(name, "Control") == name) {
 		if (pressed)
@@ -131,7 +131,7 @@ static struct wl_keyboard_listener wl_keyboard_listener = {
 	.repeat_info = noop,
 };
 
-void input_ungrab_keyboard()
+void platform_input_ungrab_keyboard()
 {
 	surface_hide(&input_pixel);
 }
@@ -140,7 +140,7 @@ void input_ungrab_keyboard()
  * *Note*: Wayland does not allow for global input handlers.
  * Input events can only be captured by a focused window :(.
  */
-void input_grab_keyboard()
+void platform_input_grab_keyboard()
 {
 	if (!input_pixel.buf)
 		init_surface(&input_pixel, -1, -1, 1, 1, 1);
@@ -148,7 +148,7 @@ void input_grab_keyboard()
 	surface_show(&input_pixel, NULL);
 }
 
-struct input_event *input_next_event(int timeout)
+struct input_event *platform_input_next_event(int timeout)
 {
 	static struct input_event ev;
 

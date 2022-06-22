@@ -22,8 +22,8 @@ static void filter(screen_t scr, const char *s)
 			matched[nr_matched++] = hints[i];
 	}
 
-	screen_clear(scr);
-	hint_draw(scr, matched, nr_matched);
+	platform_screen_clear(scr);
+	platform_hint_draw(scr, matched, nr_matched);
 	platform_commit();
 }
 
@@ -37,7 +37,7 @@ size_t generate_hints(screen_t scr, struct hint *hints)
 	const int nr = strlen(chars);
 	const int nc = strlen(chars);
 
-	screen_get_dimensions(scr, &sw, &sh);
+	platform_screen_get_dimensions(scr, &sw, &sh);
 
 	/* 
 	 * hint_size corresponds to the percentage of column/row space
@@ -85,7 +85,7 @@ size_t generate_hints(screen_t scr, struct hint *hints)
 
 void init_hint_mode()
 {
-	init_hint(config_get("hint_bgcolor"),
+	platform_init_hint(config_get("hint_bgcolor"),
 			config_get("hint_fgcolor"),
 			config_get_int("hint_border_radius"),
 			config_get("hint_font"));
@@ -95,22 +95,22 @@ int hint_mode()
 {
 	screen_t scr;
 
-	mouse_get_position(&scr, NULL, NULL);
+	platform_mouse_get_position(&scr, NULL, NULL);
 	nr_hints = generate_hints(scr, hints);
 
 	filter(scr, "");
 
 	int rc = 0;
 	char buf[32] = {0};
-	input_grab_keyboard();
+	platform_input_grab_keyboard();
 
-	mouse_hide();
+	platform_mouse_hide();
 
 	while (1) {
 		struct input_event *ev;
 		ssize_t len;
 
-		ev = input_next_event(0);
+		ev = platform_input_next_event(0);
 
 		if (!ev->pressed)
 			continue;
@@ -140,7 +140,7 @@ int hint_mode()
 			int nx, ny;
 			struct hint *h = &matched[0];
 
-			screen_clear(scr);
+			platform_screen_clear(scr);
 
 			nx = h->x + h->w / 2;
 			ny = h->y + h->h / 2;
@@ -150,18 +150,18 @@ int hint_mode()
 			 * text selection widgets which don't like spontaneous
 			 * cursor warping.
 			 */
-			mouse_move(scr, nx+1, ny+1);
+			platform_mouse_move(scr, nx+1, ny+1);
 
-			mouse_move(scr, nx, ny);
+			platform_mouse_move(scr, nx, ny);
 			break;
 		} else if (nr_matched == 0) {
 			break;
 		}
 	}
 
-	input_ungrab_keyboard();
-	screen_clear(scr);
-	mouse_show();
+	platform_input_ungrab_keyboard();
+	platform_screen_clear(scr);
+	platform_mouse_show();
 
 	platform_commit();
 	return rc;

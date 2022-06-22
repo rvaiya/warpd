@@ -24,10 +24,10 @@ static void draw_grid(screen_t scr,
 		return;
 
 	for (i = 0; i < nr+1; i++)
-		screen_draw_box(scr, x, y+(ygap+sz)*i, w, sz, color);
+		platform_screen_draw_box(scr, x, y+(ygap+sz)*i, w, sz, color);
 
 	for (i = 0; i < nc+1; i++)
-		screen_draw_box(scr, x+(xgap+sz)*i, y, sz, h, color);
+		platform_screen_draw_box(scr, x+(xgap+sz)*i, y, sz, h, color);
 }
 
 static void redraw(int mx, int my, int force)
@@ -55,7 +55,7 @@ static void redraw(int mx, int my, int force)
 	omx = mx;
 	omy = my;
 
-	screen_clear(scr);
+	platform_screen_clear(scr);
 
 	/* Draw the border. */
 	draw_grid(scr, gbcol,
@@ -69,7 +69,7 @@ static void redraw(int mx, int my, int force)
 		  x+gbsz, y+gbsz,
 		  gw-gbsz*2, gh-gbsz*2);
 
-	screen_draw_box(scr,
+	platform_screen_draw_box(scr,
 			x+gw/2-cursz/2, y+gh/2-cursz/2,
 			cursz, cursz,
 			config_get("cursor_color"));
@@ -86,23 +86,23 @@ struct input_event *grid_mode()
 	const int nc = config_get_int("grid_nc");
 	const int nr = config_get_int("grid_nr");
 
-	input_grab_keyboard();
-	mouse_hide();
+	platform_input_grab_keyboard();
+	platform_mouse_hide();
 	mouse_reset();
 
-	mouse_get_position(&scr, NULL, NULL);
-	screen_get_dimensions(scr, &grid_width, &grid_height);
+	platform_mouse_get_position(&scr, NULL, NULL);
+	platform_screen_get_dimensions(scr, &grid_width, &grid_height);
 
 	mx = grid_width / 2;
 	my = grid_height / 2;
-	mouse_move(scr, mx, my);
+	platform_mouse_move(scr, mx, my);
 	redraw(mx, my, 1);
 
 	while (1) {
 		int idx;
 
-		ev = input_next_event(10);
-		mouse_get_position(NULL, &mx, &my);
+		ev = platform_input_next_event(10);
+		platform_mouse_get_position(NULL, &mx, &my);
 
 		if (mouse_process_key(ev, "grid_up", "grid_down", "grid_left", "grid_right")) {
 			redraw(mx, my, 0);
@@ -122,7 +122,7 @@ struct input_event *grid_mode()
 			mx += grid_width / 2;
 			my += grid_height / 2;
 
-			mouse_move(scr, mx, my);
+			platform_mouse_move(scr, mx, my);
 			redraw(mx, my, 0);
 		}
 
@@ -141,10 +141,10 @@ struct input_event *grid_mode()
 	}
 
 exit:
-	screen_clear(scr);
-	mouse_show();
+	platform_screen_clear(scr);
+	platform_mouse_show();
 
-	input_ungrab_keyboard();
+	platform_input_ungrab_keyboard();
 
 	platform_commit();
 	return ev;

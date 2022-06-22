@@ -47,7 +47,7 @@ void add_screen(struct wl_output *output)
 	scr->wl_output = output;
 }
 
-void screen_draw_box(struct screen *scr, int x, int y, int w, int h, const char *color)
+void platform_screen_draw_box(struct screen *scr, int x, int y, int w, int h, const char *color)
 {
 	uint8_t r, g, b, a;
 
@@ -64,13 +64,13 @@ void screen_draw_box(struct screen *scr, int x, int y, int w, int h, const char 
 }
 
 
-void screen_get_dimensions(struct screen *scr, int *w, int *h)
+void platform_screen_get_dimensions(struct screen *scr, int *w, int *h)
 {
 	*w = scr->w;
 	*h = scr->h;
 }
 
-void screen_clear(struct screen *scr)
+void platform_screen_clear(struct screen *scr)
 {
 	size_t i;
 	for (i = 0; i < scr->nr_surfaces; i++)

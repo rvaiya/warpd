@@ -24,7 +24,7 @@ void start_main_loop(void (*loop)(void))
 
 /* Input */
 
-uint8_t input_lookup_code(const char *name)
+uint8_t platform_input_lookup_code(const char *name)
 {
 	size_t i;
 	for (i = 0; i < 256; i++)
@@ -34,12 +34,12 @@ uint8_t input_lookup_code(const char *name)
 	return 0;
 }
 
-const char *input_lookup_name(uint8_t code)
+const char *platform_input_lookup_name(uint8_t code)
 {
 	return keynames[code] ? keynames[code] : "UNDEFINED";
 }
 
-void mouse_move(struct screen *scr, int x, int y)
+void platform_mouse_move(struct screen *scr, int x, int y)
 {
 	int i;
 	int maxx = 0;
@@ -76,19 +76,19 @@ void mouse_move(struct screen *scr, int x, int y)
 		case 3: btn = 273;break; \
 	}
 
-void mouse_down(int btn)
+void platform_mouse_down(int btn)
 {
 	normalize_btn(btn);
 	zwlr_virtual_pointer_v1_button(wl.ptr, 0, btn, 1);
 }
 
-void mouse_up(int btn)
+void platform_mouse_up(int btn)
 {
 	normalize_btn(btn);
 	zwlr_virtual_pointer_v1_button(wl.ptr, 0, btn, 0);
 }
 
-void mouse_click(int btn)
+void platform_mouse_click(int btn)
 {
 	normalize_btn(btn);
 
@@ -99,7 +99,7 @@ void mouse_click(int btn)
 	wl_display_flush(wl.dpy);
 }
 
-void mouse_get_position(struct screen **scr, int *x, int *y)
+void platform_mouse_get_position(struct screen **scr, int *x, int *y)
 {
 	//TODO: figure out how to retrieve actual coordinates (if possible)
 
@@ -116,16 +116,16 @@ void mouse_get_position(struct screen **scr, int *x, int *y)
 		*y = ptry;
 }
 
-void mouse_show()
+void platform_mouse_show()
 {
 }
 
-void mouse_hide()
+void platform_mouse_hide()
 {
 	fprintf(stderr, "wayland: mouse hiding not implemented\n");
 }
 
-void scroll(int direction)
+void platform_scroll(int direction)
 {
 	//TODO: add horizontal scroll
 	direction = direction == SCROLL_DOWN ? 1 : -1;
@@ -139,10 +139,10 @@ void scroll(int direction)
 	wl_display_flush(wl.dpy);
 }
 
-void copy_selection() { UNIMPLEMENTED }
-struct input_event *input_wait(struct input_event *events, size_t sz) { UNIMPLEMENTED }
+void platform_copy_selection() { UNIMPLEMENTED }
+struct input_event *platform_input_wait(struct input_event *events, size_t sz) { UNIMPLEMENTED }
 
-void screen_list(struct screen *scr[MAX_SCREENS], size_t *n) 
+void platform_screen_list(struct screen *scr[MAX_SCREENS], size_t *n) 
 {
 	int i;
 	for (i = 0; i < nr_screens; i++)

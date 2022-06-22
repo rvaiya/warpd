@@ -42,7 +42,7 @@ void init_screens()
 	}
 }
 
-void screen_list(struct screen *rscreens[MAX_SCREENS], size_t *n)
+void platform_screen_list(struct screen *rscreens[MAX_SCREENS], size_t *n)
 {
 	size_t i;
 
@@ -52,13 +52,13 @@ void screen_list(struct screen *rscreens[MAX_SCREENS], size_t *n)
 	*n = nr_screens;
 }
 
-void screen_get_dimensions(struct screen *scr, int *w, int *h)
+void platform_screen_get_dimensions(struct screen *scr, int *w, int *h)
 {
 	*w = scr->w;
 	*h = scr->h;
 }
 
-void screen_clear(struct screen *scr)
+void platform_screen_clear(struct screen *scr)
 {
 	size_t i;
 
@@ -71,7 +71,7 @@ void screen_clear(struct screen *scr)
 	scr->nr_boxes = 0;
 }
 
-void screen_draw_box(struct screen *scr, int x, int y, int w, int h, const char *color) 
+void platform_screen_draw_box(struct screen *scr, int x, int y, int w, int h, const char *color) 
 { 
 	assert(scr->nr_boxes < MAX_BOXES);
 

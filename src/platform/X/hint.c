@@ -146,7 +146,7 @@ void do_hint_draw(struct screen *scr, Window win, struct hint *hints, size_t n, 
 	XFreeGC(dpy, mgc);
 }
 
-void hint_draw(struct screen *scr, struct hint *hints, size_t n)
+void platform_hint_draw(struct screen *scr, struct hint *hints, size_t n)
 {
 	Window win = scr->hintwin;
 	Pixmap buf = scr->buf;
@@ -193,7 +193,7 @@ void hint_draw(struct screen *scr, struct hint *hints, size_t n)
 	do_hint_draw(scr, win, hints, n, buf);
 }
 
-void init_hint(const char *bgcol, const char *fgcol, int _border_radius,
+void platform_init_hint(const char *bgcol, const char *fgcol, int _border_radius,
 	       const char *_font_family)
 {
 	size_t i;

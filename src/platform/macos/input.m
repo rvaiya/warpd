@@ -187,12 +187,12 @@ static CGEventRef eventTapCallback(CGEventTapProxy proxy, CGEventType type,
 	return event;
 }
 
-const char *input_lookup_name(uint8_t code) 
+const char *platform_input_lookup_name(uint8_t code) 
 { 
 	return input_code_names[code]; 
 }
 
-uint8_t input_lookup_code(const char *name)
+uint8_t platform_input_lookup_code(const char *name)
 {
 	size_t i;
 
@@ -232,14 +232,14 @@ void send_key(uint8_t code, int pressed)
 	});
 }
 
-void input_ungrab_keyboard()
+void platform_input_ungrab_keyboard()
 {
 	dispatch_sync(dispatch_get_main_queue(), ^{
 		grabbed = 0;
 	});
 }
 
-void input_grab_keyboard()
+void platform_input_grab_keyboard()
 {
 	if (grabbed)
 		return;
@@ -250,7 +250,7 @@ void input_grab_keyboard()
 	});
 }
 
-struct input_event *input_next_event(int timeout)
+struct input_event *platform_input_next_event(int timeout)
 {
 	static struct input_event ev;
 
@@ -260,14 +260,14 @@ struct input_event *input_next_event(int timeout)
 	return &ev;
 }
 
-struct input_event *input_wait(struct input_event *keys, size_t sz)
+struct input_event *platform_input_wait(struct input_event *keys, size_t sz)
 {
 	grabbed_keys = keys;
 	grabbed_keys_sz = sz;
 
 	while (1) {
 		size_t i;
-		struct input_event *ev = input_next_event(0);
+		struct input_event *ev = platform_input_next_event(0);
 
 		for (i = 0; i < sz; i++)
 			if (ev->pressed && keys[i].code == ev->code &&
