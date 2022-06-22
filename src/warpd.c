@@ -28,10 +28,19 @@ static void activation_loop(int mode)
 
 	while (1) {
 		switch (mode) {
+		case MODE_HISTORY:
+			if (history_hint_mode() < 0)
+				goto exit;
+
+			ev = NULL;
+			mode = MODE_NORMAL;
+			break;
 		case MODE_NORMAL:
 			ev = normal_mode(ev);
 
-			if (config_input_match(ev, "hint", 1))
+			if (config_input_match(ev, "history", 1))
+				mode = MODE_HISTORY;
+			else if (config_input_match(ev, "hint", 1))
 				mode = MODE_HINT;
 			else if (config_input_match(ev, "grid", 1))
 				mode = MODE_GRID;
@@ -42,7 +51,7 @@ static void activation_loop(int mode)
 
 			break;
 		case MODE_HINT:
-			if (hint_mode() < 0)
+			if (full_hint_mode() < 0)
 				goto exit;
 
 			ev = NULL;
@@ -70,7 +79,7 @@ exit:
 static void oneshot_loop()
 {
 	init_mouse();
-	init_hint_mode();
+	init_hints();
 
 	activation_loop(oneshot_mode);
 }
@@ -78,7 +87,7 @@ static void oneshot_loop()
 static void main_loop()
 {
 	init_mouse();
-	init_hint_mode();
+	init_hints();
 
 	struct input_event activation_events[5] = {0};
 
@@ -102,7 +111,10 @@ static void main_loop()
 		else if (config_input_match(ev, "screen_activation_key", 1))
 			mode = MODE_SCREEN_SELECTION;
 		else if (config_input_match(ev, "hint_oneshot_key", 1)) {
-			hint_mode();
+			full_hint_mode();
+			continue;
+		} else if (config_input_match(ev, "history_oneshot_key", 1)) {
+			history_hint_mode();
 			continue;
 		}
 
@@ -110,7 +122,7 @@ static void main_loop()
 	}
 }
 
-static const char *get_config_path()
+const char *get_config_path(const char *file)
 {
 	static char path[PATH_MAX];
 
@@ -124,7 +136,8 @@ static const char *get_config_path()
 		mkdir(path, 0700);
 	}
 
-	strcat(path, "/config");
+	strcat(path, "/");
+	strcat(path, file);
 
 	return path;
 }
@@ -210,7 +223,7 @@ int main(int argc, char *argv[])
 {
 	int c;
 	int foreground = 0;
-	const char *config_path = get_config_path();
+	const char *config_path = get_config_path("config");
 
 	parse_config(config_path);
 

@@ -142,6 +142,7 @@ struct input_event *normal_mode(struct input_event *start_ev)
 		} else if (config_input_match(ev, "exit", 1) ||
 			   config_input_match(ev, "grid", 1) ||
 			   config_input_match(ev, "screen", 1) ||
+			   config_input_match(ev, "history", 1) ||
 			   config_input_match(ev, "hint", 1)) {
 			goto exit;
 		} else { /* Mouse Buttons. */
@@ -149,6 +150,7 @@ struct input_event *normal_mode(struct input_event *start_ev)
 
 			if ((btn = config_input_match(ev, "buttons", 0))) {
 				hist_add(mx, my);
+				histfile_add(mx, my);
 				platform_mouse_click(btn);
 			} else if ((btn = config_input_match(ev, "oneshot_buttons", 0))) {
 				hist_add(mx, my);
@@ -177,7 +179,6 @@ struct input_event *normal_mode(struct input_event *start_ev)
 	}
 
 exit:
-	hist_add(mx, my);
 
 	platform_mouse_show();
 	platform_screen_clear(scr);

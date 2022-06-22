@@ -6,8 +6,6 @@
 #ifndef WAYLAND_H
 #define WAYLAND_H
 
-#define _XOPEN_SOURCE 500
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <poll.h>

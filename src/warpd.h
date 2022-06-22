@@ -42,10 +42,12 @@
 #endif
 
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
+#define MAX_HIST_ENTS 16
 
 enum {
 	MODE_RESERVED,
 
+	MODE_HISTORY,
 	MODE_HINT,
 	MODE_GRID,
 	MODE_NORMAL,
@@ -59,12 +61,18 @@ struct config_entry {
 	struct config_entry *next;
 };
 
-int hint_mode();
+struct histfile_ent {
+	int x;
+	int y;
+};
+
+int history_hint_mode();
+int full_hint_mode();
 void screen_selection_mode();
 struct input_event *normal_mode(struct input_event *start_ev);
 struct input_event *grid_mode();
 
-void init_hint_mode();
+void init_hints();
 void init_normal_mode();
 void init_grid_mode();
 
@@ -73,6 +81,8 @@ int config_input_match(struct input_event *ev, const char *str, int strict);
 int input_eq(struct input_event *ev, const char *str, int strict);
 int config_input_match_index(struct input_event *ev, const char *config_name);
 int input_parse_string(struct input_event *ev, const char *s);
+
+size_t hist_hints(struct hint *hints, int w, int h);
 
 void toggle_drag();
 
@@ -90,12 +100,18 @@ void scroll_stop();
 void scroll_accelerate(int direction);
 void scroll_decelerate();
 
-int hist_add(int x, int y);
+void hist_add(int x, int y);
 int hist_get(int *x, int *y);
 void hist_prev();
 void hist_next();
+
+
+size_t histfile_read(struct histfile_ent **entries);
+void histfile_add(int x, int y);
+
 void init_mouse();
 
+const char *get_config_path(const char *file);
 void parse_config(const char *path);
 const char *config_get(const char *key);
 int config_get_int(const char *key);

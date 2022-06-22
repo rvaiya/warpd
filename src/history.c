@@ -5,6 +5,13 @@
  */
 
 #include <stdlib.h>
+#include "warpd.h"
+
+/*
+ * Local history intended to be updated within a given session.
+ * Captures all macroscopic movement unlike the more conservative
+ * histfile which only tracks clicks.
+ */
 
 #define BUF_SZ 16
 
@@ -34,7 +41,7 @@ static void add(int x, int y)
 	hist.full = hist.head == hist.tail;
 }
 
-static void truncate()
+static void truncate_hist()
 {
 	if (!hist.full && hist.tail == hist.head)
 		return;
@@ -61,7 +68,7 @@ void hist_add(int x, int y)
 	if (!hist_get(&cx, &cy) && cx == x && cy == y)
 		return; // dedup
 
-	truncate();
+	truncate_hist();
 	add(x, y);
 }
 

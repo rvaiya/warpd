@@ -22,7 +22,6 @@ ifeq ($(PLATFORM), macos)
 
 	PREFIX=/usr/local
 else ifeq ($(PLATFORM), wayland)
-	CFLAGS+=-D_XOPEN_SOURCE=700
 	PLATFORM_FLAGS=-lwayland-client\
 			-lxkbcommon\
 			-lcairo\
@@ -31,7 +30,6 @@ else ifeq ($(PLATFORM), wayland)
 	PLATFORM_FILES=$(shell find src/platform/wayland/ -name '*.c')
 	PLATFORM_OBJECTS=$(PLATFORM_FILES:.c=.o)
 else
-	CFLAGS+=-D_XOPEN_SOURCE=700
 	CFLAGS+=-I/usr/include/freetype2
 	PLATFORM_FLAGS=-lXfixes\
 			-lXext\

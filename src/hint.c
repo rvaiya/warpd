@@ -6,7 +6,7 @@
 
 #include "warpd.h"
 
-struct hint hints[MAX_HINTS];
+struct hint *hints;
 struct hint matched[MAX_HINTS];
 
 static size_t nr_hints;
@@ -27,7 +27,7 @@ static void filter(screen_t scr, const char *s)
 	platform_commit();
 }
 
-size_t generate_hints(screen_t scr, struct hint *hints)
+static size_t generate_hints(screen_t scr, struct hint *hints)
 {
 	int sw, sh;
 	int i, j;
@@ -83,20 +83,10 @@ size_t generate_hints(screen_t scr, struct hint *hints)
 	return n;
 }
 
-void init_hint_mode()
+static int hint_selection(screen_t scr, struct hint *_hints, size_t _nr_hints)
 {
-	platform_init_hint(config_get("hint_bgcolor"),
-			config_get("hint_fgcolor"),
-			config_get_int("hint_border_radius"),
-			config_get("hint_font"));
-}
-
-int hint_mode()
-{
-	screen_t scr;
-
-	platform_mouse_get_position(&scr, NULL, NULL);
-	nr_hints = generate_hints(scr, hints);
+	hints = _hints;
+	nr_hints = _nr_hints;
 
 	filter(scr, "");
 
@@ -165,4 +155,55 @@ int hint_mode()
 
 	platform_commit();
 	return rc;
+}
+
+void init_hints()
+{
+	platform_init_hint(config_get("hint_bgcolor"),
+			config_get("hint_fgcolor"),
+			config_get_int("hint_border_radius"),
+			config_get("hint_font"));
+}
+
+int full_hint_mode()
+{
+	int mx, my;
+	screen_t scr;
+	struct hint hints[MAX_HINTS];
+
+	platform_mouse_get_position(&scr, &mx, &my);
+	hist_add(mx, my);
+
+	nr_hints = generate_hints(scr, hints);
+	return hint_selection(scr, hints, nr_hints);
+}
+
+int history_hint_mode()
+{
+	struct hint hints[MAX_HINTS];
+	struct histfile_ent *ents;
+	screen_t scr;
+	int sw, sh;
+	size_t n, i;
+
+	platform_mouse_get_position(&scr, NULL, NULL);
+	platform_screen_get_dimensions(scr, &sw, &sh);
+
+	n = histfile_read(&ents);
+
+	const int w = (sw * config_get_int("hist_hint_size")) / 100;
+	const int h = (sw * config_get_int("hist_hint_size")) / 100;
+
+	for (i = 0; i < n; i++) {
+		hints[i].w = w;
+		hints[i].h = h;
+
+		hints[i].x = ents[i].x - w/2;
+		hints[i].y = ents[i].y - h/2;
+
+		hints[i].label[0] = 'a'+i;
+		hints[i].label[1] = 0;
+	}
+
+	return hint_selection(scr, hints, n);
 }

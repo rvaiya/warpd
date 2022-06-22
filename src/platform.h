@@ -68,6 +68,7 @@ void platform_mouse_down(int btn);
 
 void platform_mouse_up(int btn);
 void platform_mouse_click(int btn);
+
 void platform_mouse_get_position(screen_t *scr, int *x, int *y);
 void platform_mouse_show();
 void platform_mouse_hide();

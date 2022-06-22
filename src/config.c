@@ -33,9 +33,12 @@ static struct {
 	{ "exit", "esc", "Exit the currently active warpd session." },
 	{ "drag", "v", "Toggle drag mode (mneominc (v)isual mode)." },
 	{ "copy_and_exit", "c", "Send the copy key and exit (useful in combination with v)." },
+
+	{ "history", ";", "Activate hint history mode while in normal mode." },
 	{ "hint", "x", "Activate hint mode while in normal mode (mnemonic: x marks the spot?)." },
 	{ "grid", "g", "Activate (g)rid mode while in normal mode." },
 	{ "screen", "s", "Activate (s)creen selection while in normal mode." },
+
 	{ "left", "h", "Move the cursor left in normal mode." },
 	{ "down", "j", "Move the cursor down in normal mode." },
 	{ "up", "k", "Move the cursor up in normal mode." },
@@ -47,8 +50,11 @@ static struct {
 	{ "bottom", "L", "Moves the cursor to the bottom of the screen in normal mode." },
 	{ "start", "0", "Moves the cursor to the leftmost corner of the screen in normal mode." },
 	{ "end", "$", "Moves the cursor to the rightmost corner of the screen in normal mode." },
+
 	{ "hist_back", "C-o", "Move to the last position in the history stack." },
 	{ "hist_forward", "C-i", "Move to the next position in the history stack." },
+	{ "hist_hint_size", "2", "History hint size as a percentage of screen height." },
+
 	{ "grid_nr", "2", "The number of rows in the grid." },
 	{ "grid_nc", "2", "The number of columns in the grid." },
 	{ "grid_up", "w", "Move the grid up." },
@@ -60,10 +66,14 @@ static struct {
 	{ "grid_size", "4", "The thickness of grid lines in pixels." },
 	{ "grid_border_size", "0", "The thickness of the grid border in pixels." },
 	{ "grid_border_color", "#ffffff", "The color of the grid border." },
+
 	{ "hint_size", "71", "Hint size (range: 1-100)" },
 	{ "hint_bgcolor", "#1c1c1e", "The background hint color." },
 	{ "hint_fgcolor", "#a1aba7", "The foreground hint color." },
 	{ "hint_border_radius", "3", "Border radius." },
+	{ "hint_chars", "abcdefghijklmnopqrstuvwxyz", "The character set from which hints are generated. The total number of hints is the square of the size of this string. It may be desirable to increase this for larger screens or trim it to increase gaps between hints." },
+	{ "hint_font", "Arial", "The font name used by hints. Note: This is platform specific, in X it corresponds to a valid xft font name, on macos it corresponds to a postscript name." },
+
 	{ "scroll_down", "e", "Scroll down key." },
 	{ "scroll_up", "r", "Scroll up key." },
 	{ "screen_chars", "jkl;asdfg", "The characters used for screen selection." },
@@ -71,8 +81,7 @@ static struct {
 	{ "scroll_max_speed", "9000", "Maximum scroll speed." },
 	{ "scroll_acceleration", "1600", "Scroll acceleration in units/second^2." },
 	{ "scroll_deceleration", "-3400", "Scroll deceleration." },
-	{ "hint_chars", "abcdefghijklmnopqrstuvwxyz", "The character set from which hints are generated. The total number of hints is the square of the size of this string. It may be desirable to increase this for larger screens or trim it to increase gaps between hints." },
-	{ "hint_font", "Arial", "The font name used by hints. Note: This is platform specific, in X it corresponds to a valid xft font name, on macos it corresponds to a postscript name." },
+
 	{ "indicator", "none", "Specifies an optional visual indicator to be displayed while normal mode is active, must be one of: topright, topleft, bottomright, bottomleft, none" },
 	{ "indicator_color", "#00ff00", "The color of the visual indicator color." },
 	{ "indicator_size", "12", "The size of the visual indicator in pixels." },
