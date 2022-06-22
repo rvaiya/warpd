@@ -157,6 +157,48 @@ static int hint_selection(screen_t scr, struct hint *_hints, size_t _nr_hints)
 	return rc;
 }
 
+static int sift()
+{
+	int gap = config_get_int("hint2_gap_size");
+	int hint_sz = config_get_int("hint2_size");
+	int grid_sz = 3;
+
+	int x, y;
+	int sh, sw;
+
+	int col;
+	int row;
+	size_t n = 0;
+	screen_t scr;
+
+	struct hint hints[MAX_HINTS];
+
+	platform_mouse_get_position(&scr, &x, &y);
+	platform_screen_get_dimensions(scr, &sw, &sh);
+
+	gap = (gap * sh) / 1000;
+	hint_sz = (hint_sz * sh) / 1000;
+
+	x -= ((hint_sz + (gap - 1)) * grid_sz) / 2;
+	y -= ((hint_sz + (gap - 1)) * grid_sz) / 2;
+
+	for (col = 0; col < grid_sz; col++)
+		for (row = 0; row < grid_sz; row++) {
+			hints[n].x = x + (hint_sz + gap) * col;
+			hints[n].y = y + (hint_sz + gap) * row;
+
+			hints[n].w = hint_sz;
+			hints[n].h = hint_sz;
+
+			hints[n].label[0] = 'a' + (row * grid_sz) + col;
+			hints[n].label[1] = 0;
+
+			n++;
+	}
+
+	return hint_selection(scr, hints, n);
+}
+
 void init_hints()
 {
 	platform_init_hint(config_get("hint_bgcolor"),
@@ -165,7 +207,7 @@ void init_hints()
 			config_get("hint_font"));
 }
 
-int full_hint_mode()
+int full_hint_mode(int second_pass)
 {
 	int mx, my;
 	screen_t scr;
@@ -175,7 +217,14 @@ int full_hint_mode()
 	hist_add(mx, my);
 
 	nr_hints = generate_hints(scr, hints);
-	return hint_selection(scr, hints, nr_hints);
+
+	if (hint_selection(scr, hints, nr_hints))
+		return -1;
+
+	if (second_pass)
+		return sift();
+	else
+		return 0;
 }
 
 int history_hint_mode()

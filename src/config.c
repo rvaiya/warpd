@@ -17,6 +17,7 @@ static struct {
 	{ "screen_activation_key", "A-M-s", "Activate (s)creen selection mode." },
 	{ "activation_key", "A-M-c", "Activate normal movement mode (manual (c)ursor movement)." },
 	{ "hint_oneshot_key", "A-M-l", "Activate hint mode and exit upon selection." },
+
 	{ "repeat_interval", "20", "The number of milliseconds before repeating a movement event." },
 	{ "speed", "220", "Pointer speed in pixels/second." },
 	{ "max_speed", "1600", "The maximum pointer speed." },
@@ -28,14 +29,13 @@ static struct {
 	{ "buttons", "m , .",  "A space separated list of mouse buttons (2 is middle click)." },
 	{ "oneshot_buttons", "n - /", "Oneshot mouse buttons (deactivate on click)." },
 	{ "oneshot_timeout", "300", "The length of time in milliseconds to wait for a second click after a oneshot key has been pressed." },
-	{ "grid_exit", "c", "Exit grid mode and return to normal mode." },
-	{ "hint_exit", "esc", "The exit key used for hint mode." },
 	{ "exit", "esc", "Exit the currently active warpd session." },
 	{ "drag", "v", "Toggle drag mode (mneominc (v)isual mode)." },
 	{ "copy_and_exit", "c", "Send the copy key and exit (useful in combination with v)." },
 
 	{ "history", ";", "Activate hint history mode while in normal mode." },
 	{ "hint", "x", "Activate hint mode while in normal mode (mnemonic: x marks the spot?)." },
+	{ "hint2", "X", "Activate two pass hint mode." },
 	{ "grid", "g", "Activate (g)rid mode while in normal mode." },
 	{ "screen", "s", "Activate (s)creen selection while in normal mode." },
 
@@ -66,6 +66,7 @@ static struct {
 	{ "grid_size", "4", "The thickness of grid lines in pixels." },
 	{ "grid_border_size", "0", "The thickness of the grid border in pixels." },
 	{ "grid_border_color", "#ffffff", "The color of the grid border." },
+	{ "grid_exit", "c", "Exit grid mode and return to normal mode." },
 
 	{ "hint_size", "71", "Hint size (range: 1-100)" },
 	{ "hint_bgcolor", "#1c1c1e", "The background hint color." },
@@ -73,6 +74,10 @@ static struct {
 	{ "hint_border_radius", "3", "Border radius." },
 	{ "hint_chars", "abcdefghijklmnopqrstuvwxyz", "The character set from which hints are generated. The total number of hints is the square of the size of this string. It may be desirable to increase this for larger screens or trim it to increase gaps between hints." },
 	{ "hint_font", "Arial", "The font name used by hints. Note: This is platform specific, in X it corresponds to a valid xft font name, on macos it corresponds to a postscript name." },
+	{ "hint_exit", "esc", "The exit key used for hint mode." },
+
+	{ "hint2_size", "20", "The size of hints in the secondary grid (range: 1-1000)." },
+	{ "hint2_gap_size", "1", "The spacing between hints in the secondary grid. (range: 1-1000)" },
 
 	{ "scroll_down", "e", "Scroll down key." },
 	{ "scroll_up", "r", "Scroll up key." },

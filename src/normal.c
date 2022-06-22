@@ -143,6 +143,7 @@ struct input_event *normal_mode(struct input_event *start_ev)
 			   config_input_match(ev, "grid", 1) ||
 			   config_input_match(ev, "screen", 1) ||
 			   config_input_match(ev, "history", 1) ||
+			   config_input_match(ev, "hint2", 1) ||
 			   config_input_match(ev, "hint", 1)) {
 			goto exit;
 		} else { /* Mouse Buttons. */

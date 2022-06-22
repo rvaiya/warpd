@@ -42,6 +42,8 @@ static void activation_loop(int mode)
 				mode = MODE_HISTORY;
 			else if (config_input_match(ev, "hint", 1))
 				mode = MODE_HINT;
+			else if (config_input_match(ev, "hint2", 1))
+				mode = MODE_HINT2;
 			else if (config_input_match(ev, "grid", 1))
 				mode = MODE_GRID;
 			else if (config_input_match(ev, "screen", 1))
@@ -50,8 +52,9 @@ static void activation_loop(int mode)
 				goto exit;
 
 			break;
+		case MODE_HINT2:
 		case MODE_HINT:
-			if (full_hint_mode() < 0)
+			if (full_hint_mode(mode == MODE_HINT2) < 0)
 				goto exit;
 
 			ev = NULL;
@@ -111,7 +114,7 @@ static void main_loop()
 		else if (config_input_match(ev, "screen_activation_key", 1))
 			mode = MODE_SCREEN_SELECTION;
 		else if (config_input_match(ev, "hint_oneshot_key", 1)) {
-			full_hint_mode();
+			full_hint_mode(1);
 			continue;
 		} else if (config_input_match(ev, "history_oneshot_key", 1)) {
 			history_hint_mode();
