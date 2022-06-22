@@ -71,6 +71,14 @@ targetting UI elements without the need for too much adjustment. Once this
 equilibrium has been achieved, using hint mode become second nature and is (in
 the author's opinion) superior to grid mode for quickly pinpointing elements.
 
+For finer movements, a two phase hint mode can be activated by pressing 'X'
+within normal mode.
+
+## History Mode (';' within normal mode)
+
+Identical to hint mode but exclusively displays hints over previously
+selected targets.
+
 ## Grid Mode ('A-M-g' or simply 'g' within normal mode)
 
 By default grid mode divides the screen into a 2x2 grid. Each time a key
