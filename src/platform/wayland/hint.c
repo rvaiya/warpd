@@ -7,11 +7,17 @@
 
 static char bgcolor[16];
 static char fgcolor[16];
+static char *font_family;
 
 static int calculate_font_size(cairo_t *cr, int w, int h)
 {
 	cairo_text_extents_t extents;
 	size_t sz = 100;
+
+	cairo_select_font_face (cr,
+				font_family,
+				CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+
 	do {
 		cairo_set_font_size(cr, sz);
 		cairo_text_extents(cr, "WW", &extents);
@@ -24,6 +30,11 @@ static int calculate_font_size(cairo_t *cr, int w, int h)
 static void cairo_draw_text(cairo_t *cr, const char *s, int x, int y, int w, int h)
 {
 	int ptsz = calculate_font_size(cr, w, h);
+
+	cairo_select_font_face (cr,
+				font_family,
+				CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+
 	cairo_text_extents_t extents;
 	cairo_set_font_size(cr, ptsz);
 
@@ -63,12 +74,13 @@ void platform_hint_draw(struct screen *scr, struct hint *hints, size_t n)
 	surface_show(scr->overlay, scr->wl_output);
 }
 
-void platform_init_hint(const char *bg, const char *fg, int border_radius, const char *font_family)
+void platform_init_hint(const char *bg, const char *fg, int border_radius, const char *font)
 {
 	strncpy(bgcolor, bg, sizeof bgcolor);
 	strncpy(fgcolor, fg, sizeof fgcolor);
 
-	//TODO: handle border radius and font_family
+	//TODO: handle border radius
 
+	font_family = font;
 	fprintf(stderr, "wayland: init_hint unimplemented\n");
 }
