@@ -167,7 +167,7 @@ void platform_hint_draw(struct screen *scr, struct hint *hints, size_t n)
 		XMoveWindow(dpy, scr->cached_hintwin, scr->x, scr->y);
 		XCopyArea(dpy, scr->cached_hintbuf, scr->cached_hintwin,
 			  gc, 0, 0, scr->w, scr->h, 0, 0);
-		XRaiseWindow(dpy, win);
+		XRaiseWindow(dpy, scr->cached_hintwin);
 
 		XFreeGC(dpy, gc);
 		return;
