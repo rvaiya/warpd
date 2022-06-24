@@ -68,7 +68,7 @@ static struct {
 	{ "grid_border_color", "#ffffff", "The color of the grid border." },
 	{ "grid_exit", "c", "Exit grid mode and return to normal mode." },
 
-	{ "hint_size", "71", "Hint size (range: 1-100)" },
+	{ "hint_size", "20", "Hint size (range: 1-1000)" },
 	{ "hint_bgcolor", "#1c1c1e", "The background hint color." },
 	{ "hint_fgcolor", "#a1aba7", "The foreground hint color." },
 	{ "hint_border_radius", "3", "Border radius." },

@@ -27,28 +27,30 @@ static void filter(screen_t scr, const char *s)
 	platform_commit();
 }
 
-static size_t generate_hints(screen_t scr, struct hint *hints)
+static size_t get_hint_size(screen_t scr, int *w, int *h) 
 {
 	int sw, sh;
+
+	platform_screen_get_dimensions(scr, &sw, &sh);
+
+	*w = (sw * config_get_int("hint_size")) / 1000;
+	*h = (sh * config_get_int("hint_size")) / 1000;
+}
+
+static size_t generate_fullscreen_hints(screen_t scr, struct hint *hints)
+{
+	int sw, sh;
+	int w, h;
 	int i, j;
 	size_t n = 0;
 
 	const char *chars = config_get("hint_chars");
+	get_hint_size(scr, &w, &h);
+	platform_screen_get_dimensions(scr, &sw, &sh);
+
 	const int nr = strlen(chars);
 	const int nc = strlen(chars);
 
-	platform_screen_get_dimensions(scr, &sw, &sh);
-
-	/* 
-	 * hint_size corresponds to the percentage of column/row space
-	 * taken up by the hints. At the cost of including math.h, one
-	 * could replace config_get("hint-size") / 100 by its square root, so
-	 * that hint_size corresponds to the approximate percentage of
-	 * screen area taken up by the hints
-	 */
-
-	const int w = sw / nc * config_get_int("hint_size") / 100;
-	const int h = sh / nr * config_get_int("hint_size") / 100;
 
 	const int colgap = sw / nc - w;
 	const int rowgap = sh / nr - h;
@@ -58,6 +60,8 @@ static size_t generate_hints(screen_t scr, struct hint *hints)
 
 	int x = x_offset;
 	int y = y_offset;
+
+	get_hint_size(scr, &w, &h);
 
 	for (i = 0; i < nc; i++) {
 		for (j = 0; j < nr; j++) {
@@ -209,11 +213,9 @@ void init_hints()
 
 int hintspec_mode()
 {
-	const int w = 100;
-	const int h = w;
-
 	screen_t scr;
 	int sw, sh;
+	int w, h;
 
 	int n = 0;
 	struct hint hints[MAX_HINTS];
@@ -221,6 +223,9 @@ int hintspec_mode()
 
 	platform_mouse_get_position(&scr, NULL, NULL);
 	platform_screen_get_dimensions(scr, &sw, &sh);
+
+	get_hint_size(scr, &w, &h);
+
 
 	while (scanf("%15s %d %d",
 		hints[n].label,
@@ -247,7 +252,7 @@ int full_hint_mode(int second_pass)
 	platform_mouse_get_position(&scr, &mx, &my);
 	hist_add(mx, my);
 
-	nr_hints = generate_hints(scr, hints);
+	nr_hints = generate_fullscreen_hints(scr, hints);
 
 	if (hint_selection(scr, hints, nr_hints))
 		return -1;
