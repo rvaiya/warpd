@@ -67,6 +67,7 @@ struct histfile_ent {
 	int y;
 };
 
+int hintspec_mode();
 int history_hint_mode();
 int full_hint_mode(int second_pass);
 void screen_selection_mode();

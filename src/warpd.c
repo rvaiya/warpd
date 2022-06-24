@@ -87,6 +87,18 @@ static void oneshot_loop()
 	activation_loop(oneshot_mode);
 }
 
+static void hintspec_loop()
+{
+	int x, y;
+
+	init_mouse();
+	init_hints();
+
+	hintspec_mode();
+	platform_mouse_get_position(NULL, &x, &y);
+	printf("%d %d\n", x, y);
+}
+
 static void main_loop()
 {
 	init_mouse();
@@ -203,6 +215,7 @@ static void print_usage()
 	const char *usage =
 		"warpd: [options]\n\n"
 		"  -f, --foreground            Run warpd in the foreground (useful for debugging).\n"
+		"  -q, --query                 Consumes a list of hints from stdin and presents a one off hint selection.\n"
 		"  -h, --help                  Print this help message.\n"
 		"  -v, --version               Print the version and exit.\n"
 		"  -c, --config <config file>  Use the supplied config file.\n"
@@ -233,6 +246,7 @@ int main(int argc, char *argv[])
 	struct option opts[] = {
 		{"version", no_argument, NULL, 'v'},
 		{"help", no_argument, NULL, 'h'},
+		{"query", no_argument, NULL, 'q'},
 		{"list-keys", no_argument, NULL, 'l'},
 		{"foreground", no_argument, NULL, 'f'},
 		{"config", required_argument, NULL, 'c'},
@@ -244,10 +258,13 @@ int main(int argc, char *argv[])
 		{0}
 	};
 
-	while ((c = getopt_long(argc, argv, "hfvlc:", opts, NULL)) != -1) {
+	while ((c = getopt_long(argc, argv, "rhfvlc:", opts, NULL)) != -1) {
 		switch (c) {
 			case 'v':
 				print_version();
+				return 0;
+			case 'q':
+				start_main_loop(hintspec_loop);
 				return 0;
 			case 'h':
 				print_usage();

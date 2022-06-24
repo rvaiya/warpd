@@ -207,6 +207,37 @@ void init_hints()
 			config_get("hint_font"));
 }
 
+int hintspec_mode()
+{
+	const int w = 100;
+	const int h = w;
+
+	screen_t scr;
+	int sw, sh;
+
+	int n = 0;
+	struct hint hints[MAX_HINTS];
+
+
+	platform_mouse_get_position(&scr, NULL, NULL);
+	platform_screen_get_dimensions(scr, &sw, &sh);
+
+	while (scanf("%15s %d %d",
+		hints[n].label,
+		&hints[n].x,
+		&hints[n].y) == 3) {
+
+		hints[n].w = w;
+		hints[n].h = h;
+		hints[n].x -= w/2;
+		hints[n].y -= h/2;
+
+		n++;
+	}
+
+	return hint_selection(scr, hints, n);
+}
+
 int full_hint_mode(int second_pass)
 {
 	int mx, my;

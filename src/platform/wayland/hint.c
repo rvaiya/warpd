@@ -82,5 +82,4 @@ void platform_init_hint(const char *bg, const char *fg, int border_radius, const
 	//TODO: handle border radius
 
 	font_family = font;
-	fprintf(stderr, "wayland: init_hint unimplemented\n");
 }

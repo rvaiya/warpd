@@ -13,6 +13,9 @@ warpd [options]
 	*-f*, *--foreground*: Run warpd in the foreground. Mainly useful for debugging.
 
 	*-l*, *--list-keys*: Print a list of valid keys which can be used as config values.
+
+	*-q*, *--query*: Consume a list of hints from stdin and print the result to stdout. Each line should have the form _<label> <x> <y>_.
+
 	*--list-options*: Print all configurable options.
 
 	*-v*, *--version*: Print the current version.
@@ -22,6 +25,7 @@ warpd [options]
 	*--hint*: Run warpd in oneshot (daemonless) hint mode.
 
 	*--grid*: Run warpd in oneshot grid mode.
+
 
 	*--normal*: Run warpd in oneshot normal mode.
 
