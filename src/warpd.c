@@ -104,13 +104,16 @@ static void main_loop()
 	init_mouse();
 	init_hints();
 
-	struct input_event activation_events[5] = {0};
+	struct input_event activation_events[8] = {0};
 
 	input_parse_string(&activation_events[0], config_get("activation_key"));
 	input_parse_string(&activation_events[1], config_get("hint_activation_key"));
 	input_parse_string(&activation_events[2], config_get("grid_activation_key"));
 	input_parse_string(&activation_events[3], config_get("hint_oneshot_key"));
 	input_parse_string(&activation_events[4], config_get("screen_activation_key"));
+	input_parse_string(&activation_events[5], config_get("hint2_activation_key"));
+	input_parse_string(&activation_events[6], config_get("hint2_oneshot_key"));
+	input_parse_string(&activation_events[7], config_get("history_activation_key"));
 
 	while (1) {
 		int mode = 0;
@@ -123,10 +126,17 @@ static void main_loop()
 			mode = MODE_GRID;
 		else if (config_input_match(ev, "hint_activation_key", 1))
 			mode = MODE_HINT;
+		else if (config_input_match(ev, "hint2_activation_key", 1))
+			mode = MODE_HINT2;
 		else if (config_input_match(ev, "screen_activation_key", 1))
 			mode = MODE_SCREEN_SELECTION;
-		else if (config_input_match(ev, "hint_oneshot_key", 1)) {
+		else if (config_input_match(ev, "history_activation_key", 1))
+			mode = MODE_HISTORY;
+		else if (config_input_match(ev, "hint2_oneshot_key", 1)) {
 			full_hint_mode(1);
+			continue;
+		} else if (config_input_match(ev, "hint_oneshot_key", 1)) {
+			full_hint_mode(0);
 			continue;
 		} else if (config_input_match(ev, "history_oneshot_key", 1)) {
 			history_hint_mode();
@@ -223,6 +233,7 @@ static void print_usage()
 		"  --list-options              Print all available config options.\n"
 
 		"  --hint                      Start warpd in hint mode and exit after the end of the session.\n"
+		"  --hint2                     Start warpd in two pass hint mode and exit after the end of the session.\n"
 		"  --normal                    Start warpd in normal mode and exit after the end of the session.\n"
 		"  --grid                      Start warpd in hint grid and exit after the end of the session.\n"
 		;
@@ -254,6 +265,8 @@ int main(int argc, char *argv[])
 		{"hint", no_argument, NULL, 257},
 		{"grid", no_argument, NULL, 258},
 		{"normal", no_argument, NULL, 259},
+		{"hint2", no_argument, NULL, 261},
+		{"history", no_argument, NULL, 262},
 		{"list-options", no_argument, NULL, 260},
 		{0}
 	};
@@ -287,6 +300,12 @@ int main(int argc, char *argv[])
 				break;
 			case 259:
 				oneshot_mode = MODE_NORMAL;
+				break;
+			case 261:
+				oneshot_mode = MODE_HINT2;
+				break;
+			case 262:
+				oneshot_mode = MODE_HISTORY;
 				break;
 			case 260:
 				config_print_options();

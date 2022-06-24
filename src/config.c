@@ -13,10 +13,13 @@ static struct {
 	const char *description;
 } options[] = {
 	{ "hint_activation_key", "A-M-x", "Activates hint mode." },
+	{ "hint2_activation_key", "A-M-X", "Activate two pass hint mode." },
 	{ "grid_activation_key", "A-M-g", "Activates grid mode and allows for further manipulation of the pointer using the mapped keys." },
+	{ "history_activation_key", "A-M-h", "Activate history mode." },
 	{ "screen_activation_key", "A-M-s", "Activate (s)creen selection mode." },
 	{ "activation_key", "A-M-c", "Activate normal movement mode (manual (c)ursor movement)." },
 	{ "hint_oneshot_key", "A-M-l", "Activate hint mode and exit upon selection." },
+	{ "hint2_oneshot_key", "A-M-L", "Activate two pass hint mode and exit upon selection." },
 
 	{ "repeat_interval", "20", "The number of milliseconds before repeating a movement event." },
 	{ "speed", "220", "Pointer speed in pixels/second." },
@@ -77,8 +80,10 @@ static struct {
 	{ "hint_font", "Arial", "The font name used by hints. Note: This is platform specific, in X it corresponds to a valid xft font name, on macos it corresponds to a postscript name." },
 	{ "hint_exit", "esc", "The exit key used for hint mode." },
 
+	{ "hint2_chars", "hjkl;asdfgqwertyuiopzxcvb", "The character set used for the second hint selection, should consist of at least hint_grid_size^2 characters." },
 	{ "hint2_size", "20", "The size of hints in the secondary grid (range: 1-1000)." },
 	{ "hint2_gap_size", "1", "The spacing between hints in the secondary grid. (range: 1-1000)" },
+	{ "hint2_grid_size", "3", "The size of the secondary grid." },
 
 	{ "scroll_down", "e", "Scroll down key." },
 	{ "scroll_up", "r", "Scroll up key." },
