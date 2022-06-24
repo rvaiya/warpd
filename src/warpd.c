@@ -258,7 +258,7 @@ int main(int argc, char *argv[])
 		{0}
 	};
 
-	while ((c = getopt_long(argc, argv, "rhfvlc:", opts, NULL)) != -1) {
+	while ((c = getopt_long(argc, argv, "qrhfvlc:", opts, NULL)) != -1) {
 		switch (c) {
 			case 'v':
 				print_version();
