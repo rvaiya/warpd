@@ -146,6 +146,9 @@ struct input_event *normal_mode(struct input_event *start_ev)
 			   config_input_match(ev, "hint2", 1) ||
 			   config_input_match(ev, "hint", 1)) {
 			goto exit;
+		} else if (config_input_match(ev, "print", 1)) {
+			printf("%d %d\n", mx, my);
+			fflush(stdout);
 		} else { /* Mouse Buttons. */
 			int btn;
 

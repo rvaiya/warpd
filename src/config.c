@@ -33,6 +33,7 @@ static struct {
 	{ "drag", "v", "Toggle drag mode (mneominc (v)isual mode)." },
 	{ "copy_and_exit", "c", "Send the copy key and exit (useful in combination with v)." },
 
+	{ "print", "p", "Print the current mouse coordinates to stdout (useful for scripts)." },
 	{ "history", ";", "Activate hint history mode while in normal mode." },
 	{ "hint", "x", "Activate hint mode while in normal mode (mnemonic: x marks the spot?)." },
 	{ "hint2", "X", "Activate two pass hint mode." },

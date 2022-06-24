@@ -27,7 +27,7 @@ static void filter(screen_t scr, const char *s)
 	platform_commit();
 }
 
-static size_t get_hint_size(screen_t scr, int *w, int *h) 
+static void get_hint_size(screen_t scr, int *w, int *h)
 {
 	int sw, sh;
 
@@ -139,8 +139,8 @@ static int hint_selection(screen_t scr, struct hint *_hints, size_t _nr_hints)
 			nx = h->x + h->w / 2;
 			ny = h->y + h->h / 2;
 
-			/* 
-			 * Wiggle the cursor a single pixel to accommodate 
+			/*
+			 * Wiggle the cursor a single pixel to accommodate
 			 * text selection widgets which don't like spontaneous
 			 * cursor warping.
 			 */
