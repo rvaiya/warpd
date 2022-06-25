@@ -315,12 +315,12 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	lock();
-
 	if (oneshot_mode) {
 		start_main_loop(oneshot_loop);
 		exit(0);
 	}
+
+	lock();
 
 	if (!foreground)
 		daemonize();
