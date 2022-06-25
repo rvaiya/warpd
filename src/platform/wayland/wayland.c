@@ -44,6 +44,8 @@ void platform_mouse_move(struct screen *scr, int x, int y)
 	int i;
 	int maxx = 0;
 	int maxy = 0;
+	int minx = 0;
+	int miny = 0;
 
 	ptrx = x;
 	ptry = y;
@@ -52,17 +54,26 @@ void platform_mouse_move(struct screen *scr, int x, int y)
 		int x = screens[i].x + screens[i].w;
 		int y = screens[i].y + screens[i].h;
 
+		if (screens[i].y < miny)
+			miny = screens[i].y;
+		if (screens[i].x < minx)
+			minx = screens[i].x;
+
 		if (y > maxy)
 			maxy = y;
 		if (x > maxx)
 			maxx = x;
 	}
 
+	/*
+	 * Virtual pointer space always beings at 0,0, while global compositor
+	 * space may have a negative real origin :/.
+	 */
 	zwlr_virtual_pointer_v1_motion_absolute(wl.ptr, 0,
-						wl_fixed_from_int(x+scr->x),
-						wl_fixed_from_int(y+scr->y),
-						wl_fixed_from_int(maxx),
-						wl_fixed_from_int(maxy));
+						wl_fixed_from_int(x+scr->x-minx),
+						wl_fixed_from_int(y+scr->y-miny),
+						wl_fixed_from_int(maxx-minx),
+						wl_fixed_from_int(maxy-miny));
 	zwlr_virtual_pointer_v1_frame(wl.ptr);
 
 	active_screen = scr;
