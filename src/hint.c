@@ -275,6 +275,7 @@ int history_hint_mode()
 	struct hint hints[MAX_HINTS];
 	struct histfile_ent *ents;
 	screen_t scr;
+	int w, h;
 	int sw, sh;
 	size_t n, i;
 
@@ -283,8 +284,7 @@ int history_hint_mode()
 
 	n = histfile_read(&ents);
 
-	const int w = (sw * config_get_int("hist_hint_size")) / 100;
-	const int h = (sw * config_get_int("hist_hint_size")) / 100;
+	get_hint_size(scr, &w, &h);
 
 	for (i = 0; i < n; i++) {
 		hints[i].w = w;
