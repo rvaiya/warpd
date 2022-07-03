@@ -172,8 +172,7 @@ struct input_event *normal_mode(struct input_event *start_ev)
 					}
 				}
 
-				ev = NULL;
-				goto exit;
+				exit(btn);
 			}
 		}
 	next:

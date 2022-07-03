@@ -22,12 +22,11 @@ warpd [options]
 
 	*-c*, *--config* <config file>: Use the provided config file.
 
-	*--hint*: Run warpd in oneshot (daemonless) hint mode.
+	*--hint*: Run warpd in (daemonless) hint mode. The exit code corresponds to oneshot button used to terminate warpd (or 0 in the case of the exit key).
 
-	*--grid*: Run warpd in oneshot grid mode.
+	*--grid*: Run warpd in grid mode.
 
-
-	*--normal*: Run warpd in oneshot normal mode.
+	*--normal*: Run warpd in normal mode.
 
 # DESCRIPTION
 
@@ -123,7 +122,7 @@ text to the system clipboard and terminate the current session.
 ## Wayland
 
 Wayland's architecture does not allow clients to globally bind hotkeys. In
-order to run warpd, one of the oneshot flags must be used. These can be bound
+order to run warpd, one of the mode flags must be used. These can be bound
 to the corresponding hotkeys in your compositor.
 
 E.G
