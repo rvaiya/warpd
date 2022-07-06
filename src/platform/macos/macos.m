@@ -165,7 +165,7 @@ void platform_commit()
 	});
 }
 
-void start_main_loop(void (*loop)())
+void platform_run(void (*loop)())
 {
 	pthread_t thread;
 

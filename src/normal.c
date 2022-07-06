@@ -44,7 +44,7 @@ static void move(screen_t scr, int x, int y)
 	redraw(scr, x, y, 0);
 }
 
-struct input_event *normal_mode(struct input_event *start_ev)
+struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
 {
 	struct input_event *ev;
 	screen_t scr;
@@ -156,6 +156,11 @@ struct input_event *normal_mode(struct input_event *start_ev)
 				hist_add(mx, my);
 				histfile_add(mx, my);
 				platform_mouse_click(btn);
+
+				if (oneshot) {
+					printf("%d %d\n", mx, my);
+					exit(btn);
+				}
 			} else if ((btn = config_input_match(ev, "oneshot_buttons", 0))) {
 				hist_add(mx, my);
 				platform_mouse_click(btn);

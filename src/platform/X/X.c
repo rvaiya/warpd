@@ -165,7 +165,7 @@ Window create_window(const char *color)
 	return win;
 }
 
-void start_main_loop(void (*init)(void))
+void platform_run(void (*init)(void))
 {
 	dpy = XOpenDisplay(NULL);
 

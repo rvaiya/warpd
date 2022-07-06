@@ -18,10 +18,14 @@ void toggle_drag()
 		platform_mouse_up(1);
 }
 
-static int oneshot_mode;
+static int mode_flag = 0;
+static int oneshot_flag = 0;
 
 static void activation_loop(int mode)
 {
+	init_mouse();
+	init_hints();
+
 	struct input_event *ev = NULL;
 
 	dragging = 0;
@@ -36,7 +40,7 @@ static void activation_loop(int mode)
 			mode = MODE_NORMAL;
 			break;
 		case MODE_NORMAL:
-			ev = normal_mode(ev);
+			ev = normal_mode(ev, oneshot_flag);
 
 			if (config_input_match(ev, "history", 1))
 				mode = MODE_HISTORY;
@@ -79,12 +83,9 @@ exit:
 	return;
 }
 
-static void oneshot_loop()
+static void mode_loop()
 {
-	init_mouse();
-	init_hints();
-
-	activation_loop(oneshot_mode);
+	activation_loop(mode_flag);
 }
 
 static void hintspec_loop()
@@ -99,7 +100,7 @@ static void hintspec_loop()
 	printf("%d %d\n", x, y);
 }
 
-static void main_loop()
+static void daemon_loop()
 {
 	init_mouse();
 	init_hints();
@@ -268,6 +269,7 @@ int main(int argc, char *argv[])
 		{"hint2", no_argument, NULL, 261},
 		{"history", no_argument, NULL, 262},
 		{"list-options", no_argument, NULL, 260},
+		{"oneshot", no_argument, NULL, 263},
 		{0}
 	};
 
@@ -277,13 +279,13 @@ int main(int argc, char *argv[])
 				print_version();
 				return 0;
 			case 'q':
-				start_main_loop(hintspec_loop);
+				platform_run(hintspec_loop);
 				return 0;
 			case 'h':
 				print_usage();
 				return 0;
 			case 'l':
-				start_main_loop(print_keys_loop);
+				platform_run(print_keys_loop);
 				return 0;
 			case 'c':
 				config_path = optarg;
@@ -293,19 +295,22 @@ int main(int argc, char *argv[])
 				break;
 
 			case 257:
-				oneshot_mode = MODE_HINT;
+				mode_flag = MODE_HINT;
 				break;
 			case 258:
-				oneshot_mode = MODE_GRID;
+				mode_flag = MODE_GRID;
 				break;
 			case 259:
-				oneshot_mode = MODE_NORMAL;
+				mode_flag = MODE_NORMAL;
 				break;
 			case 261:
-				oneshot_mode = MODE_HINT2;
+				mode_flag = MODE_HINT2;
 				break;
 			case 262:
-				oneshot_mode = MODE_HISTORY;
+				mode_flag = MODE_HISTORY;
+				break;
+			case 263:
+				oneshot_flag = 1;
 				break;
 			case 260:
 				config_print_options();
@@ -315,8 +320,8 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	if (oneshot_mode) {
-		start_main_loop(oneshot_loop);
+	if (mode_flag) {
+		platform_run(mode_loop);
 		exit(0);
 	}
 
@@ -327,5 +332,5 @@ int main(int argc, char *argv[])
 
 	setvbuf(stdout, NULL, _IOLBF, 0);
 	printf("Starting warpd v" VERSION " (" COMMIT ")\n");
-	start_main_loop(main_loop);
+	platform_run(daemon_loop);
 }

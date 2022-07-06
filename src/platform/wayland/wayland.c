@@ -15,7 +15,7 @@ static int ptry = -1;
 
 void init_wl();
 
-void start_main_loop(void (*loop)(void))
+void platform_run(void (*loop)(void))
 {
 	init_wl();
 

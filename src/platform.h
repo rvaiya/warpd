@@ -45,7 +45,7 @@ typedef struct screen *screen_t;
 /* Main entry point for each platform. Must be called befor other functions are
  * usable. */
 
-void start_main_loop(void (*init)(void));
+void platform_run(void (*init)(void));
 
 /* Input */
 

@@ -28,6 +28,8 @@ warpd [options]
 
 	*--normal*: Run warpd in normal mode.
 
+	*--oneshot*: Exit warpd on a button press and print the coordinates to stdout (useful for scripting).
+
 # DESCRIPTION
 
 warpd has three main modes which can be used to manipulate the pointer. The
