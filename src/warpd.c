@@ -23,6 +23,7 @@ static int click_arg = 0;
 static int movearg_x = -1;
 static int movearg_y = -1;
 static int oneshot_flag = 0;
+static int record_flag = 0;
 
 static void activation_loop(int mode)
 {
@@ -115,14 +116,21 @@ static void hintspec_loop()
 static void click_loop()
 {
 	screen_t scr;
+	int x, y;
 
-	platform_mouse_get_position(&scr, NULL, NULL);
+	platform_mouse_get_position(&scr, &x, &y);
 
-	if (movearg_x != -1 || movearg_y != -1)
+	if (movearg_x != -1 || movearg_y != -1) {
 		platform_mouse_move(scr, movearg_x, movearg_y);
+		x = movearg_x;
+		y = movearg_y;
+	}
 
-	if (click_arg)
+	if (click_arg) {
 		platform_mouse_click(click_arg);
+		if (record_flag)
+			histfile_add(x, y);
+	}
 }
 
 static void daemon_loop()
@@ -266,6 +274,7 @@ static void print_usage()
 		"  --oneshot                   When paired with one of the mode flags, exit warpd as soon as the mode is complete (i.e don't drop into normal mode). Principally useful for scripting."
 		"  --move '<x> <y>'            Move the pointer to the specified coordinates."
 		"  --click <button>            Send a mouse click corresponding to the supplied button and exit. May be paired with --move."
+		"  --record                    When used with --click, records the event in warpd's hint history."
 		;
 
 	printf("%s", usage);
@@ -301,6 +310,7 @@ int main(int argc, char *argv[])
 		{"oneshot", no_argument, NULL, 263},
 		{"click", required_argument, NULL, 264},
 		{"move", required_argument, NULL, 265},
+		{"record", no_argument, NULL, 266},
 		{0}
 	};
 
@@ -345,19 +355,26 @@ int main(int argc, char *argv[])
 				break;
 			case 264:
 				click_arg = atoi(optarg);
-				platform_run(click_loop);
-				return 0;
+				break;
 			case 265:
 				sscanf(optarg, "%d %d", &movearg_x, &movearg_y);
 
 				platform_run(click_loop);
 				return 0;
+			case 266:
+				record_flag = 1;
+				break;
 			case 260:
 				config_print_options();
 				return 0;
 			case '?':
 				return -1;
 		}
+	}
+
+	if (click_arg) {
+		platform_run(click_loop);
+		exit(0);
 	}
 
 	if (mode_flag) {
