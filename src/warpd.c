@@ -27,8 +27,14 @@ static int record_flag = 0;
 
 static void activation_loop(int mode)
 {
-	init_mouse();
-	init_hints();
+	static int init = 0;
+
+	if (!init) {
+		init_mouse();
+		init_hints();
+
+		init++;
+	}
 
 	struct input_event *ev = NULL;
 
