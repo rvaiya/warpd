@@ -22,13 +22,21 @@ warpd [options]
 
 	*-c*, *--config* <config file>: Use the provided config file.
 
-	*--hint*: Run warpd in (daemonless) hint mode. The exit code corresponds to oneshot button used to terminate warpd (or 0 in the case of the exit key).
+Mode Flags:
+
+	*--hint*: Run warpd in (daemonless) hint mode.
+
+	*--hint2*: Run warpd in 2 stage hint mode.
 
 	*--grid*: Run warpd in grid mode.
 
 	*--normal*: Run warpd in normal mode.
 
-	*--oneshot*: Exit warpd on a button press and print the coordinates to stdout (useful for scripting).
+	*--oneshot*: When paired with one of the mode flags, exit warpd as soon as the mode is complete (i.e don't drop into normal mode). Principally useful for scripting.
+
+	*--move '<x> <y>'*: Move the pointer to the specified coordinates.
+
+	*--click <button>*: Send a mouse click corresponding to the supplied button and exit. May be paired with --move.
 
 # DESCRIPTION
 
@@ -44,6 +52,8 @@ ultimately using normal mode to complete the selection. If the selection is a
 large body of text, it may be desirable to activate grid (_g_) or hint (_x_)
 mode for a second time to warp the pointer to the desired region's terminal
 point.  
+
+In its simplest form, warpd can be used as a poor man's xdotool (--move/--click).
 
 A description of each mode follows (see also _USAGE_NOTES_):
 
@@ -154,6 +164,34 @@ Options which accept multiple keys (e.g _grid_keys_) expect each key to
 be separated by a space. Options which accept one or more keys
 may be specified mulitple times, in which case all supplied mappings
 are interchangeable.
+
+# SCRIPTING
+
+Judicious use of warpd's flags makes creating custom modes fairly easy.
+
+For example, the --oneshot flag may be used in conjunction with one of the mode
+flags to facilitate target selection at which point subsequent action can be
+taken by the script.
+
+## Examples
+
+	# Prompt the user for a target using two stage hint mode and 
+	# left click on the result.
+
+	warpd --hint2; warpd --click 1
+
+	# Interactively create a hint file.
+	#
+	# Points can be added by navigating around as usual and pressing 'p'.
+	# The process is terminated by using the exit key.
+
+	warpd --normal|awk '{print substr("asdfghjkl;", NR, 1), $0}' > hints
+
+	# Prompt the user for one of the recorded hints and click on the
+	# result.
+
+	warpd -q < hints ; warpd --click 1
+
 
 # USAGE NOTES
 

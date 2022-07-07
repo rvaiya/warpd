@@ -153,14 +153,12 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
 			int btn;
 
 			if ((btn = config_input_match(ev, "buttons", 0))) {
+				if (oneshot)
+					exit(btn);
+
 				hist_add(mx, my);
 				histfile_add(mx, my);
 				platform_mouse_click(btn);
-
-				if (oneshot) {
-					printf("%d %d\n", mx, my);
-					exit(btn);
-				}
 			} else if ((btn = config_input_match(ev, "oneshot_buttons", 0))) {
 				hist_add(mx, my);
 				platform_mouse_click(btn);

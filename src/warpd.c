@@ -19,6 +19,9 @@ void toggle_drag()
 }
 
 static int mode_flag = 0;
+static int click_arg = 0;
+static int movearg_x = -1;
+static int movearg_y = -1;
 static int oneshot_flag = 0;
 
 static void activation_loop(int mode)
@@ -75,6 +78,15 @@ static void activation_loop(int mode)
 			mode = MODE_NORMAL;
 			break;
 		}
+
+		if (oneshot_flag) {
+			int mx, my;
+
+			platform_mouse_get_position(NULL, &mx, &my);
+			printf("%d %d\n", mx, my);
+
+			exit(0);
+		}
 	}
 
 exit:
@@ -98,6 +110,19 @@ static void hintspec_loop()
 	hintspec_mode();
 	platform_mouse_get_position(NULL, &x, &y);
 	printf("%d %d\n", x, y);
+}
+
+static void click_loop()
+{
+	screen_t scr;
+
+	platform_mouse_get_position(&scr, NULL, NULL);
+
+	if (movearg_x != -1 || movearg_y != -1)
+		platform_mouse_move(scr, movearg_x, movearg_y);
+
+	if (click_arg)
+		platform_mouse_click(click_arg);
 }
 
 static void daemon_loop()
@@ -237,6 +262,10 @@ static void print_usage()
 		"  --hint2                     Start warpd in two pass hint mode and exit after the end of the session.\n"
 		"  --normal                    Start warpd in normal mode and exit after the end of the session.\n"
 		"  --grid                      Start warpd in hint grid and exit after the end of the session.\n"
+		"  --grid                      Start warpd in hint grid and exit after the end of the session.\n"
+		"  --oneshot                   When paired with one of the mode flags, exit warpd as soon as the mode is complete (i.e don't drop into normal mode). Principally useful for scripting."
+		"  --move '<x> <y>'            Move the pointer to the specified coordinates."
+		"  --click <button>            Send a mouse click corresponding to the supplied button and exit. May be paired with --move."
 		;
 
 	printf("%s", usage);
@@ -270,6 +299,8 @@ int main(int argc, char *argv[])
 		{"history", no_argument, NULL, 262},
 		{"list-options", no_argument, NULL, 260},
 		{"oneshot", no_argument, NULL, 263},
+		{"click", required_argument, NULL, 264},
+		{"move", required_argument, NULL, 265},
 		{0}
 	};
 
@@ -312,6 +343,15 @@ int main(int argc, char *argv[])
 			case 263:
 				oneshot_flag = 1;
 				break;
+			case 264:
+				click_arg = atoi(optarg);
+				platform_run(click_loop);
+				return 0;
+			case 265:
+				sscanf(optarg, "%d %d", &movearg_x, &movearg_y);
+
+				platform_run(click_loop);
+				return 0;
 			case 260:
 				config_print_options();
 				return 0;
