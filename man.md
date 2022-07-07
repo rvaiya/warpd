@@ -34,6 +34,8 @@ Mode Flags:
 
 	*--oneshot*: When paired with one of the mode flags, exit warpd as soon as the mode is complete (i.e don't drop into normal mode). Principally useful for scripting.
 
+	*--drag*: Automatically start a drag operation when paired with --normal.
+
 	*--move '<x> <y>'*: Move the pointer to the specified coordinates.
 
 	*--click <button>*: Send a mouse click corresponding to the supplied button and exit. May be paired with --move.

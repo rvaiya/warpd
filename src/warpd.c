@@ -24,6 +24,7 @@ static int movearg_x = -1;
 static int movearg_y = -1;
 static int oneshot_flag = 0;
 static int record_flag = 0;
+static int drag_flag = 0;
 
 static int activation_loop(int mode)
 {
@@ -33,6 +34,9 @@ static int activation_loop(int mode)
 	if (!init) {
 		init_mouse();
 		init_hints();
+
+		if (drag_flag)
+			toggle_drag();
 
 		init++;
 	}
@@ -224,7 +228,7 @@ static void lock()
 
 	if (fd < 0) {
 		perror("flock open");
-		exit(1);
+		exit(-1);
 	}
 
 	if (flock(fd, LOCK_EX | LOCK_NB) == -1) {
@@ -323,6 +327,7 @@ int main(int argc, char *argv[])
 		{"click", required_argument, NULL, 264},
 		{"move", required_argument, NULL, 265},
 		{"record", no_argument, NULL, 266},
+		{"drag", no_argument, NULL, 267},
 		{0}
 	};
 
@@ -375,6 +380,9 @@ int main(int argc, char *argv[])
 				return 0;
 			case 266:
 				record_flag = 1;
+				break;
+			case 267:
+				drag_flag = 1;
 				break;
 			case 260:
 				config_print_options();
