@@ -177,7 +177,7 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
 					}
 				}
 
-				exit(btn);
+				goto exit;
 			}
 		}
 	next:

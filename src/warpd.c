@@ -25,9 +25,10 @@ static int movearg_y = -1;
 static int oneshot_flag = 0;
 static int record_flag = 0;
 
-static void activation_loop(int mode)
+static int activation_loop(int mode)
 {
 	static int init = 0;
+	int rc = 0;
 
 	if (!init) {
 		init_mouse();
@@ -62,8 +63,13 @@ static void activation_loop(int mode)
 				mode = MODE_GRID;
 			else if (config_input_match(ev, "screen", 1))
 				mode = MODE_SCREEN_SELECTION;
-			else if (config_input_match(ev, "exit", 1) || !ev)
+			else if ((rc = config_input_match(ev, "oneshot_buttons", 1)) || !ev) {
 				goto exit;
+			}
+			else if (config_input_match(ev, "exit", 1) || !ev) {
+				rc = 0;
+				goto exit;
+			}
 
 			break;
 		case MODE_HINT2:
@@ -99,12 +105,12 @@ static void activation_loop(int mode)
 exit:
 	if (dragging)
 		toggle_drag();
-	return;
+	return rc;
 }
 
 static void mode_loop()
 {
-	activation_loop(mode_flag);
+	exit(activation_loop(mode_flag));
 }
 
 static void hintspec_loop()
