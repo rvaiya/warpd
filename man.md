@@ -30,6 +30,8 @@ Mode Flags:
 
 	*--normal*: Run warpd in normal mode.
 
+	*--history*: Run warpd in history hint mode.
+
 	*--oneshot*: When paired with one of the mode flags, exit warpd as soon as the mode is complete (i.e don't drop into normal mode). When used with normal mode, exit as soon as a mouse button is pressed (without pressing it). If no mode flag is specified, the default behaviour is the same as --normal --oneshot. Principally useful for scripting.
 
 	*-q*, *--query*: Consume a list of hints from stdin and print the result to stdout (in the form <x> <y> <hint>). Each line should have the form _<label> <x> <y>_. May be used in conjunction with --click.
