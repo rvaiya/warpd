@@ -18,7 +18,7 @@ warpd [options]
 
 	*-v*, *--version*: Print the current version.
 
-	*-c*, *--config* <config file>: Use the provided config file.
+	*-c*, *--config* <config file>: Use the provided config file (can be a dash to read from STDIN).
 
 Mode Flags:
 
@@ -30,6 +30,8 @@ Mode Flags:
 
 	*--normal*: Run warpd in normal mode.
 
+	*--history*: Run warpd in history hint mode.
+
 	*--oneshot*: When paired with one of the mode flags, exit warpd as soon as the mode is complete (i.e don't drop into normal mode). When used with normal mode, exit as soon as a mouse button is pressed (without pressing it). If no mode flag is specified, the default behaviour is the same as --normal --oneshot. Principally useful for scripting.
 
 	*-q*, *--query*: Consume a list of hints from stdin and print the result to stdout (in the form <x> <y> <hint>). Each line should have the form _<label> <x> <y>_. May be used in conjunction with --click.
@@ -39,6 +41,8 @@ Mode Flags:
 	*--move '<x> <y>'*: Move the pointer to the specified coordinates and exit.
 
 	*--click <button>*: Send a mouse click corresponding to the supplied button and exit. May be paired with --move or --oneshot (in which case the click will occur at the end of the selection).
+
+	*--record*: When used with --click, adds the click event to warpd's history.
 
 # DESCRIPTION
 
@@ -162,10 +166,57 @@ Each option must be specified on its own line and have the format:
 
 <option>: <value>
 
-Options which accept multiple keys (e.g _grid_keys_) expect each key to
-be separated by a space. Options which accept one or more keys
-may be specified mulitple times, in which case all supplied mappings
-are interchangeable.
+If an option appears multiple times, the last occurence wins, with the exception of keybinding options (see below).
+
+# KEYBINDINGS
+
+Options which accept multiple keys (e.g _hint_keys_) expect each key to
+be separated by a space.
+
+Options which expect one or more keys may be specified multiple times, in which case all accepted mappings are interchangeable. For options expecting only a single key, it is alternatively possible to specify all desired bindings as space separated values in a single declaration. However, if the same key is bound to multiple actions, the last occuring binding still wins.
+
+## Example 1 (binding multiple keys to the same action)
+
+```
+hint_mode: f a
+hint_mode: h
+```
+
+and
+
+```
+hint_mode: f
+hint_mode: a
+hint_mode: h
+```
+
+are equivalent, and so is `hint_mode: f a h`. The result in all of the three cases would be to make pressing the f, a and h keys enter hint mode while in normal mode.
+
+## Example 2 (conflict resolution when binding the same key to multiple actions)
+
+```
+hint_mode: f a
+drag_mode: a
+```
+
+binds f to entering hint mode from normal mode, while a is bound to drag mode, as later occuring bindings take precedence.
+
+## Example 3 (binding specific mouse keys multiple times)
+
+The `buttons` and `oneshot_buttons` options play a special role as they accept three keys by default. Here, In order to bind clicking a specific mouse button to multiple keys, simply write multiple lines and leave bindings of those keys which should not be rebound unchanged.
+
+```
+buttons: g c r
+buttons: o e u
+```
+would make g and o, c and e as well as r and u clicking the left, middle and right mouse button, respectively, while
+
+```
+buttons: g c r
+buttons: o c r
+```
+
+binds two keys to a left click, while only a single key is bound to a middle and right click, respectively. 
 
 # SCRIPTING
 
