@@ -1,4 +1,25 @@
+# v1.3.0
+
+ - Add more scripting facilities (e.g --oneshot --record)
+ - Allow oneshot activation while the daemon is running
+ - Fix -q flag
+ - Add print key
+ - Make hint size specification consistent
+ - Add --query
+ - Fix dialog occlusion issue (#134)
+ - Implement 2 stage hint mode
+ - Add history mode
+ - Fix modified button presses (#86)
+ - Fix macos compilation issues
+ - Add an optional visual indicator for normal mode (#121)
+ - Check for zxdg_output_manager before adding screens (#116)
+ - Make scroll speed configurable (#112)
+ - wayland: Make font configurable (#137)
+ - wayland: Fix multi-screen support (#135)
+ - Various bugfixes
+
 # v1.2.2
+
  - Use XDG compliant config paths + eliminate ~/.config pollution
  - wayland: Lower the required layer_shell version
  - Eliminate hint asymmetry (alters the unit of hint_size)
@@ -7,18 +28,22 @@
  - Misc bugfixes
 
 # v1.2.1
+
  - Add multi-screen support to wayland
  - Add dedicated hint_exit key (distinct from exit)
 
-# v1.2
+# v1.2.0
+
  - Add experimental wayland support
  - Add --hint/--normal/--grid flags
  - Fix missing key up bug
 
 # v1.1.4-beta
+
  - Fix alternate (english) layout support
 
 # v1.1.3-beta
+
  - Hide cursor when scrolling
  - Fix full hint drawing issue caused by switching VTs
 
