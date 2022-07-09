@@ -30,6 +30,7 @@ static int oneshot_mode = 0;
 static int activation_loop(int mode)
 {
 	static int init = 0;
+	int oneshot_normal = 0;
 	int rc = 0;
 
 	if (!init) {
@@ -40,6 +41,15 @@ static int activation_loop(int mode)
 			toggle_drag();
 
 		init++;
+	}
+
+	if (oneshot_mode && mode == MODE_NORMAL) {
+		/*
+		 * If oneshot is used in conjunction with normal
+		 * we allow other intermediate modes before the
+		 * final selection.
+		 */
+		oneshot_normal = 1;
 	}
 
 	struct input_event *ev = NULL;
@@ -100,7 +110,8 @@ static int activation_loop(int mode)
 			break;
 		}
 
-		if (oneshot_mode) {
+		if (oneshot_mode &&
+			(!oneshot_normal || config_input_match(ev, "buttons", 1))) {
 			int rc = 0;
 			int x, y;
 			screen_t scr;
@@ -377,6 +388,9 @@ int main(int argc, char *argv[])
 				mode_flag = MODE_HISTORY;
 				break;
 			case 263:
+				if (!mode_flag)
+					mode_flag = MODE_NORMAL;
+
 				oneshot_mode = 1;
 				break;
 			case 264:

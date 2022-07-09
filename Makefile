@@ -1,5 +1,5 @@
 COMMIT=$(shell git rev-parse --short HEAD)
-VERSION=1.3.0
+VERSION=1.3.1
 DESTDIR=
 PREFIX=/usr
 

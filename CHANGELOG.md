@@ -1,3 +1,7 @@
+# v1.3.1
+
+ - Allow secondary mode selection with --oneshot --normal.
+
 # v1.3.0
 
  - Add more scripting facilities (e.g --oneshot --record)
