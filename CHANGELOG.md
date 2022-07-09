@@ -3,6 +3,7 @@
  - Allow secondary mode selection with --oneshot --normal.
  - Add identifying information to print keys and -q
  - Fix -c
+ - Make undo keys in hint based modes configurable
 
 # v1.3.0
 

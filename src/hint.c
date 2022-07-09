@@ -116,9 +116,9 @@ static int hint_selection(screen_t scr, struct hint *_hints, size_t _nr_hints)
 		if (config_input_match(ev, "hint_exit", 1)) {
 			rc = -1;
 			break;
-		} else if (input_eq(ev, "C-u", 1)) {
+		} else if (config_input_match(ev, "hint_undo_all", 1)) {
 			buf[0] = 0;
-		} else if (input_eq(ev, "backspace", 1)) {
+		} else if (config_input_match(ev, "hint_undo", 1)) {
 			if (len)
 				buf[len - 1] = 0;
 		} else {
