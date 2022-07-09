@@ -82,37 +82,31 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
 
 		platform_mouse_get_position(&scr, &mx, &my);
 
-		if (config_input_match(ev, "scroll_down", 1)) {
-			redraw(scr, mx, my, 1);
-
-			if (ev->pressed) {
-				scroll_stop();
-				scroll_accelerate(SCROLL_DOWN);
-			} else
+		if (!ev->pressed) {
+			if (config_input_match(ev, "scroll_down", 1)
+				|| config_input_match(ev, "scroll_up", 1)) {
+				redraw(scr, mx, my, 1);
 				scroll_decelerate();
-		} else if (config_input_match(ev, "scroll_up", 1)) {
-			redraw(scr, mx, my, 1);
+			} else if (config_input_match(ev, "accelerator", 1)
+				|| config_input_match(ev, "decelerator", 1))
+				mouse_normal();
 
-			if (ev->pressed) {
-				scroll_stop();
-				scroll_accelerate(SCROLL_UP);
-			} else
-				scroll_decelerate();
-		} else if (config_input_match(ev, "accelerator", 1)) {
-			if (ev->pressed)
-				mouse_fast();
-			else
-				mouse_normal();
-		} else if (config_input_match(ev, "decelerator", 1)) {
-			if (ev->pressed)
-				mouse_slow();
-			else
-				mouse_normal();
-		} else if (!ev->pressed) {
 			goto next;
 		}
 
-		if (config_input_match(ev, "top", 1))
+		if (config_input_match(ev, "scroll_down", 1)) {
+			redraw(scr, mx, my, 1);
+			scroll_stop();
+			scroll_accelerate(SCROLL_DOWN);
+		} else if (config_input_match(ev, "scroll_up", 1)) {
+			redraw(scr, mx, my, 1);
+			scroll_stop();
+			scroll_accelerate(SCROLL_UP);
+		} else if (config_input_match(ev, "accelerator", 1))
+			mouse_fast();
+		else if (config_input_match(ev, "decelerator", 1))
+			mouse_slow();
+		else if (config_input_match(ev, "top", 1))
 			move(scr, mx, cursz / 2);
 		else if (config_input_match(ev, "bottom", 1))
 			move(scr, mx, sh - cursz / 2);
