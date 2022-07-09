@@ -42,6 +42,8 @@ Mode Flags:
 
 	*--click <button>*: Send a mouse click corresponding to the supplied button and exit. May be paired with --move or --oneshot (in which case the click will occur at the end of the selection).
 
+	*--record*: When used with --click, adds the click event to warpd's history.
+
 # DESCRIPTION
 
 warpd has three main modes which can be used to manipulate the pointer. The
