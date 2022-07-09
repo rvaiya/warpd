@@ -68,6 +68,8 @@ struct histfile_ent {
 	int y;
 };
 
+extern char last_selected_hint[32];
+
 int hintspec_mode();
 int history_hint_mode();
 int full_hint_mode(int second_pass);

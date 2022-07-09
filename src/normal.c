@@ -147,7 +147,7 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
 			   config_input_match(ev, "hint", 1)) {
 			goto exit;
 		} else if (config_input_match(ev, "print", 1)) {
-			printf("%d %d\n", mx, my);
+			printf("%d %d %s\n", mx, my, input_event_tostr(ev));
 			fflush(stdout);
 		} else { /* Mouse Buttons. */
 			int btn;

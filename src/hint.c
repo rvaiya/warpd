@@ -12,6 +12,8 @@ struct hint matched[MAX_HINTS];
 static size_t nr_hints;
 static size_t nr_matched;
 
+char last_selected_hint[32];
+
 static void filter(screen_t scr, const char *s)
 {
 	size_t i;
@@ -147,6 +149,7 @@ static int hint_selection(screen_t scr, struct hint *_hints, size_t _nr_hints)
 			platform_mouse_move(scr, nx+1, ny+1);
 
 			platform_mouse_move(scr, nx, ny);
+			strcpy(last_selected_hint, buf);
 			break;
 		} else if (nr_matched == 0) {
 			break;

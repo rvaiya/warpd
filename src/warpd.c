@@ -131,7 +131,10 @@ static int activation_loop(int mode)
 			if (record_flag)
 				histfile_add(x, y);
 
-			printf("%d %d\n", x, y);
+			if (mode == MODE_HINTSPEC)
+				printf("%d %d %s\n", x, y, last_selected_hint);
+			else
+				printf("%d %d\n", x, y);
 			exit(rc);
 		}
 	}
