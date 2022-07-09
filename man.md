@@ -237,6 +237,13 @@ first be less intuitive).
 *~/.config/warpd/config*
 	The path of the configuration file (searched in order).
 
+# EXIT STATUS
+
+On error warpd will exit with a status of 255, otherwise the exit code will
+correspond to the button used to terminate warpd (in the case of oneshot
+buttons or in the presence of --oneshot).  If warpd is terminated explicitly
+(i.e with the exit key) it will exit with a status of 0.
+
 # BUGS/LIMITATIONS
 
 warpd uses various platform specific hacks to bypass limitations
