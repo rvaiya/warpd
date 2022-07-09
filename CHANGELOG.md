@@ -1,6 +1,8 @@
 # v1.3.1
 
  - Allow secondary mode selection with --oneshot --normal.
+ - Add identifying information to print keys and -q
+ - Fix -c
 
 # v1.3.0
 

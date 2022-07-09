@@ -131,7 +131,8 @@ void parse_config(const char *path)
 {
 	size_t i;
 
-	FILE *fh = fopen(path, "r");
+	FILE *fh = (path[0] == '-' && path[1] == 0) ? stdin : fopen(path, "r");
+
 	if (fh) {
 		while (1) {
 			int ret;

@@ -330,8 +330,6 @@ int main(int argc, char *argv[])
 	int foreground = 0;
 	const char *config_path = get_config_path("config");
 
-	parse_config(config_path);
-
 	struct option opts[] = {
 		{"version", no_argument, NULL, 'v'},
 		{"help", no_argument, NULL, 'h'},
@@ -417,6 +415,8 @@ int main(int argc, char *argv[])
 				return -1;
 		}
 	}
+
+	parse_config(config_path);
 
 	if (mode_flag || oneshot_mode) {
 		platform_run(mode_loop);
