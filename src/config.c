@@ -79,6 +79,8 @@ static struct {
 	{ "hint_chars", "abcdefghijklmnopqrstuvwxyz", "The character set from which hints are generated. The total number of hints is the square of the size of this string. It may be desirable to increase this for larger screens or trim it to increase gaps between hints." },
 	{ "hint_font", "Arial", "The font name used by hints. Note: This is platform specific, in X it corresponds to a valid xft font name, on macos it corresponds to a postscript name." },
 	{ "hint_exit", "esc", "The exit key used for hint mode." },
+	{ "hint_undo", "backspace", "undo last selection step in one of the hint based modes." },
+	{ "hint_undo_all", "C-u", "undo all selection steps in one of the hint based modes." },
 
 	{ "hint2_chars", "hjkl;asdfgqwertyuiopzxcvb", "The character set used for the second hint selection, should consist of at least hint_grid_size^2 characters." },
 	{ "hint2_size", "20", "The size of hints in the secondary grid (range: 1-1000)." },
