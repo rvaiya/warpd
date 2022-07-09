@@ -33,7 +33,7 @@ static struct {
 	{ "oneshot_buttons", "n - /", "Oneshot mouse buttons (deactivate on click)." },
 	{ "oneshot_timeout", "300", "The length of time in milliseconds to wait for a second click after a oneshot key has been pressed." },
 	{ "exit", "esc", "Exit the currently active warpd session." },
-	{ "drag", "v", "Toggle drag mode (mneominc (v)isual mode)." },
+	{ "drag", "v", "Toggle drag mode (mnemonic (v)isual mode)." },
 	{ "copy_and_exit", "c", "Send the copy key and exit (useful in combination with v)." },
 
 	{ "print", "p", "Print the current mouse coordinates to stdout (useful for scripts)." },
