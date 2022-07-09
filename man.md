@@ -18,7 +18,7 @@ warpd [options]
 
 	*-v*, *--version*: Print the current version.
 
-	*-c*, *--config* <config file>: Use the provided config file.
+	*-c*, *--config* <config file>: Use the provided config file (can be a dash to read from STDIN).
 
 Mode Flags:
 
