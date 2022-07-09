@@ -14,8 +14,6 @@ warpd [options]
 
 	*-l*, *--list-keys*: Print a list of valid keys which can be used as config values.
 
-	*-q*, *--query*: Consume a list of hints from stdin and print the result to stdout. Each line should have the form _<label> <x> <y>_.
-
 	*--list-options*: Print all configurable options.
 
 	*-v*, *--version*: Print the current version.
@@ -34,11 +32,13 @@ Mode Flags:
 
 	*--oneshot*: When paired with one of the mode flags, exit warpd as soon as the mode is complete (i.e don't drop into normal mode). Principally useful for scripting.
 
+	*-q*, *--query*: Consume a list of hints from stdin and print the result to stdout. Each line should have the form _<label> <x> <y>_. May be used in conjunction with --click.
+
 	*--drag*: Automatically start a drag operation when paired with --normal.
 
-	*--move '<x> <y>'*: Move the pointer to the specified coordinates.
+	*--move '<x> <y>'*: Move the pointer to the specified coordinates and exit.
 
-	*--click <button>*: Send a mouse click corresponding to the supplied button and exit. May be paired with --move.
+	*--click <button>*: Send a mouse click corresponding to the supplied button and exit. May be paired with --move or --oneshot (in which case the click will occur at the end of the selection).
 
 # DESCRIPTION
 
@@ -178,21 +178,25 @@ taken by the script.
 ## Examples
 
 	# Prompt the user for a target using two stage hint mode and 
-	# left click on the result.
+	# left click on the result. 
+	#
+	# This particular example can be achieved more concisely with:
+	#
+	# warpd --hint2 --click 1
 
-	warpd --hint2; warpd --click 1
+	warpd --hint2 --oneshot; warpd --click 1
 
 	# Interactively create a hint file.
 	#
 	# Points can be added by navigating around as usual and pressing 'p'.
 	# The process is terminated by using the exit key.
 
-	warpd --normal|awk '{print substr("asdfghjkl;", NR, 1), $0}' > hints
+	warpd --normal|awk '{print substr("asdfghjkl;qwertyuiopzxcv,./;", NR, 1), $0}' > hints
 
 	# Prompt the user for one of the recorded hints and click on the
 	# result.
 
-	warpd -q < hints ; warpd --click 1
+	warpd --click 1 --query < hints 
 
 
 # USAGE NOTES

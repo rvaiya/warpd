@@ -22,9 +22,10 @@ static int mode_flag = 0;
 static int click_arg = 0;
 static int movearg_x = -1;
 static int movearg_y = -1;
-static int oneshot_flag = 0;
 static int record_flag = 0;
 static int drag_flag = 0;
+
+static int oneshot_mode = 0;
 
 static int activation_loop(int mode)
 {
@@ -54,8 +55,11 @@ static int activation_loop(int mode)
 			ev = NULL;
 			mode = MODE_NORMAL;
 			break;
+		case MODE_HINTSPEC:
+			hintspec_mode();
+			break;
 		case MODE_NORMAL:
-			ev = normal_mode(ev, oneshot_flag);
+			ev = normal_mode(ev, oneshot_mode);
 
 			if (config_input_match(ev, "history", 1))
 				mode = MODE_HISTORY;
@@ -96,57 +100,41 @@ static int activation_loop(int mode)
 			break;
 		}
 
-		if (oneshot_flag) {
-			int mx, my;
+		if (oneshot_mode) {
+			int rc = 0;
+			int x, y;
+			screen_t scr;
 
-			platform_mouse_get_position(NULL, &mx, &my);
-			printf("%d %d\n", mx, my);
+			platform_mouse_get_position(&scr, NULL, NULL);
 
-			exit(0);
+			if (movearg_x != -1 && movearg_y != -1)
+				platform_mouse_move(scr, movearg_x, movearg_y);
+
+			if (click_arg) {
+				platform_mouse_click(click_arg);
+				rc = click_arg;
+			}
+
+			platform_mouse_get_position(NULL, &x, &y);
+
+			if (record_flag)
+				histfile_add(x, y);
+
+			printf("%d %d\n", x, y);
+			exit(rc);
 		}
 	}
 
 exit:
 	if (dragging)
 		toggle_drag();
+
 	return rc;
 }
 
 static void mode_loop()
 {
 	exit(activation_loop(mode_flag));
-}
-
-static void hintspec_loop()
-{
-	int x, y;
-
-	init_mouse();
-	init_hints();
-
-	hintspec_mode();
-	platform_mouse_get_position(NULL, &x, &y);
-	printf("%d %d\n", x, y);
-}
-
-static void click_loop()
-{
-	screen_t scr;
-	int x, y;
-
-	platform_mouse_get_position(&scr, &x, &y);
-
-	if (movearg_x != -1 || movearg_y != -1) {
-		platform_mouse_move(scr, movearg_x, movearg_y);
-		x = movearg_x;
-		y = movearg_y;
-	}
-
-	if (click_arg) {
-		platform_mouse_click(click_arg);
-		if (record_flag)
-			histfile_add(x, y);
-	}
 }
 
 static void daemon_loop()
@@ -275,7 +263,6 @@ static void print_usage()
 	const char *usage =
 		"warpd: [options]\n\n"
 		"  -f, --foreground            Run warpd in the foreground (useful for debugging).\n"
-		"  -q, --query                 Consumes a list of hints from stdin and presents a one off hint selection.\n"
 		"  -h, --help                  Print this help message.\n"
 		"  -v, --version               Print the version and exit.\n"
 		"  -c, --config <config file>  Use the supplied config file.\n"
@@ -286,10 +273,10 @@ static void print_usage()
 		"  --hint2                     Start warpd in two pass hint mode and exit after the end of the session.\n"
 		"  --normal                    Start warpd in normal mode and exit after the end of the session.\n"
 		"  --grid                      Start warpd in hint grid and exit after the end of the session.\n"
-		"  --grid                      Start warpd in hint grid and exit after the end of the session.\n"
 		"  --oneshot                   When paired with one of the mode flags, exit warpd as soon as the mode is complete (i.e don't drop into normal mode). Principally useful for scripting."
 		"  --move '<x> <y>'            Move the pointer to the specified coordinates."
 		"  --click <button>            Send a mouse click corresponding to the supplied button and exit. May be paired with --move."
+		"  -q, --query                 Consumes a list of hints from stdin and presents a one off hint selection.\n"
 		"  --record                    When used with --click, records the event in warpd's hint history."
 		;
 
@@ -336,9 +323,6 @@ int main(int argc, char *argv[])
 			case 'v':
 				print_version();
 				return 0;
-			case 'q':
-				platform_run(hintspec_loop);
-				return 0;
 			case 'h':
 				print_usage();
 				return 0;
@@ -351,7 +335,10 @@ int main(int argc, char *argv[])
 			case 'f':
 				foreground = 1;
 				break;
-
+			case 'q':
+				mode_flag = MODE_HINTSPEC;
+				oneshot_mode = 1;
+				break;
 			case 257:
 				mode_flag = MODE_HINT;
 				break;
@@ -368,16 +355,16 @@ int main(int argc, char *argv[])
 				mode_flag = MODE_HISTORY;
 				break;
 			case 263:
-				oneshot_flag = 1;
+				oneshot_mode = 1;
 				break;
 			case 264:
 				click_arg = atoi(optarg);
+				oneshot_mode = 1;
 				break;
 			case 265:
 				sscanf(optarg, "%d %d", &movearg_x, &movearg_y);
-
-				platform_run(click_loop);
-				return 0;
+				oneshot_mode = 1;
+				break;
 			case 266:
 				record_flag = 1;
 				break;
@@ -392,22 +379,16 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	if (click_arg) {
-		platform_run(click_loop);
-		exit(0);
-	}
-
-	if (mode_flag) {
+	if (mode_flag || oneshot_mode) {
 		platform_run(mode_loop);
-		exit(0);
+	} else {
+		lock();
+
+		if (!foreground)
+			daemonize();
+
+		setvbuf(stdout, NULL, _IOLBF, 0);
+		printf("Starting warpd v" VERSION " (" COMMIT ")\n");
+		platform_run(daemon_loop);
 	}
-
-	lock();
-
-	if (!foreground)
-		daemonize();
-
-	setvbuf(stdout, NULL, _IOLBF, 0);
-	printf("Starting warpd v" VERSION " (" COMMIT ")\n");
-	platform_run(daemon_loop);
 }

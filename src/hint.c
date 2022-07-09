@@ -227,12 +227,10 @@ int hintspec_mode()
 	int n = 0;
 	struct hint hints[MAX_HINTS];
 
-
 	platform_mouse_get_position(&scr, NULL, NULL);
 	platform_screen_get_dimensions(scr, &sw, &sh);
 
 	get_hint_size(scr, &w, &h);
-
 
 	while (scanf("%15s %d %d",
 		hints[n].label,
