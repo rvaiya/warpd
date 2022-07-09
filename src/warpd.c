@@ -185,6 +185,28 @@ static void daemon_loop()
 	}
 }
 
+const char *get_data_path(const char *file)
+{
+	static char path[PATH_MAX];
+
+	if (getenv("XDG_DATA_DIR")) {
+		sprintf(path, "%s/warpd", getenv("XDG_DATA_DIR"));
+		mkdir(path, 0700);
+	} else {
+		sprintf(path, "%s/.local", getenv("HOME"));
+		mkdir(path, 0700);
+		strcat(path, "/share");
+		mkdir(path, 0700);
+		strcat(path, "/warpd");
+		mkdir(path, 0700);
+	}
+
+	strcat(path, "/");
+	strcat(path, file);
+
+	return path;
+}
+
 const char *get_config_path(const char *file)
 {
 	static char path[PATH_MAX];

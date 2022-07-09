@@ -20,7 +20,7 @@ static void read_hist(const char *path)
 
 size_t histfile_read(struct histfile_ent **entries)
 {
-	read_hist(get_config_path("history"));
+	read_hist(get_data_path("history"));
 
 	*entries = hist.ents;
 	return hist.sz;
@@ -29,7 +29,7 @@ size_t histfile_read(struct histfile_ent **entries)
 void histfile_add(int x, int y)
 {
 	int i, n;
-	const char *histpath = get_config_path("history");
+	const char *histpath = get_data_path("history");
 
 	read_hist(histpath);
 
