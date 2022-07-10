@@ -1,9 +1,12 @@
+# v1.3.2
+ - Improve config handling (allow for shadowed values to gracefully handle conflicts)
+ - Make undo keys in hint based modes configurable
+
 # v1.3.1
 
  - Allow secondary mode selection with --oneshot --normal.
  - Add identifying information to print keys and -q
  - Fix -c
- - Make undo keys in hint based modes configurable
 
 # v1.3.0
 
