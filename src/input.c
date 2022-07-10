@@ -50,8 +50,8 @@ int input_parse_string(struct input_event *ev, const char *s)
 			ev->mods |= MOD_CONTROL;
 			break;
 		default:
-			fprintf(stderr, "%s is not a valid s\n", s);
-			exit(1);
+			fprintf(stderr, "%s is not a valid modifier\n", s);
+			exit(-1);
 		}
 
 		s += 2;
@@ -68,10 +68,8 @@ int input_parse_string(struct input_event *ev, const char *s)
 
 		ev->code = platform_input_lookup_code(s);
 
-		if (!ev->code) {
-			fprintf(stderr, "WARNING: %s is not a valid code!\n", s);
+		if (!ev->code)
 			return -1;
-		}
 	}
 
 	return 0;

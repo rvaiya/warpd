@@ -1,5 +1,6 @@
 #include "warpd.h"
 #include <stdio.h>
+#include <ctype.h>
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
@@ -129,7 +130,8 @@ int config_get_int(const char *key)
 	return atoi(config_get(key));
 }
 
-enum option_type get_option_type(const char *key) {
+enum option_type get_option_type(const char *key)
+{
 	size_t i;
 
 	for (i = 0; i < sizeof(options) / sizeof(options[0]); i++) {
@@ -141,6 +143,21 @@ enum option_type get_option_type(const char *key) {
 	exit(-1);
 }
 
+static void validate_key_option(const char *s)
+{
+	struct input_event ev;
+	char *tok;
+	char buf[1024];
+
+	strncpy(buf, s, sizeof buf);
+
+	for (tok = strtok(buf, " "); tok; tok = strtok(NULL, " ")) {
+		if (input_parse_string(&ev, tok)) {
+			fprintf(stderr, "ERROR: %s is not a valid key name\n", tok);
+			exit(-1);
+		}
+	}
+}
 
 static void config_add(const char *key, const char *val)
 {
@@ -150,6 +167,30 @@ static void config_add(const char *key, const char *val)
 	ent->key = key;
 	ent->value = val;
 	ent->type = get_option_type(key);
+
+	switch (ent->type) {
+		int i;
+
+		case OPT_INT:
+			for (i = 0; ent->value[i]; i++)
+				if (!isdigit(ent->value[i]) && !(i == 0 && ent->value[0] == '-')) {
+					fprintf(stderr, "ERROR: %s must be a valid int\n", ent->value);
+					exit(-1);
+				}
+			break;
+		case OPT_NORMAL_KEY:
+		case OPT_ACTIVATION_KEY:
+		case OPT_HINT_KEY:
+		case OPT_GRID_KEY:
+			validate_key_option(ent->value);
+
+			break;
+
+		default:
+			break;
+
+	}
+
 	ent->next = config;
 
 	config = ent;
@@ -214,7 +255,7 @@ int config_input_match(struct input_event *ev, const char *config_key, int stric
 	enum option_type type = get_option_type(config_key);
 
 	if (type == OPT_STRING || type == OPT_INT) {
-		fprintf(stderr, "%s is not a valid key type\n", config_key);
+		fprintf(stderr, "ERROR: %s is not a valid key type\n", config_key);
 		exit(-1);
 	}
 

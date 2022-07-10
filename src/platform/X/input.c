@@ -187,7 +187,7 @@ static int input_xerr(Display *dpy, XErrorEvent *ev)
 	fprintf(stderr,
 		"ERROR: Failed to grab %s (ensure it isn't mapped by another application)\n",
 		xerr_key);
-	exit(1);
+	exit(-1);
 	return 0;
 }
 
