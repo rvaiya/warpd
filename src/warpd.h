@@ -56,9 +56,20 @@ enum {
 	MODE_SCREEN_SELECTION,
 };
 
+enum option_type {
+	OPT_STRING,
+	OPT_INT,
+
+	OPT_NORMAL_KEY,
+	OPT_HINT_KEY,
+	OPT_GRID_KEY,
+	OPT_ACTIVATION_KEY,
+};
+
 struct config_entry {
 	const char *key;
 	const char *value;
+	enum option_type type;
 
 	struct config_entry *next;
 };
