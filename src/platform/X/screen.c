@@ -40,6 +40,8 @@ void init_screens()
 			XMapWindow(dpy, scr->boxes[j].win);
 		}
 	}
+
+	XFree(xscreens);
 }
 
 void platform_screen_list(struct screen *rscreens[MAX_SCREENS], size_t *n)
