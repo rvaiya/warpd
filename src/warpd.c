@@ -25,6 +25,8 @@ static int movearg_y = -1;
 static int record_flag = 0;
 static int drag_flag = 0;
 
+static const char *config_path;
+
 static int oneshot_mode = 0;
 
 static int activation_loop(int mode)
@@ -148,11 +150,15 @@ exit:
 
 static void mode_loop()
 {
+	parse_config(config_path);
+
 	exit(activation_loop(mode_flag));
 }
 
 static void daemon_loop()
 {
+	parse_config(config_path);
+
 	init_mouse();
 	init_hints();
 
@@ -328,7 +334,7 @@ int main(int argc, char *argv[])
 {
 	int c;
 	int foreground = 0;
-	const char *config_path = get_config_path("config");
+	config_path = get_config_path("config");
 
 	struct option opts[] = {
 		{"version", no_argument, NULL, 'v'},
@@ -415,8 +421,6 @@ int main(int argc, char *argv[])
 				return -1;
 		}
 	}
-
-	parse_config(config_path);
 
 	if (mode_flag || oneshot_mode) {
 		platform_run(mode_loop);

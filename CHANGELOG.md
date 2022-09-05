@@ -1,3 +1,6 @@
+# v1.3.3
+ - Fix wayland initialization issue
+
 # v1.3.2
  - Improve config handling (allow for shadowed values to gracefully handle conflicts)
  - Make undo keys in hint based modes configurable
