@@ -21,6 +21,7 @@ static int up = 0;
 static int down = 0;
 
 static int resting = 1;
+static int mode_slow = 0;
 
 static screen_t scr = 0;
 static double cx = 0;
@@ -86,7 +87,9 @@ static void tick()
 
 	if (resting) {
 		update_cursor_position();
-		v = v0;
+		if (!mode_slow){
+			v = v0;
+		}
 		resting = 0;
 	}
 
@@ -189,12 +192,14 @@ void mouse_normal()
 {
 	v = v0;
 	a = a0;
+	mode_slow = 0;
 }
 
 void mouse_slow()
 {
 	v = vd;
 	a = 0;
+	mode_slow = 1;
 }
 
 void mouse_reset()
