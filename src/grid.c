@@ -124,6 +124,7 @@ struct input_event *grid_mode()
 
 			platform_mouse_move(scr, mx, my);
 			redraw(mx, my, 0);
+			continue;
 		}
 
 		if (config_input_match(ev, "buttons", 0) ||
