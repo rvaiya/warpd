@@ -190,7 +190,20 @@ static void config_add(const char *key, const char *val)
 			break;
 
 	}
-
+	// check if key already exists
+	// if so, replace value
+	// if not, add to list
+	int found = 0;
+	struct config_entry *cur = config;
+	while (cur) {
+		if (!strcmp(cur->key, key)) {
+			cur->value = val;
+			free(ent);
+			return;
+		}
+		cur = cur->next;
+	}
+	
 	ent->next = config;
 
 	config = ent;
