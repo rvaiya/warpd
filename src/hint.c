@@ -102,6 +102,14 @@ static int hint_selection(screen_t scr, struct hint *_hints, size_t _nr_hints)
 
 	platform_mouse_hide();
 
+	const char *keys[] = {
+		"hint_exit",
+		"hint_undo_all",
+		"hint_undo",
+	};
+
+	config_input_whitelist(keys, sizeof keys / sizeof keys[0]);
+
 	while (1) {
 		struct input_event *ev;
 		ssize_t len;
@@ -113,12 +121,12 @@ static int hint_selection(screen_t scr, struct hint *_hints, size_t _nr_hints)
 
 		len = strlen(buf);
 
-		if (config_input_match(ev, "hint_exit", 1)) {
+		if (config_input_match(ev, "hint_exit")) {
 			rc = -1;
 			break;
-		} else if (config_input_match(ev, "hint_undo_all", 1)) {
+		} else if (config_input_match(ev, "hint_undo_all")) {
 			buf[0] = 0;
-		} else if (config_input_match(ev, "hint_undo", 1)) {
+		} else if (config_input_match(ev, "hint_undo")) {
 			if (len)
 				buf[len - 1] = 0;
 		} else {

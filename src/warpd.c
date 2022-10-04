@@ -58,6 +58,8 @@ static int activation_loop(int mode)
 
 	dragging = 0;
 
+	config_input_whitelist(NULL, 0);
+
 	while (1) {
 		switch (mode) {
 		case MODE_HISTORY:
@@ -73,20 +75,20 @@ static int activation_loop(int mode)
 		case MODE_NORMAL:
 			ev = normal_mode(ev, oneshot_mode);
 
-			if (config_input_match(ev, "history", 1))
+			if (config_input_match(ev, "history"))
 				mode = MODE_HISTORY;
-			else if (config_input_match(ev, "hint", 1))
+			else if (config_input_match(ev, "hint"))
 				mode = MODE_HINT;
-			else if (config_input_match(ev, "hint2", 1))
+			else if (config_input_match(ev, "hint2"))
 				mode = MODE_HINT2;
-			else if (config_input_match(ev, "grid", 1))
+			else if (config_input_match(ev, "grid"))
 				mode = MODE_GRID;
-			else if (config_input_match(ev, "screen", 1))
+			else if (config_input_match(ev, "screen"))
 				mode = MODE_SCREEN_SELECTION;
-			else if ((rc = config_input_match(ev, "oneshot_buttons", 1)) || !ev) {
+			else if ((rc = config_input_match(ev, "oneshot_buttons")) || !ev) {
 				goto exit;
 			}
-			else if (config_input_match(ev, "exit", 1) || !ev) {
+			else if (config_input_match(ev, "exit") || !ev) {
 				rc = 0;
 				goto exit;
 			}
@@ -102,7 +104,7 @@ static int activation_loop(int mode)
 			break;
 		case MODE_GRID:
 			ev = grid_mode();
-			if (config_input_match(ev, "grid_exit", 1))
+			if (config_input_match(ev, "grid_exit"))
 				ev = NULL;
 			mode = MODE_NORMAL;
 			break;
@@ -113,7 +115,7 @@ static int activation_loop(int mode)
 		}
 
 		if (oneshot_mode &&
-			(!oneshot_normal || config_input_match(ev, "buttons", 1))) {
+			(!oneshot_normal || config_input_match(ev, "buttons"))) {
 			int rc = 0;
 			int x, y;
 			screen_t scr;
@@ -178,25 +180,27 @@ static void daemon_loop()
 		struct input_event *ev = platform_input_wait(activation_events,
 						sizeof(activation_events)/sizeof(activation_events[0]));
 
-		if (config_input_match(ev, "activation_key", 1))
+		config_input_whitelist(NULL, 0);
+
+		if (config_input_match(ev, "activation_key"))
 			mode = MODE_NORMAL;
-		else if (config_input_match(ev, "grid_activation_key", 1))
+		else if (config_input_match(ev, "grid_activation_key"))
 			mode = MODE_GRID;
-		else if (config_input_match(ev, "hint_activation_key", 1))
+		else if (config_input_match(ev, "hint_activation_key"))
 			mode = MODE_HINT;
-		else if (config_input_match(ev, "hint2_activation_key", 1))
+		else if (config_input_match(ev, "hint2_activation_key"))
 			mode = MODE_HINT2;
-		else if (config_input_match(ev, "screen_activation_key", 1))
+		else if (config_input_match(ev, "screen_activation_key"))
 			mode = MODE_SCREEN_SELECTION;
-		else if (config_input_match(ev, "history_activation_key", 1))
+		else if (config_input_match(ev, "history_activation_key"))
 			mode = MODE_HISTORY;
-		else if (config_input_match(ev, "hint2_oneshot_key", 1)) {
+		else if (config_input_match(ev, "hint2_oneshot_key")) {
 			full_hint_mode(1);
 			continue;
-		} else if (config_input_match(ev, "hint_oneshot_key", 1)) {
+		} else if (config_input_match(ev, "hint_oneshot_key")) {
 			full_hint_mode(0);
 			continue;
-		} else if (config_input_match(ev, "history_oneshot_key", 1)) {
+		} else if (config_input_match(ev, "history_oneshot_key")) {
 			history_hint_mode();
 			continue;
 		}

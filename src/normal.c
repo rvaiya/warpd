@@ -51,6 +51,36 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
 	int sh, sw;
 	int mx, my;
 
+	const char *keys[] = {
+		"accelerator",
+		"bottom",
+		"buttons",
+		"copy_and_exit",
+		"decelerator",
+		"down",
+		"drag",
+		"end",
+		"exit",
+		"grid",
+		"hint",
+		"hint2",
+		"hist_back",
+		"hist_forward",
+		"history",
+		"left",
+		"middle",
+		"oneshot_buttons",
+		"print",
+		"right",
+		"screen",
+		"scroll_down",
+		"scroll_up",
+		"start",
+		"top",
+		"up",
+	};
+
+
 	platform_input_grab_keyboard();
 
 	platform_mouse_get_position(&scr, &mx, &my);
@@ -63,6 +93,7 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
 	while (1) {
 		const int cursz = config_get_int("cursor_size");
 
+		config_input_whitelist(keys, sizeof keys / sizeof keys[0]);
 		if (start_ev == NULL) {
 			ev = platform_input_next_event(10);
 		} else {
@@ -82,7 +113,7 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
 
 		platform_mouse_get_position(&scr, &mx, &my);
 
-		if (config_input_match(ev, "scroll_down", 1)) {
+		if (config_input_match(ev, "scroll_down")) {
 			redraw(scr, mx, my, 1);
 
 			if (ev->pressed) {
@@ -90,7 +121,7 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
 				scroll_accelerate(SCROLL_DOWN);
 			} else
 				scroll_decelerate();
-		} else if (config_input_match(ev, "scroll_up", 1)) {
+		} else if (config_input_match(ev, "scroll_up")) {
 			redraw(scr, mx, my, 1);
 
 			if (ev->pressed) {
@@ -98,12 +129,12 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
 				scroll_accelerate(SCROLL_UP);
 			} else
 				scroll_decelerate();
-		} else if (config_input_match(ev, "accelerator", 1)) {
+		} else if (config_input_match(ev, "accelerator")) {
 			if (ev->pressed)
 				mouse_fast();
 			else
 				mouse_normal();
-		} else if (config_input_match(ev, "decelerator", 1)) {
+		} else if (config_input_match(ev, "decelerator")) {
 			if (ev->pressed)
 				mouse_slow();
 			else
@@ -112,47 +143,47 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
 			goto next;
 		}
 
-		if (config_input_match(ev, "top", 1))
+		if (config_input_match(ev, "top"))
 			move(scr, mx, cursz / 2);
-		else if (config_input_match(ev, "bottom", 1))
+		else if (config_input_match(ev, "bottom"))
 			move(scr, mx, sh - cursz / 2);
-		else if (config_input_match(ev, "middle", 1))
+		else if (config_input_match(ev, "middle"))
 			move(scr, mx, sh / 2);
-		else if (config_input_match(ev, "start", 1))
+		else if (config_input_match(ev, "start"))
 			move(scr, 1, my);
-		else if (config_input_match(ev, "end", 1))
+		else if (config_input_match(ev, "end"))
 			move(scr, sw - cursz, my);
-		else if (config_input_match(ev, "hist_back", 1)) {
+		else if (config_input_match(ev, "hist_back")) {
 			hist_add(mx, my);
 			hist_prev();
 			hist_get(&mx, &my);
 
 			move(scr, mx, my);
-		} else if (config_input_match(ev, "hist_forward", 1)) {
+		} else if (config_input_match(ev, "hist_forward")) {
 			hist_next();
 			hist_get(&mx, &my);
 
 			move(scr, mx, my);
-		} else if (config_input_match(ev, "drag", 1)) {
+		} else if (config_input_match(ev, "drag")) {
 			toggle_drag();
-		} else if (config_input_match(ev, "copy_and_exit", 1)) {
+		} else if (config_input_match(ev, "copy_and_exit")) {
 			platform_copy_selection();
 			ev = NULL;
 			goto exit;
-		} else if (config_input_match(ev, "exit", 1) ||
-			   config_input_match(ev, "grid", 1) ||
-			   config_input_match(ev, "screen", 1) ||
-			   config_input_match(ev, "history", 1) ||
-			   config_input_match(ev, "hint2", 1) ||
-			   config_input_match(ev, "hint", 1)) {
+		} else if (config_input_match(ev, "exit") ||
+			   config_input_match(ev, "grid") ||
+			   config_input_match(ev, "screen") ||
+			   config_input_match(ev, "history") ||
+			   config_input_match(ev, "hint2") ||
+			   config_input_match(ev, "hint")) {
 			goto exit;
-		} else if (config_input_match(ev, "print", 1)) {
+		} else if (config_input_match(ev, "print")) {
 			printf("%d %d %s\n", mx, my, input_event_tostr(ev));
 			fflush(stdout);
 		} else { /* Mouse Buttons. */
 			int btn;
 
-			if ((btn = config_input_match(ev, "buttons", 0))) {
+			if ((btn = config_input_match(ev, "buttons"))) {
 				if (oneshot) {
 					printf("%d %d\n", mx, my);
 					exit(btn);
@@ -161,7 +192,7 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
 				hist_add(mx, my);
 				histfile_add(mx, my);
 				platform_mouse_click(btn);
-			} else if ((btn = config_input_match(ev, "oneshot_buttons", 0))) {
+			} else if ((btn = config_input_match(ev, "oneshot_buttons"))) {
 				hist_add(mx, my);
 				platform_mouse_click(btn);
 
@@ -171,7 +202,7 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
 				while (timeleft--) {
 					struct input_event *ev = platform_input_next_event(1);
 					if (ev && ev->pressed && 
-						config_input_match(ev, "oneshot_buttons", 0)) {
+						config_input_match(ev, "oneshot_buttons")) {
 						platform_mouse_click(btn);
 						timeleft = timeout;
 					}

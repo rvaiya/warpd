@@ -60,16 +60,16 @@ enum option_type {
 	OPT_STRING,
 	OPT_INT,
 
-	OPT_NORMAL_KEY,
-	OPT_HINT_KEY,
-	OPT_GRID_KEY,
-	OPT_ACTIVATION_KEY,
+	OPT_KEY,
+	OPT_BUTTON,
 };
 
 struct config_entry {
 	const char *key;
 	const char *value;
 	enum option_type type;
+
+	int whitelisted;
 
 	struct config_entry *next;
 };
@@ -92,11 +92,12 @@ void init_hints();
 void init_normal_mode();
 void init_grid_mode();
 
+void config_input_whitelist(const char *names[], size_t n);
+
 const char *input_event_tostr(struct input_event *ev);
-int config_input_match(struct input_event *ev, const char *str, int strict);
-int input_eq(struct input_event *ev, const char *str, int strict);
-int config_input_match_index(struct input_event *ev, const char *config_name);
+int input_eq(struct input_event *ev, const char *str);
 int input_parse_string(struct input_event *ev, const char *s);
+int config_input_match(struct input_event *ev, const char *str);
 
 size_t hist_hints(struct hint *hints, int w, int h);
 

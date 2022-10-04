@@ -14,45 +14,45 @@ static struct {
 	const char *description;
 	enum option_type type;
 } options[] = {
-	{ "hint_activation_key", "A-M-x", "Activates hint mode.", OPT_ACTIVATION_KEY },
-	{ "hint2_activation_key", "A-M-X", "Activate two pass hint mode.", OPT_ACTIVATION_KEY },
-	{ "grid_activation_key", "A-M-g", "Activates grid mode and allows for further manipulation of the pointer using the mapped keys.", OPT_ACTIVATION_KEY },
-	{ "history_activation_key", "A-M-h", "Activate history mode.", OPT_ACTIVATION_KEY },
-	{ "screen_activation_key", "A-M-s", "Activate (s)creen selection mode.", OPT_ACTIVATION_KEY },
-	{ "activation_key", "A-M-c", "Activate normal movement mode (manual (c)ursor movement).", OPT_ACTIVATION_KEY },
+	{ "hint_activation_key", "A-M-x", "Activates hint mode.", OPT_KEY },
+	{ "hint2_activation_key", "A-M-X", "Activate two pass hint mode.", OPT_KEY },
+	{ "grid_activation_key", "A-M-g", "Activates grid mode and allows for further manipulation of the pointer using the mapped keys.", OPT_KEY },
+	{ "history_activation_key", "A-M-h", "Activate history mode.", OPT_KEY },
+	{ "screen_activation_key", "A-M-s", "Activate (s)creen selection mode.", OPT_KEY },
+	{ "activation_key", "A-M-c", "Activate normal movement mode (manual (c)ursor movement).", OPT_KEY },
 
-	{ "hint_oneshot_key", "A-M-l", "Activate hint mode and exit upon selection.", OPT_ACTIVATION_KEY },
-	{ "hint2_oneshot_key", "A-M-L", "Activate two pass hint mode and exit upon selection.", OPT_ACTIVATION_KEY },
+	{ "hint_oneshot_key", "A-M-l", "Activate hint mode and exit upon selection.", OPT_KEY },
+	{ "hint2_oneshot_key", "A-M-L", "Activate two pass hint mode and exit upon selection.", OPT_KEY },
 
 	/* Normal mode keys */
 
-	{ "exit", "esc", "Exit the currently active warpd session.", OPT_NORMAL_KEY },
-	{ "drag", "v", "Toggle drag mode (mnemonic (v)isual mode).", OPT_NORMAL_KEY },
-	{ "copy_and_exit", "c", "Send the copy key and exit (useful in combination with v).", OPT_NORMAL_KEY },
-	{ "accelerator", "a", "Increase the acceleration of the pointer while held.", OPT_NORMAL_KEY },
-	{ "decelerator", "d", "Decrease the speed of the pointer while held.", OPT_NORMAL_KEY },
-	{ "buttons", "m , .",  "A space separated list of mouse buttons (2 is middle click).", OPT_NORMAL_KEY },
-	{ "oneshot_buttons", "n - /", "Oneshot mouse buttons (deactivate on click).", OPT_NORMAL_KEY },
+	{ "exit", "esc", "Exit the currently active warpd session.", OPT_KEY },
+	{ "drag", "v", "Toggle drag mode (mnemonic (v)isual mode).", OPT_KEY },
+	{ "copy_and_exit", "c", "Send the copy key and exit (useful in combination with v).", OPT_KEY },
+	{ "accelerator", "a", "Increase the acceleration of the pointer while held.", OPT_KEY },
+	{ "decelerator", "d", "Decrease the speed of the pointer while held.", OPT_KEY },
+	{ "buttons", "m , .",  "A space separated list of mouse buttons (2 is middle click).", OPT_BUTTON },
+	{ "oneshot_buttons", "n - /", "Oneshot mouse buttons (deactivate on click).", OPT_BUTTON },
 
-	{ "print", "p", "Print the current mouse coordinates to stdout (useful for scripts).", OPT_NORMAL_KEY },
-	{ "history", ";", "Activate hint history mode while in normal mode.", OPT_NORMAL_KEY },
-	{ "hint", "x", "Activate hint mode while in normal mode (mnemonic: x marks the spot?).", OPT_NORMAL_KEY },
-	{ "hint2", "X", "Activate two pass hint mode.", OPT_NORMAL_KEY },
-	{ "grid", "g", "Activate (g)rid mode while in normal mode.", OPT_NORMAL_KEY },
-	{ "screen", "s", "Activate (s)creen selection while in normal mode.", OPT_NORMAL_KEY },
+	{ "print", "p", "Print the current mouse coordinates to stdout (useful for scripts).", OPT_KEY },
+	{ "history", ";", "Activate hint history mode while in normal mode.", OPT_KEY },
+	{ "hint", "x", "Activate hint mode while in normal mode (mnemonic: x marks the spot?).", OPT_KEY },
+	{ "hint2", "X", "Activate two pass hint mode.", OPT_KEY },
+	{ "grid", "g", "Activate (g)rid mode while in normal mode.", OPT_KEY },
+	{ "screen", "s", "Activate (s)creen selection while in normal mode.", OPT_KEY },
 
-	{ "left", "h", "Move the cursor left in normal mode.", OPT_NORMAL_KEY },
-	{ "down", "j", "Move the cursor down in normal mode.", OPT_NORMAL_KEY },
-	{ "up", "k", "Move the cursor up in normal mode.", OPT_NORMAL_KEY },
-	{ "right", "l", "Move the cursor right in normal mode.", OPT_NORMAL_KEY },
-	{ "top", "H", "Moves the cursor to the top of the screen in normal mode.", OPT_NORMAL_KEY },
-	{ "middle", "M", "Moves the cursor to the middle of the screen in normal mode.", OPT_NORMAL_KEY },
-	{ "bottom", "L", "Moves the cursor to the bottom of the screen in normal mode.", OPT_NORMAL_KEY },
-	{ "start", "0", "Moves the cursor to the leftmost corner of the screen in normal mode.", OPT_NORMAL_KEY },
-	{ "end", "$", "Moves the cursor to the rightmost corner of the screen in normal mode.", OPT_NORMAL_KEY },
+	{ "left", "h", "Move the cursor left in normal mode.", OPT_KEY },
+	{ "down", "j", "Move the cursor down in normal mode.", OPT_KEY },
+	{ "up", "k", "Move the cursor up in normal mode.", OPT_KEY },
+	{ "right", "l", "Move the cursor right in normal mode.", OPT_KEY },
+	{ "top", "H", "Moves the cursor to the top of the screen in normal mode.", OPT_KEY },
+	{ "middle", "M", "Moves the cursor to the middle of the screen in normal mode.", OPT_KEY },
+	{ "bottom", "L", "Moves the cursor to the bottom of the screen in normal mode.", OPT_KEY },
+	{ "start", "0", "Moves the cursor to the leftmost corner of the screen in normal mode.", OPT_KEY },
+	{ "end", "$", "Moves the cursor to the rightmost corner of the screen in normal mode.", OPT_KEY },
 
-	{ "scroll_down", "e", "Scroll down key.", OPT_NORMAL_KEY },
-	{ "scroll_up", "r", "Scroll up key.", OPT_NORMAL_KEY },
+	{ "scroll_down", "e", "Scroll down key.", OPT_KEY },
+	{ "scroll_up", "r", "Scroll up key.", OPT_KEY },
 
 	{ "cursor_color", "#FF4500", "The color of the pointer in normal mode (rgba hex value).", OPT_STRING },
 
@@ -68,15 +68,15 @@ static struct {
 	{ "grid_nr", "2", "The number of rows in the grid.", OPT_INT },
 	{ "grid_nc", "2", "The number of columns in the grid.", OPT_INT },
 
-	{ "hist_back", "C-o", "Move to the last position in the history stack.", OPT_NORMAL_KEY },
-	{ "hist_forward", "C-i", "Move to the next position in the history stack.", OPT_NORMAL_KEY },
+	{ "hist_back", "C-o", "Move to the last position in the history stack.", OPT_KEY },
+	{ "hist_forward", "C-i", "Move to the next position in the history stack.", OPT_KEY },
 
-	{ "grid_up", "w", "Move the grid up.", OPT_GRID_KEY },
-	{ "grid_left", "a", "Move the grid left.", OPT_GRID_KEY },
-	{ "grid_down", "s", "Move the grid down.", OPT_GRID_KEY },
-	{ "grid_right", "d", "Move the grid right.", OPT_GRID_KEY },
-	{ "grid_keys", "u i j k", "A sequence of comma delimited keybindings which are ordered bookwise with respect to grid position.", OPT_GRID_KEY },
-	{ "grid_exit", "c", "Exit grid mode and return to normal mode.", OPT_GRID_KEY },
+	{ "grid_up", "w", "Move the grid up.", OPT_KEY },
+	{ "grid_left", "a", "Move the grid left.", OPT_KEY },
+	{ "grid_down", "s", "Move the grid down.", OPT_KEY },
+	{ "grid_right", "d", "Move the grid right.", OPT_KEY },
+	{ "grid_keys", "u i j k", "A sequence of comma delimited keybindings which are ordered bookwise with respect to grid position.", OPT_KEY },
+	{ "grid_exit", "c", "Exit grid mode and return to normal mode.", OPT_KEY },
 
 	{ "grid_size", "4", "The thickness of grid lines in pixels.", OPT_INT },
 	{ "grid_border_size", "0", "The thickness of the grid border in pixels.", OPT_INT },
@@ -92,9 +92,9 @@ static struct {
 	{ "hint_size", "20", "Hint size (range: 1-1000)", OPT_INT },
 	{ "hint_border_radius", "3", "Border radius.", OPT_INT },
 
-	{ "hint_exit", "esc", "The exit key used for hint mode.", OPT_HINT_KEY },
-	{ "hint_undo", "backspace", "undo last selection step in one of the hint based modes.", OPT_HINT_KEY },
-	{ "hint_undo_all", "C-u", "undo all selection steps in one of the hint based modes.", OPT_HINT_KEY },
+	{ "hint_exit", "esc", "The exit key used for hint mode.", OPT_KEY },
+	{ "hint_undo", "backspace", "undo last selection step in one of the hint based modes.", OPT_KEY },
+	{ "hint_undo_all", "C-u", "undo all selection steps in one of the hint based modes.", OPT_KEY },
 
 	{ "hint2_chars", "hjkl;asdfgqwertyuiopzxcvb", "The character set used for the second hint selection, should consist of at least hint_grid_size^2 characters.", OPT_STRING },
 	{ "hint2_size", "20", "The size of hints in the secondary grid (range: 1-1000).", OPT_INT },
@@ -178,10 +178,8 @@ static void config_add(const char *key, const char *val)
 					exit(-1);
 				}
 			break;
-		case OPT_NORMAL_KEY:
-		case OPT_ACTIVATION_KEY:
-		case OPT_HINT_KEY:
-		case OPT_GRID_KEY:
+		case OPT_BUTTON:
+		case OPT_KEY:
 			validate_key_option(ent->value);
 
 			break;
@@ -234,6 +232,51 @@ void parse_config(const char *path)
 	}
 }
 
+static int keyidx(const char *key_list, struct input_event *ev, int *exact)
+{
+	const char *tok;
+	char buf[1024];
+	int idx = 1;
+
+	snprintf(buf, sizeof buf, "%s", key_list);
+
+	for (tok = strtok(buf, " "); tok; tok = strtok(NULL, " ")) {
+		int ret;
+		if ((ret = input_eq(ev, tok))) {
+			*exact = ret == 2;
+			return idx;
+		}
+
+		idx++;
+	}
+
+	return 0;
+}
+
+void config_input_whitelist(const char *names[], size_t n)
+{
+	struct config_entry *ent;
+
+	for (ent = config; ent; ent = ent->next) {
+		ent->whitelisted = 0;
+
+		if (ent->type != OPT_KEY && ent->type != OPT_BUTTON)
+			continue;
+
+		if (names == NULL) {
+			ent->whitelisted = 1;
+		} else {
+			size_t i;
+
+			for (i = 0; i < n; i++)
+				if (!strcmp(names[i], ent->key)) {
+					ent->whitelisted = 1;
+					break;
+				}
+		}
+	}
+}
+
 /*
  * Consumes an input event and the name of a config option corresponding
  * to a set of keys and returns the 1-based index of the most recent
@@ -247,33 +290,20 @@ void parse_config(const char *path)
  * modifying all calling code.
  */
 
-int config_input_match(struct input_event *ev, const char *config_key, int strict)
+int config_input_match(struct input_event *ev, const char *config_key)
 {
-	char *tok;
 	struct config_entry *ent;
 
-	enum option_type type = get_option_type(config_key);
-
-	if (type == OPT_STRING || type == OPT_INT) {
-		fprintf(stderr, "ERROR: %s is not a valid key type\n", config_key);
-		exit(-1);
-	}
-
 	for (ent = config; ent; ent = ent->next) {
-		if (ent->type == type) {
-			char buf[1024];
-			snprintf(buf, sizeof buf, "%s", ent->value);
+		int idx;
+		int exact;
 
-			int idx = 1;
-			for (tok = strtok(buf, " "); tok; tok = strtok(NULL, " ")) {
-				if (input_eq(ev, tok, strict)) {
-					if (!strcmp(ent->key, config_key))
-						return idx;
-					else if (strict) //Shadowed by another config option
-						return 0;
-				}
-
-				idx++;
+		if (ent->whitelisted && (idx = keyidx(ent->value, ev, &exact))) {
+			if ((ent->type == OPT_KEY && exact) || ent->type == OPT_BUTTON) {
+				if (!strcmp(ent->key, config_key))
+					return idx;
+				else
+					return 0;
 			}
 		}
 	}
