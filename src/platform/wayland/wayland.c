@@ -5,9 +5,6 @@
  */
 #include "wayland.h"
 
-static int ptrx = -1;
-static int ptry = -1;
-
 #define UNIMPLEMENTED { \
 	fprintf(stderr, "FATAL: wayland: %s unimplemented\n", __func__); \
 	exit(-1);							 \
@@ -47,8 +44,8 @@ void platform_mouse_move(struct screen *scr, int x, int y)
 	int minx = 0;
 	int miny = 0;
 
-	ptrx = x;
-	ptry = y;
+	active_screen->ptrx = x;
+	active_screen->ptry = y;
 
 	for (i = 0; i < nr_screens; i++) {
 		int x = screens[i].x + screens[i].w;
@@ -112,19 +109,12 @@ void platform_mouse_click(int btn)
 
 void platform_mouse_get_position(struct screen **scr, int *x, int *y)
 {
-	//TODO: figure out how to retrieve actual coordinates (if possible)
-
-	if (ptrx == -1) {
-		ptrx = active_screen->w/2;
-		ptry = active_screen->h/2;
-	}
-
 	if (scr)
 		*scr = active_screen;
 	if (x)
-		*x = ptrx;
+		*x = active_screen->ptrx;
 	if (y)
-		*y = ptry;
+		*y = active_screen->ptry;
 }
 
 void platform_mouse_show()

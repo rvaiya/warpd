@@ -123,6 +123,34 @@ static void handle_keymap(void *data,
 	xkb_keymap_unref(xkbmap);
 }
 
+void handle_pointer_enter(void *data,
+			  struct wl_pointer *wl_pointer,
+			  uint32_t serial,
+			  struct wl_surface *surface, wl_fixed_t wlx,
+			  wl_fixed_t wly)
+{
+
+	if (active_screen->ptrx == -1 && surface == active_screen->overlay->wl_surface) {
+		int x = wl_fixed_to_int(wlx);
+		int y = wl_fixed_to_int(wly);
+
+		active_screen->ptrx = x;
+		active_screen->ptry = y;
+	}
+}
+
+struct wl_pointer_listener wl_pointer_listener = {
+	.enter = handle_pointer_enter,
+	.leave = noop,
+	.motion = noop,
+	.button = noop,
+	.axis = noop,
+	.frame = noop,
+	.axis_source = noop,
+	.axis_stop = noop,
+	.axis_discrete = noop,
+};
+
 static struct wl_keyboard_listener wl_keyboard_listener = {
 	.key = handle_key,
 	.keymap = handle_keymap,
@@ -178,5 +206,6 @@ struct input_event *platform_input_next_event(int timeout)
 void add_seat(struct wl_seat *seat) 
 {
 	wl_keyboard_add_listener(wl_seat_get_keyboard(seat), &wl_keyboard_listener, NULL);
+	wl_pointer_add_listener(wl_seat_get_pointer(seat), &wl_pointer_listener, NULL);
 	wl_seat_destroy(seat);
 }

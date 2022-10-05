@@ -101,11 +101,11 @@ void init_screen()
 			wl_display_dispatch(wl.dpy);
 		} while (scr->state != 2);
 
+		scr->ptrx = -1;
+		scr->ptry = -1;
 		scr->overlay = calloc(1, sizeof(struct surface));
 		init_surface(scr->overlay, 0, 0, scr->w, scr->h, 0);
 	}
-
-
 
 	sfc.screen = 0;
 	init_surface(&sfc, 0, 0, 1, 1, 0);
@@ -115,4 +115,9 @@ void init_screen()
 
 	active_screen = sfc.screen;
 	surface_destroy(&sfc);
+
+	surface_show(active_screen->overlay, active_screen->wl_output);
+	while (active_screen->ptrx == -1)
+		wl_display_dispatch(wl.dpy);
+	surface_hide(active_screen->overlay);
 }
