@@ -43,11 +43,22 @@ static void do_mouse_click(int btn, int pressed, int nclicks)
 	int button = kCGMouseButtonLeft;
 	CGEventFlags mask = 0;
 
-	/* TODO: Add support for middle click. */
-	if (btn == 3) {
+	switch (btn) {
+	case 3:
 		down = kCGEventRightMouseDown;
 		up = kCGEventRightMouseUp;
 		button = kCGMouseButtonRight;
+		break;
+	case 1:
+		down = kCGEventLeftMouseDown;
+		up = kCGEventLeftMouseUp;
+		button = kCGMouseButtonLeft;
+		break;
+	default:
+		down = kCGEventOtherMouseDown;
+		up = kCGEventOtherMouseUp;
+		button = btn;
+		break;
 	}
 
 	if (active_mods & MOD_META) mask |= kCGEventFlagMaskCommand;
