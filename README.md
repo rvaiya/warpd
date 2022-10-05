@@ -61,6 +61,8 @@ E.g
 ## debian/ubuntu:
 
 ```
+git clone https://github.com/rvaiya/warpd.git
+cd warpd
 sudo apt-get install \
 	libxi-dev \
 	libxinerama-dev \
@@ -156,12 +158,29 @@ bound within the compositor using warpd's oneshot flags.
 
 E.g
 
-On sway:
+**On sway**:
 
 ```
+# warpd hotkeys
+
 bindsym Mod4+Mod1+x exec warpd --hint
 bindsym Mod4+Mod1+c exec warpd --normal
 bindsym Mod4+Mod1+g exec warpd --grid
+```
+
+**Using sxhkd**:
+
+```
+# warpd hotkeys
+
+Alt + super + x
+  exec warpd --hint
+
+Alt + super + c
+  warpd --normal
+
+Alt + super + g
+  warpd --grid
 ```
 
 # Packages:
