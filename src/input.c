@@ -11,20 +11,6 @@
 
 #include "warpd.h"
 
-struct {
-	char *name;
-	char *shifted_name;
-} shift_table[] = {
-    {"1", "!"}, {"2", "@"}, {"3", "#"}, {"4", "$"}, {"5", "%"}, {"6", "^"},
-    {"7", "&"}, {"8", "*"}, {"9", "("}, {"0", ")"}, {"-", "_"}, {"=", "+"},
-    {"q", "Q"}, {"w", "W"}, {"e", "E"}, {"r", "R"}, {"t", "T"}, {"y", "Y"},
-    {"u", "U"}, {"i", "I"}, {"o", "O"}, {"p", "P"}, {"[", "{"}, {"]", "}"},
-    {"a", "A"}, {"s", "S"}, {"d", "D"}, {"f", "F"}, {"g", "G"}, {"h", "H"},
-    {"j", "J"}, {"k", "K"}, {"l", "L"}, {";", ":"}, {"`", "~"}, {"\\", "|"},
-    {"z", "Z"}, {"x", "X"}, {"c", "C"}, {"v", "V"}, {"b", "B"}, {"n", "N"},
-    {"m", "M"}, {",", "<"}, {".", ">"}, {"/", "?"},
-};
-
 static uint8_t cached_mods[256];
 
 int input_parse_string(struct input_event *ev, const char *s)
@@ -58,15 +44,11 @@ int input_parse_string(struct input_event *ev, const char *s)
 	}
 
 	if (s[0]) {
-		size_t i;
+		int shifted;
 
-		for (i = 0; i < sizeof(shift_table)/sizeof(shift_table[0]); i++)
-			if (!strcmp(shift_table[i].shifted_name, s)) {
-				s = shift_table[i].name;
-				ev->mods |= MOD_SHIFT;
-			}
-
-		ev->code = platform_input_lookup_code(s);
+		ev->code = platform_input_lookup_code(s, &shifted);
+		if (shifted)
+			ev->mods |= MOD_SHIFT;
 
 		if (!ev->code)
 			return -1;
@@ -78,7 +60,7 @@ int input_parse_string(struct input_event *ev, const char *s)
 const char *input_event_tostr(struct input_event *ev)
 {
 	static char s[64];
-	const char *name = platform_input_lookup_name(ev->code);
+	const char *name = platform_input_lookup_name(ev->code, ev->mods & MOD_SHIFT ? 1 : 0);
 	int n = 0;
 
 	if (!ev)
@@ -87,23 +69,6 @@ const char *input_event_tostr(struct input_event *ev)
 	if (ev->mods & MOD_CONTROL) {
 		s[n++] = 'C';
 		s[n++] = '-';
-	}
-
-	if (ev->mods & MOD_SHIFT) {
-		size_t i;
-		int shifted = 0;
-
-		for (i = 0; i < sizeof(shift_table) / sizeof(shift_table[0]); i++) {
-			if (!strcmp(shift_table[i].name, name)) {
-				shifted = 1;
-				name = shift_table[i].shifted_name;
-			}
-		}
-
-		if (!shifted) {
-			s[n++] = 'S';
-			s[n++] = '-';
-		}
 	}
 
 	if (ev->mods & MOD_ALT) {

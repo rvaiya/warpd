@@ -53,8 +53,8 @@ void platform_input_grab_keyboard();
 void platform_input_ungrab_keyboard();
 
 struct input_event *platform_input_next_event(int timeout);
-uint8_t platform_input_lookup_code(const char *name);
-const char *platform_input_lookup_name(uint8_t name);
+uint8_t platform_input_lookup_code(const char *name, int *shifted);
+const char *platform_input_lookup_name(uint8_t code, int shifted);
 
 /*
  * Efficiently listen for one or more input events before

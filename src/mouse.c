@@ -41,7 +41,7 @@ static long get_time_us()
 
 static int tonum(uint8_t code)
 {
-	const char *name = platform_input_lookup_name(code);
+	const char *name = platform_input_lookup_name(code, 0);
 
 	if (!name)
 		return -1;

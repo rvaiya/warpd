@@ -4,7 +4,6 @@
  * © 2019 Raheman Vaiya (see: LICENSE).
  */
 
-#include "input.h"
 #include "X.h"
 
 static int nr_grabbed_device_ids = 0;
@@ -83,52 +82,6 @@ static XEvent *get_next_xev(int timeout)
 		return NULL;
 }
 
-static uint8_t sym_table[] = {
-    [XK_q] = 24, [XK_w] = 25, [XK_e] = 26,
-    [XK_r] = 27, [XK_t] = 28, [XK_y] = 29,
-    [XK_u] = 30, [XK_i] = 31, [XK_o] = 32,
-    [XK_p] = 33, [XK_a] = 38, [XK_s] = 39,
-    [XK_d] = 40, [XK_f] = 41, [XK_g] = 42,
-    [XK_h] = 43, [XK_j] = 44, [XK_k] = 45,
-    [XK_l] = 46, [XK_semicolon] = 47, [XK_apostrophe] = 48,
-    [XK_grave] = 49, [XK_backslash] = 51, [XK_z] = 52,
-    [XK_x] = 53, [XK_c] = 54, [XK_v] = 55,
-    [XK_b] = 56, [XK_n] = 57, [XK_m] = 58,
-    [XK_comma] = 59, [XK_period] = 60, [XK_slash] = 61,
-    [XK_space] = 65,
-};
-
-static const size_t sym_table_sz = sizeof(sym_table) / sizeof(sym_table[0]);
-
-static uint8_t xcode_to_code(int xcode)
-{
-	/*
-	 * NOTE: In theory the X server doesn't encode any information in the
-	 * keycode itself and relies on the client to convert it into a keysym.
-	 * In practice the code appears to correspond to the evdev code which
-	 * generated the X code + 8. This is the basis for our X code map.
-	 */
-
-	KeySym sym = XKeycodeToKeysym(dpy, xcode, 0);
-
-	if (sym < sym_table_sz && sym_table[sym])
-		xcode = sym_table[sym];
-
-	return xcode - 8;
-}
-
-static int code_to_xcode(uint8_t code)
-{
-	size_t sym;
-	int xcode = code+8;
-
-	for(sym = 0; sym < sym_table_sz; sym++)
-		if (sym_table[sym] == xcode)
-			return XKeysymToKeycode(dpy, sym);
-
-	return xcode;
-}
-
 /* returns a key code or 0 on failure. */
 static uint8_t process_xinput_event(XEvent *ev, int *state, int *mods)
 {
@@ -157,7 +110,7 @@ static uint8_t process_xinput_event(XEvent *ev, int *state, int *mods)
 
 	case XI_KeyPress:
 		dev = (XIDeviceEvent *)(cookie->data);
-		code = xcode_to_code(dev->detail);
+		code = (uint8_t)dev->detail;
 
 		*state = (dev->flags & XIKeyRepeat) ? 2 : 1;
 		*mods = dev->mods.effective;
@@ -167,7 +120,7 @@ static uint8_t process_xinput_event(XEvent *ev, int *state, int *mods)
 		return code;
 	case XI_KeyRelease:
 		dev = (XIDeviceEvent *)(cookie->data);
-		code = xcode_to_code(dev->detail);
+		code = (uint8_t)dev->detail;
 
 		*state = 0;
 		*mods = dev->mods.effective;
@@ -194,7 +147,6 @@ static int input_xerr(Display *dpy, XErrorEvent *ev)
 static void xgrab_key(uint8_t code, uint8_t mods)
 {
 	XSetErrorHandler(input_xerr);
-	int xcode = code_to_xcode(code);
 	int xmods = 0;
 
 	if (!code)
@@ -211,10 +163,10 @@ static void xgrab_key(uint8_t code, uint8_t mods)
 
 	xerr_key = input_event_tostr(&(struct input_event){code, mods, 0});
 
-	XGrabKey(dpy, xcode, xmods, DefaultRootWindow(dpy), False,
+	XGrabKey(dpy, code, xmods, DefaultRootWindow(dpy), False,
 		 GrabModeAsync, GrabModeAsync);
 
-	XGrabKey(dpy, xcode, xmods | Mod2Mask, /* numlock */
+	XGrabKey(dpy, code, xmods | Mod2Mask, /* numlock */
 		 DefaultRootWindow(dpy), False, GrabModeAsync, GrabModeAsync);
 
 	XSync(dpy, False);
@@ -309,6 +261,27 @@ uint8_t xmods_to_mods(int xmods)
 	return mods;
 }
 
+uint8_t get_code_modifier(uint8_t code) 
+{
+	KeySym sym = XKeycodeToKeysym(dpy, code, 0);
+	switch (sym) {
+	case XK_Control_L:
+	case XK_Control_R:
+		return MOD_CONTROL;
+	case XK_Meta_L:
+	case XK_Meta_R:
+		return MOD_META;
+	case XK_Alt_L:
+	case XK_Alt_R:
+		return MOD_ALT;
+	case XK_Shift_L:
+	case XK_Shift_R:
+		return MOD_SHIFT;
+	default:
+		return 0;
+	}
+}
+
 /* returns 0 on timeout. */
 struct input_event *platform_input_next_event(int timeout)
 {
@@ -334,9 +307,9 @@ struct input_event *platform_input_next_event(int timeout)
 				ev.mods = xmods_to_mods(xmods);
 
 				if (state)
-					active_mods |= modmap[code];
+					active_mods |= get_code_modifier(code);
 				else
-					active_mods &= ~modmap[code];
+					active_mods &= ~get_code_modifier(code);
 
 				return &ev;
 			}
@@ -367,7 +340,7 @@ struct input_event *platform_input_wait(struct input_event *events, size_t sz)
 		XEvent *xev = get_next_xev(0);
 
 		if (xev->type == KeyPress || xev->type == KeyRelease) {
-			ev.code = xcode_to_code(xev->xkey.keycode);
+			ev.code = (uint8_t)xev->xkey.keycode;
 			ev.mods = xmods_to_mods(xev->xkey.state);
 			ev.pressed = xev->type == KeyPress;
 
@@ -377,21 +350,59 @@ struct input_event *platform_input_wait(struct input_event *events, size_t sz)
 	}
 }
 
-uint8_t platform_input_lookup_code(const char *name)
+/* Normalize keynames for non API code. */
+struct {
+	const char *name;
+	const char *xname;
+} normalization_map[] = {
+	{"esc", "Escape"},
+	{",", "comma"},
+	{".", "period"},
+	{"-", "minus"},
+	{"/", "slash"},
+	{";", "semicolon"},
+	{"$", "dollar"},
+	{"backspace", "BackSpace"},
+};
+
+uint8_t platform_input_lookup_code(const char *name, int *shifted)
 {
-	size_t code = 0;
+	uint8_t code = 0;
+	size_t i;
 
-	for (code = 0;
-	     code < sizeof(keynames) / sizeof(keynames[0]); code++) {
-		if (keynames[code] &&
-		    !strcmp(keynames[code], name))
-			return code;
-	}
+	for (i = 0; i < sizeof normalization_map / sizeof normalization_map[0]; i++)
+		if (!strcmp(normalization_map[i].name, name))
+			name = normalization_map[i].xname;
 
-	return 0;
+	KeySym sym = XStringToKeysym(name);
+
+	if (!sym)
+		return 0;
+	
+	code = XKeysymToKeycode(dpy, sym);
+
+	if (XKeycodeToKeysym(dpy, code, 0) != sym)
+		*shifted = 1;
+	else
+		*shifted = 0;
+
+
+	return code;
 }
 
-const char *platform_input_lookup_name(uint8_t code)
+const char *platform_input_lookup_name(uint8_t code, int shifted)
 {
-	return keynames[code];
+	size_t i;
+	const char *name;
+	KeySym sym = XKeycodeToKeysym(dpy, code, shifted);
+	if (!sym)
+		return NULL;
+
+	name = XKeysymToString(sym);
+
+	for (i = 0; i < sizeof normalization_map / sizeof normalization_map[0]; i++)
+		if (!strcmp(normalization_map[i].xname, name))
+			name = normalization_map[i].name;
+
+	return name;
 }
