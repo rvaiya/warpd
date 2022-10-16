@@ -122,7 +122,11 @@ int mouse_process_key(struct input_event *ev,
 		      const char *up_key,
 		      const char *down_key,
 		      const char *left_key,
-		      const char *right_key)
+		      const char *right_key,
+		      const char *up_left_key,
+		      const char *up_right_key,
+		      const char *down_left_key,
+		      const char *down_right_key)
 {
 	int ret = 0;
 	int n;
@@ -130,7 +134,7 @@ int mouse_process_key(struct input_event *ev,
 	/* timeout */
 	if (!ev) {
 		tick();
-		return left || right || up || down;
+		return left || right || up || down || up_left_key || up_right_key || down_left_key || down_right_key;
 	}
 
 	if ((n = tonum(ev->code)) != -1 && ev->mods == 0) {
@@ -155,6 +159,22 @@ int mouse_process_key(struct input_event *ev,
 		ret = 1;
 	} else if (config_input_match(ev, up_key)) {
 		up = ev->pressed;
+		ret = 1;
+	} else if (config_input_match(ev, up_left_key)) {
+		up = ev->pressed;
+		left = ev->pressed;
+		ret = 1;
+	} else if (config_input_match(ev, up_right_key)) {
+		up = ev->pressed;
+		right = ev->pressed;
+		ret = 1;
+	} else if (config_input_match(ev, down_left_key)) {
+		down = ev->pressed;
+		left = ev->pressed;
+		ret = 1;
+	} else if (config_input_match(ev, down_right_key)) {
+		down = ev->pressed;
+		right = ev->pressed;
 		ret = 1;
 	}
 

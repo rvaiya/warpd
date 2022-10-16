@@ -123,7 +123,7 @@ struct input_event *grid_mode()
 		ev = platform_input_next_event(10);
 		platform_mouse_get_position(NULL, &mx, &my);
 
-		if (mouse_process_key(ev, "grid_up", "grid_down", "grid_left", "grid_right")) {
+		if (mouse_process_key(ev, "grid_up", "grid_down", "grid_left", "grid_right", NULL, NULL, NULL, NULL)) {
 			redraw(mx, my, 0);
 			continue;
 		}

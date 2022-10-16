@@ -58,6 +58,8 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
 		"copy_and_exit",
 		"decelerator",
 		"down",
+		"down_left",
+		"down_right",
 		"drag",
 		"end",
 		"exit",
@@ -78,6 +80,8 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
 		"start",
 		"top",
 		"up",
+		"up_left",
+		"up_right"
 	};
 
 
@@ -102,7 +106,7 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
 		}
 
 		scroll_tick();
-		if (mouse_process_key(ev, "up", "down", "left", "right")) {
+		if (mouse_process_key(ev, "up", "down", "left", "right", "up_left", "up_right", "down_left", "down_right")) {
 			platform_mouse_get_position(&scr, &mx, &my);
 			redraw(scr, mx, my, 0);
 			continue;

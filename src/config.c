@@ -45,6 +45,10 @@ static struct {
 	{ "down", "j", "Move the cursor down in normal mode.", OPT_KEY },
 	{ "up", "k", "Move the cursor up in normal mode.", OPT_KEY },
 	{ "right", "l", "Move the cursor right in normal mode.", OPT_KEY },
+	{ "up_left", "y", "Move the cursor up and left in normal mode.", OPT_KEY },
+	{ "up_right", "u", "Move the cursor up and right in normal mode.", OPT_KEY },
+	{ "down_left", "b", "Move the cursor down and left in normal mode.", OPT_KEY },
+	{ "down_right", "n", "Move the cursor down and right in normal mode.", OPT_KEY },
 	{ "top", "H", "Moves the cursor to the top of the screen in normal mode.", OPT_KEY },
 	{ "middle", "M", "Moves the cursor to the middle of the screen in normal mode.", OPT_KEY },
 	{ "bottom", "L", "Moves the cursor to the bottom of the screen in normal mode.", OPT_KEY },
@@ -300,7 +304,7 @@ int config_input_match(struct input_event *ev, const char *config_key)
 
 		if (ent->whitelisted && (idx = keyidx(ent->value, ev, &exact))) {
 			if ((ent->type == OPT_KEY && exact) || ent->type == OPT_BUTTON) {
-				if (!strcmp(ent->key, config_key))
+				if (config_key && !strcmp(ent->key, config_key))
 					return idx;
 				else
 					return 0;
