@@ -3,6 +3,7 @@
  *
  * © 2019 Raheman Vaiya (see also: LICENSE).
  */
+#include <limits.h>
 #include "wayland.h"
 
 #define UNIMPLEMENTED { \
@@ -75,10 +76,10 @@ const char *platform_input_lookup_name(uint8_t code, int shifted)
 void platform_mouse_move(struct screen *scr, int x, int y)
 {
 	int i;
-	int maxx = 0;
-	int maxy = 0;
-	int minx = 0;
-	int miny = 0;
+	int maxx = INT_MIN;
+	int maxy = INT_MIN;
+	int minx = INT_MAX;
+	int miny = INT_MAX;
 
 	active_screen->ptrx = x;
 	active_screen->ptry = y;
