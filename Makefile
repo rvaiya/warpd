@@ -14,8 +14,12 @@ CFLAGS:=-g\
        -DCOMMIT=\"$(COMMIT)\"\
        -D_DEFAULT_SOURCE  $(CFLAGS)
 
+ifeq ($(shell uname -s),Darwin)
+	PLATFORM?=macos
+endif
+
 ifeq ($(PLATFORM), macos)
-	PLATFORM_FLAGS=-framework cocoa
+	PLATFORM_FLAGS=-framework cocoa -framework carbon
 
 	PLATFORM_FILES=$(shell find src/platform/macos/*.m)
 	PLATFORM_OBJECTS=$(PLATFORM_FILES:.m=.o)

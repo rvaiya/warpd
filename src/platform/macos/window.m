@@ -22,15 +22,15 @@
 }
 @end
 
-/* 
+/*
  * Wrap NSWindow in a nice C API, with a coordinate scheme based on the top
  * left, where God (and the X developers) intended it :). Drawing routines
- * are attached to the window with window_register_draw_hook() and run 
+ * are attached to the window with window_register_draw_hook() and run
  * in registration order when rendering. The usual NS/CG* routines
  * can be used for drawing operations.
  */
 
-void window_show(struct window *win) 
+void window_show(struct window *win)
 {
 	[win->win makeKeyAndOrderFront:nil];
 	[[win->win contentView] setNeedsDisplay:TRUE];
@@ -51,7 +51,7 @@ void window_move(struct window *win, struct screen *scr, int x, int y)
 	[win->win setFrameOrigin:NSMakePoint(scr->x + x, scr->y + scr->h - wh - y)];
 }
 
-void window_hide(struct window *win) 
+void window_hide(struct window *win)
 {
 	[win->win orderOut:nil];
 }

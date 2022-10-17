@@ -5,7 +5,6 @@
  */
 
 #include "macos.h"
-#include "input.h"
 
 static int grabbed = 0;
 static long grabbed_time;
@@ -110,9 +109,9 @@ static CGEventRef eventTapCallback(CGEventTapProxy proxy, CGEventType type,
 		break;
 	case kCGEventKeyDown:
 	case kCGEventKeyUp:
-		/* 
+		/*
 		 * We shift codes up by 1 so 0 is not a valid code. This is
-		 * accounted for in the name table. 
+		 * accounted for in the name table.
 		 */
 		code = CGEventGetIntegerValueField(event, kCGKeyboardEventKeycode) + 1;
 		pressed = type == kCGEventKeyDown;
@@ -187,19 +186,80 @@ static CGEventRef eventTapCallback(CGEventTapProxy proxy, CGEventType type,
 	return event;
 }
 
-const char *platform_input_lookup_name(uint8_t code) 
-{ 
-	return input_code_names[code]; 
+/*
+ * TODO: make sure names are consistent with the linux map + account
+ * for OS keymap.
+ */
+const char *code_to_string(uint8_t code, int shifted)
+{
+	static char buf[128];
+	UInt32 deadkeystate = 0;
+	UniChar chars[4];
+	UniCharCount len;
+	CFStringRef str;
+	TISInputSourceRef kbd = TISCopyCurrentKeyboardInputSource();
+
+	switch (code) {
+		case 55: return "rightmeta";
+		case 56: return "leftmeta";
+		case 57: return "leftshift";
+		case 58: return "capslock";
+		case 59: return "leftalt";
+		case 60: return "leftcontrol";
+		case 61: return "rightshift";
+		case 62: return "rightalt";
+		case 63: return "rightcontrol";
+	}
+
+	buf[0] = 0;
+
+	/* Blech */
+	CFDataRef layout_data = TISGetInputSourceProperty(kbd, kTISPropertyUnicodeKeyLayoutData);
+	const UCKeyboardLayout *layout = (const UCKeyboardLayout *)CFDataGetBytePtr(layout_data);
+
+	UCKeyTranslate(layout, code-1, kUCKeyActionDisplay, shifted ? 2 : 0, LMGetKbdType(),
+		       kUCKeyTranslateNoDeadKeysBit, &deadkeystate,
+		       sizeof(chars) / sizeof(chars[0]), &len, chars);
+
+	str = CFStringCreateWithCharacters(kCFAllocatorDefault, chars, 1);
+	CFStringGetCString(str, buf, sizeof buf, kCFStringEncodingUTF8);
+
+	CFRelease(str);
+
+	if (!strcmp(buf, "\033"))
+		return "esc";
+	if (!strcmp(buf, ""))
+		return "backspace";
+
+	return buf;
 }
 
-uint8_t platform_input_lookup_code(const char *name)
+const char *platform_input_lookup_name(uint8_t code, int shifted)
+{
+	return code_to_string(code, shifted);
+}
+
+uint8_t platform_input_lookup_code(const char *name, int *shifted)
 {
 	size_t i;
 
-	for (i = 0; i < sizeof input_code_names / sizeof(input_code_names[0]);
-	     i++) {
-		if (input_code_names[i] && !strcmp(input_code_names[i], name))
+	/*
+	 * Horribly inefficient. We should probably cache these, but then we
+	 * are less responsive to layout changes :/.
+	 *
+	 * TODO: Figure out the right Carbon incantation for reverse
+	 * name lookups.
+	 */
+	for (i = 0; i < 256; i++) {
+		const char *cand;
+
+		if ((cand = code_to_string(i, 0)) && !strcmp(cand, name)) {
+			*shifted = 0;
 			return i;
+		} else if ((cand = code_to_string(i, 1)) && !strcmp(cand, name)) {
+			*shifted = 1;
+			return i;
+		}
 	}
 
 	return 0;

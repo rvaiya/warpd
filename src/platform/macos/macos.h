@@ -10,6 +10,7 @@
 #include "../../platform.h"
 #include <ApplicationServices/ApplicationServices.h>
 #include <Cocoa/Cocoa.h>
+#include <Carbon/Carbon.h>
 #include <stdint.h>
 #include <pthread.h>
 

@@ -172,7 +172,7 @@ void platform_mouse_move(struct screen *scr, int x, int y)
 	x += scr->x;
 	y = scr->y + scr->h - y;
 
-	/* 
+	/*
 	 * CGEvents use a different coordinate system, so we have to convert between the
 	 * two.
 	 */

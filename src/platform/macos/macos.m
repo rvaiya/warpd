@@ -119,10 +119,12 @@ NSColor *nscolor_from_hex(const char *str)
 
 void platform_copy_selection()
 {
-	send_key(platform_input_lookup_code("leftmeta"), 1);
-	send_key(platform_input_lookup_code("c"), 1);
-	send_key(platform_input_lookup_code("leftmeta"), 0);
-	send_key(platform_input_lookup_code("c"), 0);
+	int shifted;
+
+	send_key(platform_input_lookup_code("leftmeta", &shifted), 1);
+	send_key(platform_input_lookup_code("c", &shifted), 1);
+	send_key(platform_input_lookup_code("leftmeta", &shifted), 0);
+	send_key(platform_input_lookup_code("c", &shifted), 0);
 }
 
 void platform_scroll(int direction)

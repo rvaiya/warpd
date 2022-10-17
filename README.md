@@ -96,7 +96,7 @@ or (from source)
 # don't already have them.
 xcode-select --install
 
-PLATFORM=macos make && sudo PLATFORM=macos make install
+make && sudo make install
 ```
 
 *Note:* Some programs (e.g iTerm) have a 'secure input mode' that may need to be
