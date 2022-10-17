@@ -10,6 +10,20 @@
 	exit(-1);							 \
 }
 
+struct {
+	const char *name;
+	const char *xname;
+} normalization_map[] = {
+	{"esc", "Escape"},
+	{",", "comma"},
+	{".", "period"},
+	{"-", "minus"},
+	{"/", "slash"},
+	{";", "semicolon"},
+	{"$", "dollar"},
+	{"backspace", "BackSpace"},
+};
+
 void init_wl();
 
 void platform_run(void (*loop)(void))
@@ -21,19 +35,41 @@ void platform_run(void (*loop)(void))
 
 /* Input */
 
-uint8_t platform_input_lookup_code(const char *name)
+uint8_t platform_input_lookup_code(const char *name, int *shifted)
 {
 	size_t i;
+
+	for (i = 0; i < sizeof normalization_map / sizeof normalization_map[0]; i++)
+		if (!strcmp(normalization_map[i].name, name))
+			name = normalization_map[i].xname;
+
 	for (i = 0; i < 256; i++)
-		if (!strcmp(keynames[i], name))
+		if (!strcmp(keymap[i].name, name)) {
+			*shifted = 0;
 			return i;
+		} else if (!strcmp(keymap[i].shifted_name, name)) {
+			*shifted = 1;
+			return i;
+		}
 
 	return 0;
 }
 
-const char *platform_input_lookup_name(uint8_t code)
+const char *platform_input_lookup_name(uint8_t code, int shifted)
 {
-	return keynames[code] ? keynames[code] : "UNDEFINED";
+	size_t i;
+	const char *name = NULL;
+
+	if (shifted && keymap[code].shifted_name[0])
+		name = keymap[code].shifted_name;
+	else if (!shifted && keymap[code].name[0])
+		name = keymap[code].name;
+	
+	for (i = 0; i < sizeof normalization_map / sizeof normalization_map[0]; i++)
+		if (name && !strcmp(normalization_map[i].xname, name))
+			name = normalization_map[i].name;
+
+	return name;
 }
 
 void platform_mouse_move(struct screen *scr, int x, int y)

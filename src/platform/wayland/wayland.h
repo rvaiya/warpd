@@ -82,6 +82,11 @@ struct screen {
 	struct surface *overlay;
 };
 
+struct keymap_entry {
+	char name[32];
+	char shifted_name[32];
+};
+
 extern struct screen screens[MAX_SCREENS];
 extern size_t nr_screens;
 
@@ -104,5 +109,6 @@ int hex_to_rgba(const char *str, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a)
 void init_screen();
 
 extern struct screen *active_screen;
+extern struct keymap_entry keymap[256];
 
 #endif

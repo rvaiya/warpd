@@ -7,16 +7,19 @@
 
 static struct input_event input_queue[32];
 static size_t input_queue_sz;
-char keynames[256][32];
 
 static struct surface input_pixel;
 static uint8_t active_mods = 0;
 
 static void noop() {}
+struct keymap_entry keymap[256] = {0};
 
 void update_mods(uint8_t code, uint8_t pressed)
 {
-	const char *name = platform_input_lookup_name(code);
+	const char *name = platform_input_lookup_name(code, 0);
+
+	if (!name)
+		return;
 
 	if (strstr(name, "Control") == name) {
 		if (pressed)
@@ -67,28 +70,11 @@ static void handle_keymap(void *data,
 			  uint32_t format, int32_t fd, uint32_t size)
 {
 	size_t i;
+	int n;
 	char *buf;
 	struct xkb_context *ctx;
 	struct xkb_keymap *xkbmap;
 	struct xkb_state *xkbstate;
-
-	struct {
-		const char *name;
-		const char *alias;
-	} aliases[] = {
-		{"Escape", "esc"},
-		{"minus", "-"},
-		{"comma", ","},
-		{"slash", "/"},
-		{"period", "."},
-		{"BackSpace", "backspace"},
-		{"bracketleft", "["},
-		{"backslash", "\\"},
-		{"bracketright", "]"},
-		{"semicolon", ";"},
-		{"quote", "'"},
-		{"apostrophe", "'"},
-	};
 
 	assert(format == WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1);
 
@@ -98,27 +84,27 @@ static void handle_keymap(void *data,
 	ctx = xkb_context_new(0);
 	assert(ctx);
 
-	xkbmap =
-	    xkb_keymap_new_from_string(ctx, buf,
-				       XKB_KEYMAP_FORMAT_TEXT_V1, 0);
+	xkbmap = xkb_keymap_new_from_string(ctx, buf, XKB_KEYMAP_FORMAT_TEXT_V1, 0);
 
 	assert(xkbmap);
-
 	xkbstate = xkb_state_new(xkbmap);
 	assert(xkbstate);
 
 	for (i = 0; i < 248; i++) {
-		size_t j;
-		keynames[i][0] = 0;
-		xkb_keysym_t sym = xkb_state_key_get_one_sym(xkbstate, i+8);
-		xkb_keysym_get_name(sym, keynames[i], sizeof keynames[i]);
+		const xkb_keysym_t *syms;
+		if (xkb_keymap_key_get_syms_by_level(xkbmap, i+8,
+						     xkb_state_key_get_layout(xkbstate, i+8),
+						     0, &syms)) {
+			xkb_keysym_get_name(syms[0], keymap[i].name, sizeof keymap[i].name);
+		}
 
-		for (j = 0; j < sizeof(aliases)/sizeof(aliases[0]); j++) {
-			if (!strcmp(aliases[j].name, keynames[i]))
-				strcpy(keynames[i], aliases[j].alias);
+		if (xkb_keymap_key_get_syms_by_level(xkbmap, i+8,
+						     xkb_state_key_get_layout(xkbstate, i+8),
+						     1,
+						     &syms)) {
+			xkb_keysym_get_name(syms[0], keymap[i].shifted_name, sizeof keymap[i].shifted_name);
 		}
 	}
-
 	xkb_state_unref(xkbstate);
 	xkb_keymap_unref(xkbmap);
 }
