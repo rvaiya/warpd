@@ -1,3 +1,9 @@
+# v1.3.4
+ - Fix initial pointer position on wayland
+ - Add support middle click support for macos
+ - Add support for platform keymaps (non-qwerty layouts)
+ - Various bugfixes
+
 # v1.3.3
  - Fix wayland initialization issue
 
