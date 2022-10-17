@@ -121,6 +121,7 @@ static void handle_keymap(void *data,
 
 	xkb_state_unref(xkbstate);
 	xkb_keymap_unref(xkbmap);
+	xkb_context_unref(ctx);
 }
 
 void handle_pointer_enter(void *data,
