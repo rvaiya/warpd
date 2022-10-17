@@ -1,7 +1,7 @@
 COMMIT=$(shell git rev-parse --short HEAD)
 VERSION=1.3.4
 DESTDIR=
-PREFIX=/usr
+PREFIX=/usr/local
 
 CFLAGS:=-g\
        -Wall\
