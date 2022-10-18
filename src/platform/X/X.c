@@ -168,6 +168,10 @@ Window create_window(const char *color)
 void platform_run(void (*init)(void))
 {
 	dpy = XOpenDisplay(NULL);
+	if (!dpy) {
+		fprintf(stderr, "Could not connect to X server\n");
+		exit(-1);
+	}
 
 	/* TODO: account for screen hotplugging */
 	init_screens();
