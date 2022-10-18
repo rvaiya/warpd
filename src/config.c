@@ -32,6 +32,7 @@ static struct {
 	{ "accelerator", "a", "Increase the acceleration of the pointer while held.", OPT_KEY },
 	{ "decelerator", "d", "Decrease the speed of the pointer while held.", OPT_KEY },
 	{ "buttons", "m , .",  "A space separated list of mouse buttons (2 is middle click).", OPT_BUTTON },
+	{ "drag_button", "1", "The mouse buttton used for dragging.", OPT_INT },
 	{ "oneshot_buttons", "n - /", "Oneshot mouse buttons (deactivate on click).", OPT_BUTTON },
 
 	{ "print", "p", "Print the current mouse coordinates to stdout (useful for scripts).", OPT_KEY },

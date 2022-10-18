@@ -10,12 +10,13 @@ static int dragging = 0;
 
 void toggle_drag()
 {
+	int btn = config_get_int("drag_button");
 	dragging = !dragging;
 
 	if (dragging)
-		platform_mouse_down(1);
+		platform_mouse_down(btn);
 	else
-		platform_mouse_up(1);
+		platform_mouse_up(btn);
 }
 
 static int mode_flag = 0;
