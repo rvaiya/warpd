@@ -35,6 +35,12 @@ static void get_hint_size(screen_t scr, int *w, int *h)
 
 	platform_screen_get_dimensions(scr, &sw, &sh);
 
+	if (sw < sh) {
+		int tmp = sw;
+		sw = sh;
+		sh = tmp;
+	}
+
 	*w = (sw * config_get_int("hint_size")) / 1000;
 	*h = (sh * config_get_int("hint_size")) / 1000;
 }
