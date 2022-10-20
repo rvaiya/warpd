@@ -29,8 +29,6 @@ OBJECTS=$(CFILES:.c=.o)
 all: $(OBJECTS)
 	-mkdir bin
 	$(CC)  -o bin/warpd $(OBJECTS) $(CFLAGS)
-man:
-	scdoc < man.md | gzip > warpd.1.gz
 clean:
 	-rm $(OBJECTS)
 	-rm -r bin

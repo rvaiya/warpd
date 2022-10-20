@@ -348,7 +348,7 @@ void macos_init_input()
 	AXIsProcessTrustedWithOptions((CFDictionaryRef)options);
 
 	tap =
-	    CGEventTapCreate(kCGHIDEventTap, kCGHeadInsertEventTap, 0,
+	    CGEventTapCreate(kCGSessionEventTap, kCGHeadInsertEventTap, 0,
 			     kCGEventMaskForAllEvents, eventTapCallback, NULL);
 
 	if (!tap) {

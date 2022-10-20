@@ -26,3 +26,6 @@ ifeq ($(PLATFORM), macos)
 else
 	include mk/linux.mk
 endif
+
+man:
+	scdoc < warpd.1.scdoc | gzip > warpd.1.gz
