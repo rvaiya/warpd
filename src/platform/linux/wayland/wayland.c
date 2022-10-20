@@ -75,7 +75,7 @@ const char *wl_input_lookup_name(uint8_t code, int shifted)
 
 void wl_mouse_move(struct screen *scr, int x, int y)
 {
-	int i;
+	size_t i;
 	int maxx = INT_MIN;
 	int maxy = INT_MIN;
 	int minx = INT_MAX;
@@ -182,7 +182,7 @@ struct input_event *wl_input_wait(struct input_event *events, size_t sz) { UNIMP
 
 void wl_screen_list(struct screen *scr[MAX_SCREENS], size_t *n) 
 {
-	int i;
+	size_t i;
 	for (i = 0; i < nr_screens; i++)
 		scr[i] = &screens[i];
 

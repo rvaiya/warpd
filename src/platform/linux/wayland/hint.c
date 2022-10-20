@@ -7,7 +7,7 @@
 
 static char bgcolor[16];
 static char fgcolor[16];
-static char *font_family;
+static const char *font_family;
 
 static int calculate_font_size(cairo_t *cr, int w, int h)
 {

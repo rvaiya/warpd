@@ -40,8 +40,8 @@ static void surface_handle_enter(void *data,
 				 struct wl_output *output)
 {
 	struct surface *sfc = data;
+	size_t i;
 
-	int i = 0;
 	for (i = 0; i < nr_screens; i++)
 		if (screens[i].wl_output == output)
 			sfc->screen = &screens[i];
