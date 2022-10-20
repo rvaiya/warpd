@@ -33,7 +33,7 @@ clean:
 	-rm $(OBJECTS)
 	-rm -r bin
 install:
-	install -m644 warpd.1.gz $(DESTDIR)$(PREFIX)/share/man/man1/
+	install -m644 files/warpd.1.gz $(DESTDIR)$(PREFIX)/share/man/man1/
 	install -m755 bin/warpd $(DESTDIR)$(PREFIX)/bin/
 uninstall:
 	rm $(DESTDIR)$(PREFIX)/share/man/man1/warpd.1.gz\

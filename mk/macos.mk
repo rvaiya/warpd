@@ -9,15 +9,15 @@ RELFLAGS=-Wl,-adhoc_codesign -framework cocoa -framework carbon
 all: $(OBJECTS)
 	-mkdir bin
 	$(CC) -o bin/warpd $(OBJECTS) -framework cocoa -framework carbon
-rel:
+rel: clean
 	$(CC) -o bin/warpd-arm $(CFILES) $(OBJCFILES) -target arm64-apple-macos $(CFLAGS) $(RELFLAGS)
 	$(CC) -o bin/warpd-x86  $(CFILES) $(OBJCFILES) -target x86_64-apple-macos $(CFLAGS) $(RELFLAGS)
 	lipo -create bin/warpd-arm bin/warpd-x86 -output bin/warpd && rm -r bin/warpd-*
-	-rm -rf dist
-	mkdir dist
-	sudo DESTDIR=dist make install
-	cd dist && tar czvf ../dist.tar.gz $$(find . -type f)
-	-rm -rf dist
+	-rm -rf tmp dist
+	mkdir tmp dist
+	sudo DESTDIR=tmp make install
+	cd tmp && tar czvf ../dist/macos-$(VERSION).tar.gz $$(find . -type f)
+	-rm -rf tmp
 install:
 	mkdir -p $(DESTDIR)/usr/local/bin/ \
 		$(DESTDIR)/usr/local/share/man/man1/ \
@@ -30,4 +30,4 @@ uninstall:
 		$(DESTDIR)/usr/local/bin/warpd \
 		$(DESTDIR)/Library/LaunchAgents/com.warpd.warpd.plist
 clean:
-	rm $(OBJECTS)
+	-rm $(OBJECTS)
