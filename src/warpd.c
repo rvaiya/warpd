@@ -337,7 +337,7 @@ static void print_usage()
 
 static void print_version()
 {
-	printf("warpd v" VERSION " (built from: " COMMIT ")\n");
+	printf("warpd " VERSION"\n");
 }
 
 int main(int argc, char *argv[])

@@ -1,6 +1,6 @@
-COMMIT=$(shell git rev-parse --short HEAD)
 VERSION=1.3.4
 PREFIX?=/usr/local
+COMMITSTR=$(shell commit=$$(git rev-parse --short HEAD 2> /dev/null) && echo " (built from: $$commit)")
 
 ifeq ($(shell uname -s), Darwin)
 	PLATFORM?=macos
@@ -17,7 +17,7 @@ CFLAGS:=-g\
        -Wno-deprecated-declarations\
        -Wno-unused-parameter\
        -std=c99\
-       -DVERSION=\"$(VERSION)\"\
+       -DVERSION='"v$(VERSION)$(COMMITSTR)"'\
        -DCOMMIT=\"$(COMMIT)\"\
        -D_DEFAULT_SOURCE  $(CFLAGS)
 
