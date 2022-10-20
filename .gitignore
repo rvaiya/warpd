@@ -8,3 +8,4 @@ NOTES
 lib/
 bin/
 *.o
+dist/
