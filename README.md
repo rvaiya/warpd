@@ -97,11 +97,13 @@ make && sudo make install && launchctl load /Library/LaunchAgents/com.warpd.warp
 *Note:* Some programs (e.g iTerm) have a 'secure input mode' that may need to be
 disabled in order for warpd to work properly.
 
-Changes to `~/.config/warpd/config` can be effected by restart the system service using launchctl
+Changes to `~/.config/warpd/config` can be effected by restart the system service using launchctl:
 
 E.g
 
+```
 launchctl kickstart -k gui/$UID/com.warpd.warpd
+```
 
 The service can be disabled with
 
