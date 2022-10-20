@@ -56,14 +56,14 @@ void wl_hint_draw(struct screen *scr, struct hint *hints, size_t n)
 	cairo_paint(cr);
 
 	for (i = 0; i < n; i++) {
-		hex_to_rgba(bgcolor, &r, &g, &b, &a);
+		wl_hex_to_rgba(bgcolor, &r, &g, &b, &a);
 		cairo_set_source_rgba(cr, r / 255.0, g / 255.0, b / 255.0,
 				      a / 255.0);
 		cairo_rectangle(cr, hints[i].x, hints[i].y, hints[i].w,
 				hints[i].h);
 		cairo_fill(cr);
 
-		hex_to_rgba(fgcolor, &r, &g, &b, &a);
+		wl_hex_to_rgba(fgcolor, &r, &g, &b, &a);
 		cairo_set_source_rgba(cr, r / 255.0, g / 255.0, b / 255.0,
 				      a / 255.0);
 

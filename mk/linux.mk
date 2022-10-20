@@ -1,18 +1,16 @@
-WAYLAND=1
-X=1
-
 CFILES=$(shell find src/platform/linux/*.c src/*.c)
 
-ifdef WAYLAND
+ifndef DISABLE_WAYLAND
 	CFLAGS+=-lwayland-client\
 		-lxkbcommon\
 		-lcairo\
 		-lrt\
+		-DWARPD_WAYLAND=1
 
 	CFILES+=$(shell find src/platform/linux/wayland/ -name '*.c')
 endif
 
-ifdef X
+ifndef DISABLE_X
 	CFLAGS+=-I/usr/include/freetype2/\
 		-lXfixes\
 		-lXext\
@@ -20,7 +18,8 @@ ifdef X
 		-lXi\
 		-lXtst\
 		-lX11\
-		-lXft
+		-lXft\
+		-DWARPD_X=1
 
 	CFILES+=$(shell find src/platform/linux/X/*.c)
 endif
