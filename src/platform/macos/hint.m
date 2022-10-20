@@ -22,7 +22,7 @@ static void draw_hook(void *arg, NSView *view)
 	}
 }
 
-void platform_hint_draw(struct screen *scr, struct hint *hints, size_t n)
+void osx_hint_draw(struct screen *scr, struct hint *hints, size_t n)
 {
 	scr->nr_hints = n;
 	memcpy(scr->hints, hints, sizeof(struct hint)*n);
@@ -30,7 +30,7 @@ void platform_hint_draw(struct screen *scr, struct hint *hints, size_t n)
 	window_register_draw_hook(scr->overlay, draw_hook, scr);
 }
 
-void platform_init_hint(const char *bg, const char *fg, int _border_radius,
+void osx_init_hint(const char *bg, const char *fg, int _border_radius,
 	       const char *font_family)
 {
 	bgColor = nscolor_from_hex(bg);

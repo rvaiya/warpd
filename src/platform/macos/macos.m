@@ -117,17 +117,17 @@ NSColor *nscolor_from_hex(const char *str)
 					 alpha:(float)a / 255];
 }
 
-void platform_copy_selection()
+void osx_copy_selection()
 {
 	int shifted;
 
-	send_key(platform_input_lookup_code("leftmeta", &shifted), 1);
-	send_key(platform_input_lookup_code("c", &shifted), 1);
-	send_key(platform_input_lookup_code("leftmeta", &shifted), 0);
-	send_key(platform_input_lookup_code("c", &shifted), 0);
+	send_key(osx_input_lookup_code("leftmeta", &shifted), 1);
+	send_key(osx_input_lookup_code("c", &shifted), 1);
+	send_key(osx_input_lookup_code("leftmeta", &shifted), 0);
+	send_key(osx_input_lookup_code("c", &shifted), 0);
 }
 
-void platform_scroll(int direction)
+void osx_scroll(int direction)
 {
 	int y = 0;
 	int x = 0;
@@ -152,7 +152,7 @@ void platform_scroll(int direction)
 	CGEventPost(kCGHIDEventTap, ev);
 }
 
-void platform_commit()
+void osx_commit()
 {
 	dispatch_sync(dispatch_get_main_queue(), ^{
 		size_t i;
@@ -167,7 +167,7 @@ void platform_commit()
 	});
 }
 
-void platform_run(void (*loop)())
+void osx_run(void (*loop)())
 {
 	pthread_t thread;
 
@@ -181,4 +181,31 @@ void platform_run(void (*loop)())
 	pthread_create(&thread, NULL, mainloop, (void *)loop);
 
 	[NSApp run];
+}
+
+void platform_init()
+{
+	platform.commit = osx_commit;
+	platform.copy_selection = osx_copy_selection;
+	platform.hint_draw = osx_hint_draw;
+	platform.init_hint = osx_init_hint;
+	platform.input_grab_keyboard = osx_input_grab_keyboard;
+	platform.input_lookup_code = osx_input_lookup_code;
+	platform.input_lookup_name = osx_input_lookup_name;
+	platform.input_next_event = osx_input_next_event;
+	platform.input_ungrab_keyboard = osx_input_ungrab_keyboard;
+	platform.input_wait = osx_input_wait;
+	platform.mouse_click = osx_mouse_click;
+	platform.mouse_down = osx_mouse_down;
+	platform.mouse_get_position = osx_mouse_get_position;
+	platform.mouse_hide = osx_mouse_hide;
+	platform.mouse_move = osx_mouse_move;
+	platform.mouse_show = osx_mouse_show;
+	platform.mouse_up = osx_mouse_up;
+	platform.run = osx_run;
+	platform.screen_clear = osx_screen_clear;
+	platform.screen_draw_box = osx_screen_draw_box;
+	platform.screen_get_dimensions = osx_screen_get_dimensions;
+	platform.screen_list = osx_screen_list;
+	platform.scroll = osx_scroll;
 }

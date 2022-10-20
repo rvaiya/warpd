@@ -15,7 +15,7 @@ static void draw_hook(void *arg, NSView *view)
 	macos_draw_box(b->scr, b->color, b->x, b->y, b->w, b->h, 0);
 }
 
-void platform_screen_draw_box(struct screen *scr, int x, int y, int w, int h, const char *color)
+void osx_screen_draw_box(struct screen *scr, int x, int y, int w, int h, const char *color)
 {
 	assert(scr->nr_boxes < MAX_BOXES);
 	struct box *b = &scr->boxes[scr->nr_boxes++];
@@ -30,7 +30,7 @@ void platform_screen_draw_box(struct screen *scr, int x, int y, int w, int h, co
 	window_register_draw_hook(scr->overlay, draw_hook, b);
 }
 
-void platform_screen_list(struct screen *rscreens[MAX_SCREENS], size_t *n)
+void osx_screen_list(struct screen *rscreens[MAX_SCREENS], size_t *n)
 {
 	size_t i;
 
@@ -40,13 +40,13 @@ void platform_screen_list(struct screen *rscreens[MAX_SCREENS], size_t *n)
 	*n = nr_screens;
 }
 
-void platform_screen_clear(struct screen *scr)
+void osx_screen_clear(struct screen *scr)
 {
 	scr->nr_boxes = 0;
 	scr->overlay->nr_hooks = 0;
 }
 
-void platform_screen_get_dimensions(struct screen *scr, int *w, int *h)
+void osx_screen_get_dimensions(struct screen *scr, int *w, int *h)
 {
 	*w = scr->w;
 	*h = scr->h;

@@ -234,12 +234,12 @@ const char *code_to_string(uint8_t code, int shifted)
 	return buf;
 }
 
-const char *platform_input_lookup_name(uint8_t code, int shifted)
+const char *osx_input_lookup_name(uint8_t code, int shifted)
 {
 	return code_to_string(code, shifted);
 }
 
-uint8_t platform_input_lookup_code(const char *name, int *shifted)
+uint8_t osx_input_lookup_code(const char *name, int *shifted)
 {
 	size_t i;
 
@@ -292,14 +292,14 @@ void send_key(uint8_t code, int pressed)
 	});
 }
 
-void platform_input_ungrab_keyboard()
+void osx_input_ungrab_keyboard()
 {
 	dispatch_sync(dispatch_get_main_queue(), ^{
 		grabbed = 0;
 	});
 }
 
-void platform_input_grab_keyboard()
+void osx_input_grab_keyboard()
 {
 	if (grabbed)
 		return;
@@ -310,7 +310,7 @@ void platform_input_grab_keyboard()
 	});
 }
 
-struct input_event *platform_input_next_event(int timeout)
+struct input_event *osx_input_next_event(int timeout)
 {
 	static struct input_event ev;
 
@@ -320,14 +320,14 @@ struct input_event *platform_input_next_event(int timeout)
 	return &ev;
 }
 
-struct input_event *platform_input_wait(struct input_event *keys, size_t sz)
+struct input_event *osx_input_wait(struct input_event *keys, size_t sz)
 {
 	grabbed_keys = keys;
 	grabbed_keys_sz = sz;
 
 	while (1) {
 		size_t i;
-		struct input_event *ev = platform_input_next_event(0);
+		struct input_event *ev = osx_input_next_event(0);
 
 		for (i = 0; i < sz; i++)
 			if (ev->pressed && keys[i].code == ev->code &&

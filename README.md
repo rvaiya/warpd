@@ -58,7 +58,7 @@ Make sure you have the appropriate dependencies for your system:
 
 E.G 
 
-## debian/ubuntu (X):
+## debian/ubuntu:
 
 ```
 sudo apt-get install \
@@ -67,26 +67,17 @@ sudo apt-get install \
 	libxft-dev \
 	libxfixes-dev \
 	libxtst-dev \
-	libx11-dev && \
-make && sudo make install
-```
-
-## debian/ubuntu (Wayland):
-
-```
-sudo apt-get install \
+	libx11-dev \
 	libcairo2-dev \
 	libxkbcommon-dev \
-	libwayland-dev && \
-PLATFORM=wayland make && sudo make install
+	libwayland-dev &&
+make && sudo make install
 ```
 
 ## macos:
 
 ```
-sudo curl -Lo /usr/local/bin/warpd https://github.com/rvaiya/warpd/releases/download/v1.2.2/warpd-osx && \
-sudo chmod +x /usr/local/bin/warpd && \
-sudo curl -Lo /usr/local/share/man/man1/warpd.1.gz https://github.com/rvaiya/warpd/releases/download/v1.2.2/warpd.1.gz
+curl -Lo https://github.com/rvaiya/warpd/releases/download/v1.3.4/warpd-osx.tgz | sudo tar xzvfC - / 
 ```
 
 or (from source)

@@ -46,7 +46,7 @@ int input_parse_string(struct input_event *ev, const char *s)
 	if (s[0]) {
 		int shifted;
 
-		ev->code = platform_input_lookup_code(s, &shifted);
+		ev->code = platform.input_lookup_code(s, &shifted);
 		if (shifted)
 			ev->mods |= MOD_SHIFT;
 
@@ -60,7 +60,7 @@ int input_parse_string(struct input_event *ev, const char *s)
 const char *input_event_tostr(struct input_event *ev)
 {
 	static char s[64];
-	const char *name = platform_input_lookup_name(ev->code, ev->mods & MOD_SHIFT ? 1 : 0);
+	const char *name = platform.input_lookup_name(ev->code, ev->mods & MOD_SHIFT ? 1 : 0);
 	int n = 0;
 
 	if (!ev)

@@ -44,7 +44,7 @@ static void cairo_draw_text(cairo_t *cr, const char *s, int x, int y, int w, int
 	cairo_show_text(cr, s);
 }
 
-void platform_hint_draw(struct screen *scr, struct hint *hints, size_t n) 
+void wl_hint_draw(struct screen *scr, struct hint *hints, size_t n) 
 {
 	size_t i;
 	uint8_t r,g,b,a;
@@ -74,7 +74,7 @@ void platform_hint_draw(struct screen *scr, struct hint *hints, size_t n)
 	surface_show(scr->overlay, scr->wl_output);
 }
 
-void platform_init_hint(const char *bg, const char *fg, int border_radius, const char *font)
+void wl_init_hint(const char *bg, const char *fg, int border_radius, const char *font)
 {
 	strncpy(bgcolor, bg, sizeof bgcolor);
 	strncpy(fgcolor, fg, sizeof fgcolor);

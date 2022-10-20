@@ -21,7 +21,7 @@
 #include <wayland-client.h>
 #include <xkbcommon/xkbcommon.h>
 
-#include "../../platform.h"
+#include "../../../platform.h"
 #include "wl/xdg-shell.h"
 #include "wl/virtual-pointer.h"
 #include "wl/layer-shell.h"
@@ -104,11 +104,37 @@ void init_surface(struct surface *sfc, int x, int y, int w, int h, int input_foc
 void add_seat(struct wl_seat *seat);
 void add_screen(struct wl_output *output);
 
-int hex_to_rgba(const char *str, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a);
+int wl_hex_to_rgba(const char *str, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a);
 
 void init_screen();
 
 extern struct screen *active_screen;
 extern struct keymap_entry keymap[256];
+
+
+void wl_run(void (*init)(void));
+void wl_input_grab_keyboard();
+void wl_input_ungrab_keyboard();
+struct input_event *wl_input_next_event(int timeout);
+uint8_t wl_input_lookup_code(const char *name, int *shifted);
+const char *wl_input_lookup_name(uint8_t code, int shifted);
+struct input_event *wl_input_wait(struct input_event *events, size_t sz);
+void wl_mouse_move(screen_t scr, int x, int y);
+void wl_mouse_down(int btn);
+void wl_mouse_up(int btn);
+void wl_mouse_click(int btn);
+void wl_mouse_get_position(screen_t *scr, int *x, int *y);
+void wl_mouse_show();
+void wl_mouse_hide();
+void wl_screen_get_dimensions(screen_t scr, int *w, int *h);
+void wl_screen_draw_box(screen_t scr, int x, int y, int w, int h, const char *color);
+void wl_screen_clear(screen_t scr);
+void wl_screen_list(screen_t scr[MAX_SCREENS], size_t *n);
+void wl_init_hint(const char *bg, const char *fg, int border_radius, const char *font_family);
+void wl_hint_draw(struct screen *scr, struct hint *hints, size_t n);
+void wl_scroll(int direction);
+void wl_copy_selection();
+void wl_commit();
+
 
 #endif

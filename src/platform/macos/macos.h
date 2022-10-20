@@ -99,4 +99,29 @@ NSColor *nscolor_from_hex(const char *str);
 extern struct screen screens[32];
 extern size_t nr_screens;
 extern uint8_t active_mods;
+
+void osx_run(void (*init)(void));
+void osx_input_grab_keyboard();
+void osx_input_ungrab_keyboard();
+struct input_event *osx_input_next_event(int timeout);
+uint8_t osx_input_lookup_code(const char *name, int *shifted);
+const char *osx_input_lookup_name(uint8_t code, int shifted);
+struct input_event *osx_input_wait(struct input_event *events, size_t sz);
+void osx_mouse_move(screen_t scr, int x, int y);
+void osx_mouse_down(int btn);
+void osx_mouse_up(int btn);
+void osx_mouse_click(int btn);
+void osx_mouse_get_position(screen_t *scr, int *x, int *y);
+void osx_mouse_show();
+void osx_mouse_hide();
+void osx_screen_get_dimensions(screen_t scr, int *w, int *h);
+void osx_screen_draw_box(screen_t scr, int x, int y, int w, int h, const char *color);
+void osx_screen_clear(screen_t scr);
+void osx_screen_list(screen_t scr[MAX_SCREENS], size_t *n);
+void osx_init_hint(const char *bg, const char *fg, int border_radius, const char *font_family);
+void osx_hint_draw(struct screen *scr, struct hint *hints, size_t n);
+void osx_scroll(int direction);
+void osx_copy_selection();
+void osx_commit();
+
 #endif

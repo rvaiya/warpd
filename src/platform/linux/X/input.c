@@ -9,7 +9,7 @@
 static int nr_grabbed_device_ids = 0;
 static int grabbed_device_ids[64];
 
-uint8_t active_mods = 0;
+uint8_t x_active_mods = 0;
 
 /* clear the X keyboard state. */
 static void reset_keyboard()
@@ -174,7 +174,7 @@ static void xgrab_key(uint8_t code, uint8_t mods)
 	XSetErrorHandler(NULL);
 }
 
-void platform_input_grab_keyboard()
+void x_input_grab_keyboard()
 {
 	int i, n;
 	XIDeviceInfo *devices;
@@ -202,11 +202,11 @@ void platform_input_grab_keyboard()
 	reset_keyboard();
 	XIFreeDeviceInfo(devices);
 
-	active_mods = 0;
+	x_active_mods = 0;
 	XSync(dpy, False);
 }
 
-void platform_input_ungrab_keyboard()
+void x_input_ungrab_keyboard()
 {
 	int i;
 
@@ -283,7 +283,7 @@ uint8_t get_code_modifier(uint8_t code)
 }
 
 /* returns 0 on timeout. */
-struct input_event *platform_input_next_event(int timeout)
+struct input_event *x_input_next_event(int timeout)
 {
 	static struct input_event ev;
 
@@ -307,9 +307,9 @@ struct input_event *platform_input_next_event(int timeout)
 				ev.mods = xmods_to_mods(xmods);
 
 				if (state)
-					active_mods |= get_code_modifier(code);
+					x_active_mods |= get_code_modifier(code);
 				else
-					active_mods &= ~get_code_modifier(code);
+					x_active_mods &= ~get_code_modifier(code);
 
 				return &ev;
 			}
@@ -326,7 +326,7 @@ struct input_event *platform_input_next_event(int timeout)
 	}
 }
 
-struct input_event *platform_input_wait(struct input_event *events, size_t sz)
+struct input_event *x_input_wait(struct input_event *events, size_t sz)
 {
 	size_t i;
 	static struct input_event ev;
@@ -344,7 +344,7 @@ struct input_event *platform_input_wait(struct input_event *events, size_t sz)
 			ev.mods = xmods_to_mods(xev->xkey.state);
 			ev.pressed = xev->type == KeyPress;
 
-			platform_input_grab_keyboard();
+			x_input_grab_keyboard();
 			return &ev;
 		}
 	}
@@ -365,7 +365,7 @@ struct {
 	{"backspace", "BackSpace"},
 };
 
-uint8_t platform_input_lookup_code(const char *name, int *shifted)
+uint8_t x_input_lookup_code(const char *name, int *shifted)
 {
 	uint8_t code = 0;
 	size_t i;
@@ -390,7 +390,7 @@ uint8_t platform_input_lookup_code(const char *name, int *shifted)
 	return code;
 }
 
-const char *platform_input_lookup_name(uint8_t code, int shifted)
+const char *x_input_lookup_name(uint8_t code, int shifted)
 {
 	size_t i;
 	const char *name;

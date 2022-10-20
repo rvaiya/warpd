@@ -9,44 +9,44 @@ static struct input_event input_queue[32];
 static size_t input_queue_sz;
 
 static struct surface input_pixel;
-static uint8_t active_mods = 0;
+static uint8_t x_active_mods = 0;
 
 static void noop() {}
 struct keymap_entry keymap[256] = {0};
 
 void update_mods(uint8_t code, uint8_t pressed)
 {
-	const char *name = platform_input_lookup_name(code, 0);
+	const char *name = wl_input_lookup_name(code, 0);
 
 	if (!name)
 		return;
 
 	if (strstr(name, "Control") == name) {
 		if (pressed)
-			active_mods |= MOD_CONTROL;
+			x_active_mods |= MOD_CONTROL;
 		else
-			active_mods &= ~MOD_CONTROL;
+			x_active_mods &= ~MOD_CONTROL;
 	}
 
 	if (strstr(name, "Shift") == name) {
 		if (pressed)
-			active_mods |= MOD_SHIFT;
+			x_active_mods |= MOD_SHIFT;
 		else
-			active_mods &= ~MOD_SHIFT;
+			x_active_mods &= ~MOD_SHIFT;
 	}
 
 	if (strstr(name, "Super") == name) {
 		if (pressed)
-			active_mods |= MOD_META;
+			x_active_mods |= MOD_META;
 		else
-			active_mods &= ~MOD_META;
+			x_active_mods &= ~MOD_META;
 	}
 
 	if (strstr(name, "Alt") == name) {
 		if (pressed)
-			active_mods |= MOD_ALT;
+			x_active_mods |= MOD_ALT;
 		else
-			active_mods &= ~MOD_ALT;
+			x_active_mods &= ~MOD_ALT;
 	}
 }
 
@@ -62,7 +62,7 @@ static void handle_key(void *data,
 
 	ev->code = code;
 	ev->pressed = state;
-	ev->mods = active_mods;
+	ev->mods = x_active_mods;
 }
 
 static void handle_keymap(void *data,
@@ -70,7 +70,6 @@ static void handle_keymap(void *data,
 			  uint32_t format, int32_t fd, uint32_t size)
 {
 	size_t i;
-	int n;
 	char *buf;
 	struct xkb_context *ctx;
 	struct xkb_keymap *xkbmap;
@@ -147,7 +146,7 @@ static struct wl_keyboard_listener wl_keyboard_listener = {
 	.repeat_info = noop,
 };
 
-void platform_input_ungrab_keyboard()
+void wl_input_ungrab_keyboard()
 {
 	surface_hide(&input_pixel);
 }
@@ -156,7 +155,7 @@ void platform_input_ungrab_keyboard()
  * *Note*: Wayland does not allow for global input handlers.
  * Input events can only be captured by a focused window :(.
  */
-void platform_input_grab_keyboard()
+void wl_input_grab_keyboard()
 {
 	if (!input_pixel.buf)
 		init_surface(&input_pixel, -1, -1, 1, 1, 1);
@@ -164,7 +163,7 @@ void platform_input_grab_keyboard()
 	surface_show(&input_pixel, NULL);
 }
 
-struct input_event *platform_input_next_event(int timeout)
+struct input_event *wl_input_next_event(int timeout)
 {
 	static struct input_event ev;
 

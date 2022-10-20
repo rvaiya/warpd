@@ -1,9 +1,9 @@
 #include "X.h"
 
-struct screen screens[32];
-size_t nr_screens = 0;
+struct screen xscreens[32];
+size_t nr_xscreens = 0;
 
-void window_set_color(Window w, const char *color)
+static void window_set_color(Window w, const char *color)
 {
 	uint32_t col = parse_xcolor(color, NULL);
 
@@ -12,28 +12,28 @@ void window_set_color(Window w, const char *color)
 				&(((XSetWindowAttributes) { .background_pixel = col })));
 }
 
-void init_screens()
+void init_xscreens()
 {
 	Window chld, root;
 	int n, x, y, _;
 	unsigned int _u;
-	XineramaScreenInfo *xscreens;
+	XineramaScreenInfo *screens;
 
 	/* Obtain absolute pointer coordinates */
 	XQueryPointer(dpy, DefaultRootWindow(dpy), &root, &chld, &x, &y, &_, &_,
 		      &_u);
 
-	xscreens = XineramaQueryScreens(dpy, &n);
+	screens = XineramaQueryScreens(dpy, &n);
 	for (int i = 0; i < n; i++) {
 		size_t j;
 
-		struct screen *scr = &screens[nr_screens++];
+		struct screen *scr = &xscreens[nr_xscreens++];
 
-		scr->y = xscreens[i].y_org;
-		scr->x = xscreens[i].x_org;
+		scr->y = screens[i].y_org;
+		scr->x = screens[i].x_org;
 
-		scr->w = xscreens[i].width;
-		scr->h = xscreens[i].height;
+		scr->w = screens[i].width;
+		scr->h = screens[i].height;
 
 		for (j = 0; j < MAX_BOXES; j++) {
 			scr->boxes[j].win = create_window("#000000");
@@ -41,26 +41,26 @@ void init_screens()
 		}
 	}
 
-	XFree(xscreens);
+	XFree(screens);
 }
 
-void platform_screen_list(struct screen *rscreens[MAX_SCREENS], size_t *n)
+void x_screen_list(struct screen *rscreens[MAX_SCREENS], size_t *n)
 {
 	size_t i;
 
-	for (i = 0; i < nr_screens; i++)
-		rscreens[i] = &screens[i];
+	for (i = 0; i < nr_xscreens; i++)
+		rscreens[i] = &xscreens[i];
 
-	*n = nr_screens;
+	*n = nr_xscreens;
 }
 
-void platform_screen_get_dimensions(struct screen *scr, int *w, int *h)
+void x_screen_get_dimensions(struct screen *scr, int *w, int *h)
 {
 	*w = scr->w;
 	*h = scr->h;
 }
 
-void platform_screen_clear(struct screen *scr)
+void x_screen_clear(struct screen *scr)
 {
 	size_t i;
 
@@ -73,7 +73,7 @@ void platform_screen_clear(struct screen *scr)
 	scr->nr_boxes = 0;
 }
 
-void platform_screen_draw_box(struct screen *scr, int x, int y, int w, int h, const char *color) 
+void x_screen_draw_box(struct screen *scr, int x, int y, int w, int h, const char *color) 
 { 
 	assert(scr->nr_boxes < MAX_BOXES);
 

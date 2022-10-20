@@ -24,16 +24,16 @@ static void filter(screen_t scr, const char *s)
 			matched[nr_matched++] = hints[i];
 	}
 
-	platform_screen_clear(scr);
-	platform_hint_draw(scr, matched, nr_matched);
-	platform_commit();
+	platform.screen_clear(scr);
+	platform.hint_draw(scr, matched, nr_matched);
+	platform.commit();
 }
 
 static void get_hint_size(screen_t scr, int *w, int *h)
 {
 	int sw, sh;
 
-	platform_screen_get_dimensions(scr, &sw, &sh);
+	platform.screen_get_dimensions(scr, &sw, &sh);
 
 	if (sw < sh) {
 		int tmp = sw;
@@ -54,7 +54,7 @@ static size_t generate_fullscreen_hints(screen_t scr, struct hint *hints)
 
 	const char *chars = config_get("hint_chars");
 	get_hint_size(scr, &w, &h);
-	platform_screen_get_dimensions(scr, &sw, &sh);
+	platform.screen_get_dimensions(scr, &sw, &sh);
 
 	const int nr = strlen(chars);
 	const int nc = strlen(chars);
@@ -104,9 +104,9 @@ static int hint_selection(screen_t scr, struct hint *_hints, size_t _nr_hints)
 
 	int rc = 0;
 	char buf[32] = {0};
-	platform_input_grab_keyboard();
+	platform.input_grab_keyboard();
 
-	platform_mouse_hide();
+	platform.mouse_hide();
 
 	const char *keys[] = {
 		"hint_exit",
@@ -120,7 +120,7 @@ static int hint_selection(screen_t scr, struct hint *_hints, size_t _nr_hints)
 		struct input_event *ev;
 		ssize_t len;
 
-		ev = platform_input_next_event(0);
+		ev = platform.input_next_event(0);
 
 		if (!ev->pressed)
 			continue;
@@ -150,7 +150,7 @@ static int hint_selection(screen_t scr, struct hint *_hints, size_t _nr_hints)
 			int nx, ny;
 			struct hint *h = &matched[0];
 
-			platform_screen_clear(scr);
+			platform.screen_clear(scr);
 
 			nx = h->x + h->w / 2;
 			ny = h->y + h->h / 2;
@@ -160,9 +160,9 @@ static int hint_selection(screen_t scr, struct hint *_hints, size_t _nr_hints)
 			 * text selection widgets which don't like spontaneous
 			 * cursor warping.
 			 */
-			platform_mouse_move(scr, nx+1, ny+1);
+			platform.mouse_move(scr, nx+1, ny+1);
 
-			platform_mouse_move(scr, nx, ny);
+			platform.mouse_move(scr, nx, ny);
 			strcpy(last_selected_hint, buf);
 			break;
 		} else if (nr_matched == 0) {
@@ -170,11 +170,11 @@ static int hint_selection(screen_t scr, struct hint *_hints, size_t _nr_hints)
 		}
 	}
 
-	platform_input_ungrab_keyboard();
-	platform_screen_clear(scr);
-	platform_mouse_show();
+	platform.input_ungrab_keyboard();
+	platform.screen_clear(scr);
+	platform.mouse_show();
 
-	platform_commit();
+	platform.commit();
 	return rc;
 }
 
@@ -198,8 +198,8 @@ static int sift()
 
 	struct hint hints[MAX_HINTS];
 
-	platform_mouse_get_position(&scr, &x, &y);
-	platform_screen_get_dimensions(scr, &sw, &sh);
+	platform.mouse_get_position(&scr, &x, &y);
+	platform.screen_get_dimensions(scr, &sw, &sh);
 
 	gap = (gap * sh) / 1000;
 	hint_sz = (hint_sz * sh) / 1000;
@@ -229,7 +229,7 @@ static int sift()
 
 void init_hints()
 {
-	platform_init_hint(config_get("hint_bgcolor"),
+	platform.init_hint(config_get("hint_bgcolor"),
 			config_get("hint_fgcolor"),
 			config_get_int("hint_border_radius"),
 			config_get("hint_font"));
@@ -244,8 +244,8 @@ int hintspec_mode()
 	int n = 0;
 	struct hint hints[MAX_HINTS];
 
-	platform_mouse_get_position(&scr, NULL, NULL);
-	platform_screen_get_dimensions(scr, &sw, &sh);
+	platform.mouse_get_position(&scr, NULL, NULL);
+	platform.screen_get_dimensions(scr, &sw, &sh);
 
 	get_hint_size(scr, &w, &h);
 
@@ -271,7 +271,7 @@ int full_hint_mode(int second_pass)
 	screen_t scr;
 	struct hint hints[MAX_HINTS];
 
-	platform_mouse_get_position(&scr, &mx, &my);
+	platform.mouse_get_position(&scr, &mx, &my);
 	hist_add(mx, my);
 
 	nr_hints = generate_fullscreen_hints(scr, hints);
@@ -294,8 +294,8 @@ int history_hint_mode()
 	int sw, sh;
 	size_t n, i;
 
-	platform_mouse_get_position(&scr, NULL, NULL);
-	platform_screen_get_dimensions(scr, &sw, &sh);
+	platform.mouse_get_position(&scr, NULL, NULL);
+	platform.screen_get_dimensions(scr, &sw, &sh);
 
 	n = histfile_read(&ents);
 

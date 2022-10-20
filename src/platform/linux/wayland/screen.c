@@ -47,7 +47,7 @@ void add_screen(struct wl_output *output)
 	scr->wl_output = output;
 }
 
-void platform_screen_draw_box(struct screen *scr, int x, int y, int w, int h, const char *color)
+void wl_screen_draw_box(struct screen *scr, int x, int y, int w, int h, const char *color)
 {
 	uint8_t r, g, b, a;
 
@@ -56,7 +56,7 @@ void platform_screen_draw_box(struct screen *scr, int x, int y, int w, int h, co
 
 	init_surface(sfc, x, y, w, h, 0);
 
-	hex_to_rgba(color, &r, &g, &b, &a);
+	wl_hex_to_rgba(color, &r, &g, &b, &a);
 	cairo_set_source_rgba(sfc->cr, r / 255.0, g / 255.0, b / 255.0, a / 255.0);
 	cairo_paint(sfc->cr);
 
@@ -64,13 +64,13 @@ void platform_screen_draw_box(struct screen *scr, int x, int y, int w, int h, co
 }
 
 
-void platform_screen_get_dimensions(struct screen *scr, int *w, int *h)
+void wl_screen_get_dimensions(struct screen *scr, int *w, int *h)
 {
 	*w = scr->w;
 	*h = scr->h;
 }
 
-void platform_screen_clear(struct screen *scr)
+void wl_screen_clear(struct screen *scr)
 {
 	size_t i;
 	for (i = 0; i < scr->nr_surfaces; i++)

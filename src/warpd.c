@@ -14,9 +14,9 @@ void toggle_drag()
 	dragging = !dragging;
 
 	if (dragging)
-		platform_mouse_down(btn);
+		platform.mouse_down(btn);
 	else
-		platform_mouse_up(btn);
+		platform.mouse_up(btn);
 }
 
 static int mode_flag = 0;
@@ -25,6 +25,8 @@ static int movearg_x = -1;
 static int movearg_y = -1;
 static int record_flag = 0;
 static int drag_flag = 0;
+
+struct platform platform = {0};
 
 static const char *config_path;
 
@@ -121,17 +123,17 @@ static int activation_loop(int mode)
 			int x, y;
 			screen_t scr;
 
-			platform_mouse_get_position(&scr, NULL, NULL);
+			platform.mouse_get_position(&scr, NULL, NULL);
 
 			if (movearg_x != -1 && movearg_y != -1)
-				platform_mouse_move(scr, movearg_x, movearg_y);
+				platform.mouse_move(scr, movearg_x, movearg_y);
 
 			if (click_arg) {
-				platform_mouse_click(click_arg);
+				platform.mouse_click(click_arg);
 				rc = click_arg;
 			}
 
-			platform_mouse_get_position(NULL, &x, &y);
+			platform.mouse_get_position(NULL, &x, &y);
 
 			if (record_flag)
 				histfile_add(x, y);
@@ -178,7 +180,7 @@ static void daemon_loop()
 
 	while (1) {
 		int mode = 0;
-		struct input_event *ev = platform_input_wait(activation_events,
+		struct input_event *ev = platform.input_wait(activation_events,
 						sizeof(activation_events)/sizeof(activation_events[0]));
 
 		config_input_whitelist(NULL, 0);
@@ -298,8 +300,8 @@ static void print_keys_loop()
 {
 	size_t i;
 	for (i = 0; i < 256; i++) {
-		const char *name = platform_input_lookup_name(i, 0);
-		const char *shifted_name = platform_input_lookup_name(i, 1);
+		const char *name = platform.input_lookup_name(i, 0);
+		const char *shifted_name = platform.input_lookup_name(i, 1);
 
 		if (name && name[0])
 			printf("%s\n", name);
@@ -366,6 +368,8 @@ int main(int argc, char *argv[])
 		{0}
 	};
 
+	platform_init();
+
 	while ((c = getopt_long(argc, argv, "qrhfvlc:", opts, NULL)) != -1) {
 		switch (c) {
 			case 'v':
@@ -375,7 +379,7 @@ int main(int argc, char *argv[])
 				print_usage();
 				return 0;
 			case 'l':
-				platform_run(print_keys_loop);
+				platform.run(print_keys_loop);
 				return 0;
 			case 'c':
 				config_path = optarg;
@@ -431,7 +435,7 @@ int main(int argc, char *argv[])
 	}
 
 	if (mode_flag || oneshot_mode) {
-		platform_run(mode_loop);
+		platform.run(mode_loop);
 	} else {
 		lock();
 
@@ -440,6 +444,6 @@ int main(int argc, char *argv[])
 
 		setvbuf(stdout, NULL, _IOLBF, 0);
 		printf("Starting warpd v" VERSION " (" COMMIT ")\n");
-		platform_run(daemon_loop);
+		platform.run(daemon_loop);
 	}
 }

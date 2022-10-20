@@ -91,7 +91,7 @@ static void set_opacity(Display *dpy, Window w, uint8_t _opacity)
 			(unsigned char *)&opacity, 1L);
 }
 
-void platform_copy_selection()
+void x_copy_selection()
 {
 	XTestFakeKeyEvent(dpy, XKeysymToKeycode(dpy, XK_Control_L), True,
 			  CurrentTime);
@@ -107,7 +107,7 @@ void platform_copy_selection()
 	system("xclip -o|xclip -selection CLIPBOARD");
 }
 
-void platform_scroll(int direction)
+void x_scroll(int direction)
 {
 	int btn = 0;
 
@@ -165,7 +165,7 @@ Window create_window(const char *color)
 	return win;
 }
 
-void platform_run(void (*init)(void))
+void x_run(void (*init)(void))
 {
 	dpy = XOpenDisplay(NULL);
 	if (!dpy) {
@@ -174,11 +174,38 @@ void platform_run(void (*init)(void))
 	}
 
 	/* TODO: account for screen hotplugging */
-	init_screens();
+	init_xscreens();
 	init();
 }
 
-void platform_commit() 
+void x_commit() 
 {
 	XSync(dpy, False); 
+}
+
+void x_platform_init()
+{
+	platform.commit = x_commit;
+	platform.copy_selection = x_copy_selection;
+	platform.hint_draw = x_hint_draw;
+	platform.init_hint = x_init_hint;
+	platform.input_grab_keyboard = x_input_grab_keyboard;
+	platform.input_lookup_code = x_input_lookup_code;
+	platform.input_lookup_name = x_input_lookup_name;
+	platform.input_next_event = x_input_next_event;
+	platform.input_ungrab_keyboard = x_input_ungrab_keyboard;
+	platform.input_wait = x_input_wait;
+	platform.mouse_click = x_mouse_click;
+	platform.mouse_down = x_mouse_down;
+	platform.mouse_get_position = x_mouse_get_position;
+	platform.mouse_hide = x_mouse_hide;
+	platform.mouse_move = x_mouse_move;
+	platform.mouse_show = x_mouse_show;
+	platform.mouse_up = x_mouse_up;
+	platform.run = x_run;
+	platform.screen_clear = x_screen_clear;
+	platform.screen_draw_box = x_screen_draw_box;
+	platform.screen_get_dimensions = x_screen_get_dimensions;
+	platform.screen_list = x_screen_list;
+	platform.scroll = x_scroll;
 }

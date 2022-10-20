@@ -1,0 +1,27 @@
+COMMIT=$(shell git rev-parse --short HEAD)
+VERSION=1.3.4
+DESTDIR=
+
+CFLAGS:=-g\
+       -Wall\
+       -Wextra\
+       -pedantic\
+       -Wno-deprecated-declarations\
+       -Wno-unused-parameter\
+       -std=c99\
+       -DVERSION=\"$(VERSION)-osx\"\
+       -DCOMMIT=\"$(COMMIT)\"\
+       -D_DEFAULT_SOURCE  $(CFLAGS)
+
+CARGS := -Wl,-adhoc_codesign src/*.c src/platform/macos/*.m -framework cocoa -framework carbon $(CFLAGS)
+
+all:
+	$(CC) -o bin/warpd-arm -target arm64-apple-macos $(CARGS) && \
+	$(CC) -o bin/warpd-x86  -target x86_64-apple-macos $(CARGS) && \
+	lipo -create bin/warpd-arm bin/warpd-x86 -output bin/warpd && rm -r bin/warpd-*
+install:
+	sudo install -m644 files/warpd.1.gz /usr/local/share/man/man1/
+	sudo install -m755 bin/warpd /usr/local/bin/
+	sudo install -m644 files/com.warpd.warpd.plist /Library/LaunchAgents/
+	launchctl unload /Library/LaunchAgents/com.warpd.warpd.plist
+	launchctl load /Library/LaunchAgents/com.warpd.warpd.plist

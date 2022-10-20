@@ -87,7 +87,7 @@ static void do_mouse_click(int btn, int pressed, int nclicks)
 	}
 }
 
-void platform_mouse_click(int btn)
+void osx_mouse_click(int btn)
 {
 	dispatch_sync(dispatch_get_main_queue(), ^{
 		const int threshold = 300;
@@ -114,7 +114,7 @@ void platform_mouse_click(int btn)
 	});
 }
 
-void platform_mouse_up(int btn)
+void osx_mouse_up(int btn)
 {
 	if (btn == 1)
 		dragging = 0;
@@ -122,7 +122,7 @@ void platform_mouse_up(int btn)
 	do_mouse_click(btn, 0, 1);
 }
 
-void platform_mouse_down(int btn)
+void osx_mouse_down(int btn)
 {
 	if (btn == 1)
 		dragging = 1;
@@ -130,7 +130,7 @@ void platform_mouse_down(int btn)
 	do_mouse_click(btn, 1, 1);
 }
 
-void platform_mouse_get_position(struct screen **_scr, int *_x, int *_y)
+void osx_mouse_get_position(struct screen **_scr, int *_x, int *_y)
 {
 	size_t i;
 	NSPoint loc = [NSEvent mouseLocation];
@@ -164,7 +164,7 @@ void platform_mouse_get_position(struct screen **_scr, int *_x, int *_y)
 	exit(-1);
 }
 
-void platform_mouse_move(struct screen *scr, int x, int y)
+void osx_mouse_move(struct screen *scr, int x, int y)
 {
 	const int type = dragging ? kCGEventLeftMouseDragged : kCGEventMouseMoved;
 	int cgx, cgy;
@@ -190,7 +190,7 @@ void platform_mouse_move(struct screen *scr, int x, int y)
 	CFRelease(ev);
 }
 
-void platform_mouse_hide()
+void osx_mouse_hide()
 {
 	dispatch_sync(dispatch_get_main_queue(), ^{
 		if (hider_timer)
@@ -209,7 +209,7 @@ void platform_mouse_hide()
 	});
 }
 
-void platform_mouse_show()
+void osx_mouse_show()
 {
 	dispatch_sync(dispatch_get_main_queue(), ^{
 		int i;

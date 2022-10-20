@@ -2,27 +2,27 @@
 
 static int hidden = 0;
 
-void platform_mouse_up(int btn)
+void x_mouse_up(int btn)
 {
 	XTestFakeButtonEvent(dpy, btn, False, CurrentTime);
 	XSync(dpy, False);
 }
 
-void platform_mouse_down(int btn)
+void x_mouse_down(int btn)
 {
 	XTestFakeButtonEvent(dpy, btn, True, CurrentTime);
 	XSync(dpy, False);
 }
 
-void platform_mouse_click(int btn)
+void x_mouse_click(int btn)
 {
-	if (active_mods & MOD_SHIFT)
+	if (x_active_mods & MOD_SHIFT)
 		XTestFakeKeyEvent(dpy, XKeysymToKeycode(dpy, XK_Shift_L), 1, CurrentTime);
-	if (active_mods & MOD_CONTROL)
+	if (x_active_mods & MOD_CONTROL)
 		XTestFakeKeyEvent(dpy, XKeysymToKeycode(dpy, XK_Control_L), 1, CurrentTime);
-	if (active_mods & MOD_META)
+	if (x_active_mods & MOD_META)
 		XTestFakeKeyEvent(dpy, XKeysymToKeycode(dpy, XK_Meta_L), 1, CurrentTime);
-	if (active_mods & MOD_ALT)
+	if (x_active_mods & MOD_ALT)
 		XTestFakeKeyEvent(dpy, XKeysymToKeycode(dpy, XK_Alt_L), 1, CurrentTime);
 
 	XSync(dpy, False);
@@ -32,19 +32,19 @@ void platform_mouse_click(int btn)
 
 	XSync(dpy, False);
 
-	if (active_mods & MOD_SHIFT)
+	if (x_active_mods & MOD_SHIFT)
 		XTestFakeKeyEvent(dpy, XKeysymToKeycode(dpy, XK_Shift_L), 0, CurrentTime);
-	if (active_mods & MOD_CONTROL)
+	if (x_active_mods & MOD_CONTROL)
 		XTestFakeKeyEvent(dpy, XKeysymToKeycode(dpy, XK_Control_L), 0, CurrentTime);
-	if (active_mods & MOD_META)
+	if (x_active_mods & MOD_META)
 		XTestFakeKeyEvent(dpy, XKeysymToKeycode(dpy, XK_Meta_L), 0, CurrentTime);
-	if (active_mods & MOD_ALT)
+	if (x_active_mods & MOD_ALT)
 		XTestFakeKeyEvent(dpy, XKeysymToKeycode(dpy, XK_Alt_L), 0, CurrentTime);
 
 	XSync(dpy, False);
 }
 
-void platform_mouse_move(struct screen *scr, int x, int y)
+void x_mouse_move(struct screen *scr, int x, int y)
 {
 	XTestFakeMotionEvent(dpy,
 			     DefaultScreen(dpy),
@@ -53,7 +53,7 @@ void platform_mouse_move(struct screen *scr, int x, int y)
 	XSync(dpy, False);
 }
 
-void platform_mouse_get_position(struct screen **_scr, int *_x, int *_y)
+void x_mouse_get_position(struct screen **_scr, int *_x, int *_y)
 {
 	size_t i;
 	Window chld, root;
@@ -65,8 +65,8 @@ void platform_mouse_get_position(struct screen **_scr, int *_x, int *_y)
 	XQueryPointer(dpy, DefaultRootWindow(dpy), &root, &chld, &x, &y, &_, &_,
 		      &_u);
 
-	for (i = 0; i < nr_screens; i++) {
-		struct screen *scr = &screens[i];
+	for (i = 0; i < nr_xscreens; i++) {
+		struct screen *scr = &xscreens[i];
 
 		if ((x >= scr->x) && (x <= (scr->x + scr->w)) &&
 		    (y >= scr->y) && (y <= (scr->y + scr->h))) {
@@ -86,7 +86,7 @@ void platform_mouse_get_position(struct screen **_scr, int *_x, int *_y)
 	assert(0);
 }
 
-void platform_mouse_hide()
+void x_mouse_hide()
 {
 	if (hidden)
 		return;
@@ -96,7 +96,7 @@ void platform_mouse_hide()
 	hidden = 1;
 }
 
-void platform_mouse_show()
+void x_mouse_show()
 {
 	if (!hidden)
 		return;
