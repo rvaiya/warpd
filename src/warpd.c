@@ -301,12 +301,13 @@ static void print_keys_loop()
 	size_t i;
 	for (i = 0; i < 256; i++) {
 		const char *name = platform.input_lookup_name(i, 0);
-		const char *shifted_name = platform.input_lookup_name(i, 1);
 
 		if (name && name[0])
 			printf("%s\n", name);
-		if (shifted_name && shifted_name[0])
-			printf("%s\n", shifted_name);
+
+		name = platform.input_lookup_name(i, 1);
+		if (name && name[0])
+			printf("%s\n", name);
 	}
 }
 
