@@ -15,7 +15,6 @@ static size_t grabbed_keys_sz = 0;
 
 static uint8_t passthrough_keys[256] = {0};
 
-static int keystate[256] = {0};
 static CFMachPortRef tap;
 
 uint8_t active_mods = 0;
@@ -76,6 +75,7 @@ static CGEventRef eventTapCallback(CGEventTapProxy proxy, CGEventType type,
 
 	static uint8_t keymods[256] = {0}; /* Mods active at key down time. */
 	static long pressed_timestamps[256];
+	static CGEventFlags lastFlags = 0;
 
 	/* macOS will timeout the event tap, so we have to re-enable it :/ */
 	if (type == kCGEventTapDisabledByTimeout) {
@@ -86,6 +86,7 @@ static CGEventRef eventTapCallback(CGEventTapProxy proxy, CGEventType type,
 	/* If only apple designed its system APIs like its macbooks... */
 	switch (type) {
 		NSEvent *nsev;
+		CGEventFlags flags;
 
 	case NX_SYSDEFINED: /* system codes (e.g brightness) */
 		nsev = [NSEvent eventWithCGEvent:event];
@@ -103,12 +104,22 @@ static CGEventRef eventTapCallback(CGEventTapProxy proxy, CGEventType type,
 		break;
 	case kCGEventFlagsChanged: /* modifier codes */
 		code = CGEventGetIntegerValueField(event, kCGKeyboardEventKeycode) + 1;
-		pressed = !keystate[code];
+		flags = CGEventGetFlags(event);
 
+		pressed = lastFlags < flags;
 		is_key_event = 1;
+		lastFlags = flags;
 		break;
 	case kCGEventKeyDown:
 	case kCGEventKeyUp:
+		/* Skip repeat events */
+		if (CGEventGetIntegerValueField(event, kCGKeyboardEventAutorepeat)) {
+			if (grabbed)
+				return nil;
+			else
+				return event;
+		}
+
 		/*
 		 * We shift codes up by 1 so 0 is not a valid code. This is
 		 * accounted for in the name table.
@@ -125,10 +136,7 @@ static CGEventRef eventTapCallback(CGEventTapProxy proxy, CGEventType type,
 	if (!is_key_event)
 		return event;
 
-	/* repeat event.. */
-	if (keystate[code] && pressed)
-		pressed = 2;
-	else if (pressed == 1)
+	if (pressed == 1)
 		pressed_timestamps[code] = get_time_ms();
 
 	if (passthrough_keys[code]) {
@@ -156,18 +164,13 @@ static CGEventRef eventTapCallback(CGEventTapProxy proxy, CGEventType type,
 		keymods[code] = mods;
 	}
 
-	/* Report all non-repeat events */
-	if (pressed != 2) {
-		struct input_event ev;
+	struct input_event ev;
 
-		ev.code = code;
-		ev.pressed = pressed;
-		ev.mods = mods;
+	ev.code = code;
+	ev.pressed = pressed;
+	ev.mods = mods;
 
-		write_message(input_fds[1], &ev, sizeof ev);
-	}
-
-	keystate[code] = pressed;
+	write_message(input_fds[1], &ev, sizeof ev);
 
 	for (i = 0; i < grabbed_keys_sz; i++)
 		if (grabbed_keys[i].code == code &&

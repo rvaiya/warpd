@@ -10,6 +10,9 @@ ifeq ($(PLATFORM), macos)
 	VERSION:=$(VERSION)-osx
 endif
 
+%.o: %.c Makefile mk/*.mk
+	$(CC) -c $< -o $@ $(CFLAGS)
+
 CFLAGS:=-g\
        -Wall\
        -Wextra\
@@ -19,7 +22,8 @@ CFLAGS:=-g\
        -std=c99\
        -DVERSION='"v$(VERSION)$(COMMITSTR)"'\
        -DCOMMIT=\"$(COMMIT)\"\
-       -D_DEFAULT_SOURCE  $(CFLAGS)
+       -D_DEFAULT_SOURCE \
+       -D_FORTIFY_SOURCE=2  $(CFLAGS)
 
 ifeq ($(PLATFORM), macos)
 	include mk/macos.mk
