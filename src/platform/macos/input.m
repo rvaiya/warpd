@@ -353,11 +353,22 @@ void macos_init_input()
 {
 	/* Request accessibility access if not present. */
 	NSDictionary *options = @{(id)kAXTrustedCheckOptionPrompt : @YES};
-	AXIsProcessTrustedWithOptions((CFDictionaryRef)options);
+	BOOL access = AXIsProcessTrustedWithOptions((CFDictionaryRef)options);
 
-	tap =
-	    CGEventTapCreate(kCGSessionEventTap, kCGHeadInsertEventTap, 0,
-			     kCGEventMaskForAllEvents, eventTapCallback, NULL);
+	if (!access) {
+		printf("Waiting for accessibility permissions\n");
+		tap = nil;
+		while (!tap) {
+			tap = CGEventTapCreate(kCGSessionEventTap, kCGHeadInsertEventTap, 0,
+					     kCGEventMaskForAllEvents, eventTapCallback, NULL);
+			usleep(100000);
+		}
+		printf("Accessibility permission granted, proceeding\n");
+	} else {
+		tap = CGEventTapCreate(kCGSessionEventTap, kCGHeadInsertEventTap, 0,
+				     kCGEventMaskForAllEvents, eventTapCallback, NULL);
+	}
+
 
 	if (!tap) {
 		fprintf(stderr,
