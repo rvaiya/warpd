@@ -94,7 +94,13 @@ xcode-select --install
 make && sudo make install && launchctl load /Library/LaunchAgents/com.warpd.warpd.plist
 ```
 
-*Note:* Some programs (e.g iTerm) have a 'secure input mode' that may need to be
+*Note:* On initialization you may be prompted to add the warpd binary to your
+accessibility settings. If you are upgrading it may also be necessary to run
+`sudo tccutil reset Accessibility` (**this will remove all applications
+from your accessibility settings**), since macos appears to cache the binary
+checksum.
+
+*Note 2:* Some programs (e.g iTerm) have a 'secure input mode' that may need to be
 disabled in order for warpd to work properly.
 
 Changes to `~/.config/warpd/config` can be effected by restart the system service using launchctl:
