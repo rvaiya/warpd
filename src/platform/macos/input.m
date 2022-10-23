@@ -75,7 +75,6 @@ static CGEventRef eventTapCallback(CGEventTapProxy proxy, CGEventType type,
 
 	static uint8_t keymods[256] = {0}; /* Mods active at key down time. */
 	static long pressed_timestamps[256];
-	static CGEventFlags lastFlags = 0;
 
 	/* macOS will timeout the event tap, so we have to re-enable it :/ */
 	if (type == kCGEventTapDisabledByTimeout) {
@@ -105,10 +104,16 @@ static CGEventRef eventTapCallback(CGEventTapProxy proxy, CGEventType type,
 	case kCGEventFlagsChanged: /* modifier codes */
 		code = CGEventGetIntegerValueField(event, kCGKeyboardEventKeycode) + 1;
 		flags = CGEventGetFlags(event);
+		pressed = 0;
 
-		pressed = lastFlags < flags;
+		switch (code) {
+			case 57: case 61: pressed = !!(flags & kCGEventFlagMaskShift); break;
+			case 59: case 62: pressed = !!(flags & kCGEventFlagMaskAlternate); break;
+			case 55: case 56: pressed = !!(flags & kCGEventFlagMaskCommand); break;
+			case 60: case 63: pressed = !!(flags & kCGEventFlagMaskControl); break;
+		}
+
 		is_key_event = 1;
-		lastFlags = flags;
 		break;
 	case kCGEventKeyDown:
 	case kCGEventKeyUp:
