@@ -114,7 +114,7 @@ launchctl kickstart -k gui/$UID/com.warpd.warpd
 The service can be disabled with
 
 ```
-launchctl unload /Library/LaunchAgents/com.warpd.warpd
+launchctl unload /Library/LaunchAgents/com.warpd.warpd.plist
 ```
 
 # Quickstart
