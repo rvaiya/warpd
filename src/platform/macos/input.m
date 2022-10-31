@@ -205,7 +205,7 @@ const char *code_to_string(uint8_t code, int shifted)
 	UniChar chars[4];
 	UniCharCount len;
 	CFStringRef str;
-	TISInputSourceRef kbd = TISCopyCurrentKeyboardInputSource();
+	TISInputSourceRef kbd = TISCopyCurrentKeyboardLayoutInputSource();
 
 	switch (code) {
 		case 55: return "rightmeta";

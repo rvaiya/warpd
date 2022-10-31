@@ -21,7 +21,6 @@ CFLAGS:=-g\
        -Wno-unused-parameter\
        -std=c99\
        -DVERSION='"v$(VERSION)$(COMMITSTR)"'\
-       -DCOMMIT=\"$(COMMIT)\"\
        -D_DEFAULT_SOURCE \
        -D_FORTIFY_SOURCE=2  $(CFLAGS)
 

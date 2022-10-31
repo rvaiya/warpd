@@ -444,7 +444,7 @@ int main(int argc, char *argv[])
 			daemonize();
 
 		setvbuf(stdout, NULL, _IOLBF, 0);
-		printf("Starting warpd v" VERSION " (" COMMIT ")\n");
+		printf("Starting warpd " VERSION "\n");
 		platform.run(daemon_loop);
 	}
 }
