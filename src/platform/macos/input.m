@@ -201,11 +201,6 @@ static CGEventRef eventTapCallback(CGEventTapProxy proxy, CGEventType type,
 const char *code_to_string(uint8_t code, int shifted)
 {
 	static char buf[128];
-	UInt32 deadkeystate = 0;
-	UniChar chars[4];
-	UniCharCount len;
-	CFStringRef str;
-	TISInputSourceRef kbd = TISCopyCurrentKeyboardLayoutInputSource();
 
 	switch (code) {
 		case 55: return "rightmeta";
@@ -219,20 +214,30 @@ const char *code_to_string(uint8_t code, int shifted)
 		case 63: return "rightcontrol";
 	}
 
-	buf[0] = 0;
+	dispatch_sync(dispatch_get_main_queue(), ^{
+		UInt32 deadkeystate = 0;
+		UniChar chars[4];
+		UniCharCount len;
+		CFStringRef str;
+		TISInputSourceRef kbd = TISCopyCurrentKeyboardLayoutInputSource();
 
-	/* Blech */
-	CFDataRef layout_data = TISGetInputSourceProperty(kbd, kTISPropertyUnicodeKeyLayoutData);
-	const UCKeyboardLayout *layout = (const UCKeyboardLayout *)CFDataGetBytePtr(layout_data);
+		assert(kbd);
 
-	UCKeyTranslate(layout, code-1, kUCKeyActionDisplay, shifted ? 2 : 0, LMGetKbdType(),
-		       kUCKeyTranslateNoDeadKeysBit, &deadkeystate,
-		       sizeof(chars) / sizeof(chars[0]), &len, chars);
+		buf[0] = 0;
 
-	str = CFStringCreateWithCharacters(kCFAllocatorDefault, chars, 1);
-	CFStringGetCString(str, buf, sizeof buf, kCFStringEncodingUTF8);
+		/* Blech */
+		CFDataRef layout_data = TISGetInputSourceProperty(kbd, kTISPropertyUnicodeKeyLayoutData);
+		const UCKeyboardLayout *layout = (const UCKeyboardLayout *)CFDataGetBytePtr(layout_data);
 
-	CFRelease(str);
+		UCKeyTranslate(layout, code-1, kUCKeyActionDisplay, shifted ? 2 : 0, LMGetKbdType(),
+			       kUCKeyTranslateNoDeadKeysBit, &deadkeystate,
+			       sizeof(chars) / sizeof(chars[0]), &len, chars);
+
+		str = CFStringCreateWithCharacters(kCFAllocatorDefault, chars, 1);
+		CFStringGetCString(str, buf, sizeof buf, kCFStringEncodingUTF8);
+
+		CFRelease(str);
+	});
 
 	if (!strcmp(buf, "\033"))
 		return "esc";
