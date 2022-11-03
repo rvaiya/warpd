@@ -18,6 +18,12 @@ static uint8_t passthrough_keys[256] = {0};
 static CFMachPortRef tap;
 
 uint8_t active_mods = 0;
+pthread_mutex_t keymap_mtx = PTHREAD_MUTEX_INITIALIZER;
+
+static struct {
+	char *name;
+	char *shifted_name;
+} keymap[256] = { 0 };
 
 struct mod {
 	uint8_t mask;
@@ -200,51 +206,12 @@ static CGEventRef eventTapCallback(CGEventTapProxy proxy, CGEventType type,
  */
 const char *code_to_string(uint8_t code, int shifted)
 {
-	static char buf[128];
+	static char name[256];
+	pthread_mutex_lock(&keymap_mtx);
+	strcpy(name, shifted ? keymap[code].shifted_name : keymap[code].name);
+	pthread_mutex_unlock(&keymap_mtx);
 
-	switch (code) {
-		case 55: return "rightmeta";
-		case 56: return "leftmeta";
-		case 57: return "leftshift";
-		case 58: return "capslock";
-		case 59: return "leftalt";
-		case 60: return "leftcontrol";
-		case 61: return "rightshift";
-		case 62: return "rightalt";
-		case 63: return "rightcontrol";
-	}
-
-	dispatch_sync(dispatch_get_main_queue(), ^{
-		UInt32 deadkeystate = 0;
-		UniChar chars[4];
-		UniCharCount len;
-		CFStringRef str;
-		TISInputSourceRef kbd = TISCopyCurrentKeyboardLayoutInputSource();
-
-		assert(kbd);
-
-		buf[0] = 0;
-
-		/* Blech */
-		CFDataRef layout_data = TISGetInputSourceProperty(kbd, kTISPropertyUnicodeKeyLayoutData);
-		const UCKeyboardLayout *layout = (const UCKeyboardLayout *)CFDataGetBytePtr(layout_data);
-
-		UCKeyTranslate(layout, code-1, kUCKeyActionDisplay, shifted ? 2 : 0, LMGetKbdType(),
-			       kUCKeyTranslateNoDeadKeysBit, &deadkeystate,
-			       sizeof(chars) / sizeof(chars[0]), &len, chars);
-
-		str = CFStringCreateWithCharacters(kCFAllocatorDefault, chars, 1);
-		CFStringGetCString(str, buf, sizeof buf, kCFStringEncodingUTF8);
-
-		CFRelease(str);
-	});
-
-	if (!strcmp(buf, "\033"))
-		return "esc";
-	if (!strcmp(buf, ""))
-		return "backspace";
-
-	return buf;
+	return name;
 }
 
 const char *osx_input_lookup_name(uint8_t code, int shifted)
@@ -255,26 +222,27 @@ const char *osx_input_lookup_name(uint8_t code, int shifted)
 uint8_t osx_input_lookup_code(const char *name, int *shifted)
 {
 	size_t i;
+	pthread_mutex_lock(&keymap_mtx);
 
 	/*
-	 * Horribly inefficient. We should probably cache these, but then we
-	 * are less responsive to layout changes :/.
+	 * Horribly inefficient.
 	 *
 	 * TODO: Figure out the right Carbon incantation for reverse
 	 * name lookups.
 	 */
 	for (i = 0; i < 256; i++) {
-		const char *cand;
-
-		if ((cand = code_to_string(i, 0)) && !strcmp(cand, name)) {
+		if (keymap[i].name && !strcmp(name, keymap[i].name)) {
 			*shifted = 0;
+			pthread_mutex_unlock(&keymap_mtx);
 			return i;
-		} else if ((cand = code_to_string(i, 1)) && !strcmp(cand, name)) {
+		} else if (keymap[i].shifted_name && !strcmp(name, keymap[i].shifted_name)) {
 			*shifted = 1;
+			pthread_mutex_unlock(&keymap_mtx);
 			return i;
 		}
 	}
 
+	pthread_mutex_unlock(&keymap_mtx);
 	return 0;
 }
 
@@ -353,6 +321,66 @@ struct input_event *osx_input_wait(struct input_event *keys, size_t sz)
 	}
 }
 
+static void update_keymap()
+{
+	pthread_mutex_lock(&keymap_mtx);
+
+	int code;
+	UInt32 deadkeystate = 0;
+	UniChar chars[4];
+	UniCharCount len;
+	CFStringRef str;
+	TISInputSourceRef kbd = TISCopyCurrentKeyboardLayoutInputSource();
+
+	assert(kbd);
+
+	for (code = 1; code < 256; code++) {
+		if (!keymap[code].name) {
+			keymap[code].name = malloc(32);
+			keymap[code].shifted_name = malloc(32);
+		}
+		/* Blech */
+		CFDataRef layout_data = TISGetInputSourceProperty(kbd, kTISPropertyUnicodeKeyLayoutData);
+		const UCKeyboardLayout *layout = (const UCKeyboardLayout *)CFDataGetBytePtr(layout_data);
+
+		UCKeyTranslate(layout, code-1, kUCKeyActionDisplay, 0, LMGetKbdType(),
+			       kUCKeyTranslateNoDeadKeysBit, &deadkeystate,
+			       sizeof(chars) / sizeof(chars[0]), &len, chars);
+
+		str = CFStringCreateWithCharacters(kCFAllocatorDefault, chars, 1);
+		CFStringGetCString(str, keymap[code].name, 32, kCFStringEncodingUTF8);
+		CFRelease(str);
+
+		UCKeyTranslate(layout, code-1, kUCKeyActionDisplay, 2, LMGetKbdType(),
+			       kUCKeyTranslateNoDeadKeysBit, &deadkeystate,
+			       sizeof(chars) / sizeof(chars[0]), &len, chars);
+
+		str = CFStringCreateWithCharacters(kCFAllocatorDefault, chars, 1);
+		CFStringGetCString(str, keymap[code].shifted_name, 32, kCFStringEncodingUTF8);
+		CFRelease(str);
+
+		if (!strcmp(keymap[code].name, "\033"))
+			strcpy(keymap[code].name, "esc");
+		if (!strcmp(keymap[code].name, ""))
+			strcpy(keymap[code].name, "backspace");
+
+		switch (code) {
+			case 55: strcpy(keymap[code].name, "rightmeta"); break;
+			case 56: strcpy(keymap[code].name, "leftmeta"); break;
+			case 57: strcpy(keymap[code].name, "leftshift"); break;
+			case 58: strcpy(keymap[code].name, "capslock"); break;
+			case 59: strcpy(keymap[code].name, "leftalt"); break;
+			case 60: strcpy(keymap[code].name, "leftcontrol"); break;
+			case 61: strcpy(keymap[code].name, "rightshift"); break;
+			case 62: strcpy(keymap[code].name, "rightalt"); break;
+			case 63: strcpy(keymap[code].name, "rightcontrol"); break;
+		}
+
+	}
+
+	pthread_mutex_unlock(&keymap_mtx);
+}
+
 /* Called by the main thread to set up event stream. */
 void macos_init_input()
 {
@@ -388,7 +416,15 @@ void macos_init_input()
 	CFRunLoopAddSource(CFRunLoopGetCurrent(), runLoopSource,
 			   kCFRunLoopCommonModes);
 
+
 	CGEventTapEnable(tap, true);
+
+	CFNotificationCenterAddObserver(
+	    CFNotificationCenterGetLocalCenter(), NULL, update_keymap,
+	    CFSTR("NSTextInputContextKeyboardSelectionDidChangeNotification"),
+	    NULL, CFNotificationSuspensionBehaviorDeliverImmediately);
+
+	update_keymap();
 
 	if (pipe(input_fds) < 0) {
 		perror("pipe");
