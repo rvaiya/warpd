@@ -31,4 +31,4 @@ else
 endif
 
 man:
-	scdoc < warpd.1.scdoc | gzip > files/warpd.1.gz
+	scdoc < warpd.1.md | gzip > files/warpd.1.gz
