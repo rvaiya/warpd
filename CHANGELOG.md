@@ -1,3 +1,12 @@
+# v1.3.5
+- macos: Various input bugfixes
+- macos: Introduce launchd service (the user should no longer run warpd explicitly)
+- macos: Fix multi-user support
+- linux: Merge X/Wayland support into a single binary
+- Improve portrait mode support
+- Make the drag button configurable
+- Fix config key precedence bug
+
 # v1.3.4
  - Fix initial pointer position on wayland
  - Add support middle click support for macos
