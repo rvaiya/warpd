@@ -306,7 +306,7 @@ static void daemonize()
 static void print_keys_loop()
 {
 	size_t i;
-	for (i = 0; i < 256; i++) {
+	for (i = 1; i < 256; i++) {
 		const char *name = platform.input_lookup_name(i, 0);
 
 		if (name && name[0])

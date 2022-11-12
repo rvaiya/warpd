@@ -21,8 +21,8 @@ uint8_t active_mods = 0;
 pthread_mutex_t keymap_mtx = PTHREAD_MUTEX_INITIALIZER;
 
 static struct {
-	char *name;
-	char *shifted_name;
+	char name[32];
+	char shifted_name[32];
 } keymap[256] = { 0 };
 
 struct mod {
@@ -204,19 +204,18 @@ static CGEventRef eventTapCallback(CGEventTapProxy proxy, CGEventType type,
  * TODO: make sure names are consistent with the linux map + account
  * for OS keymap.
  */
-const char *code_to_string(uint8_t code, int shifted)
+const char *osx_input_lookup_name(uint8_t code, int shifted)
 {
 	static char name[256];
+
 	pthread_mutex_lock(&keymap_mtx);
 	strcpy(name, shifted ? keymap[code].shifted_name : keymap[code].name);
 	pthread_mutex_unlock(&keymap_mtx);
 
-	return name;
-}
+	if (!name[0])
+		return NULL;
 
-const char *osx_input_lookup_name(uint8_t code, int shifted)
-{
-	return code_to_string(code, shifted);
+	return name;
 }
 
 uint8_t osx_input_lookup_code(const char *name, int *shifted)
@@ -231,11 +230,11 @@ uint8_t osx_input_lookup_code(const char *name, int *shifted)
 	 * name lookups.
 	 */
 	for (i = 0; i < 256; i++) {
-		if (keymap[i].name && !strcmp(name, keymap[i].name)) {
+		if (!strcmp(name, keymap[i].name)) {
 			*shifted = 0;
 			pthread_mutex_unlock(&keymap_mtx);
 			return i;
-		} else if (keymap[i].shifted_name && !strcmp(name, keymap[i].shifted_name)) {
+		} else if (!strcmp(name, keymap[i].shifted_name)) {
 			*shifted = 1;
 			pthread_mutex_unlock(&keymap_mtx);
 			return i;
@@ -323,6 +322,24 @@ struct input_event *osx_input_wait(struct input_event *keys, size_t sz)
 
 static void update_keymap()
 {
+	static uint8_t valid_keycodes[256] = {
+		[0x01] = 1, [0x02] = 1, [0x03] = 1, [0x04] = 1, [0x05] = 1, [0x06] = 1, [0x07] = 1, [0x08] = 1,
+		[0x09] = 1, [0x0a] = 1, [0x0b] = 1, [0x0c] = 1, [0x0d] = 1, [0x0e] = 1, [0x0f] = 1, [0x10] = 1,
+		[0x11] = 1, [0x12] = 1, [0x13] = 1, [0x14] = 1, [0x15] = 1, [0x16] = 1, [0x17] = 1, [0x18] = 1,
+		[0x19] = 1, [0x1a] = 1, [0x1b] = 1, [0x1c] = 1, [0x1d] = 1, [0x1e] = 1, [0x1f] = 1, [0x20] = 1,
+		[0x21] = 1, [0x22] = 1, [0x23] = 1, [0x24] = 1, [0x25] = 1, [0x26] = 1, [0x27] = 1, [0x28] = 1,
+		[0x29] = 1, [0x2a] = 1, [0x2b] = 1, [0x2c] = 1, [0x2d] = 1, [0x2e] = 1, [0x2f] = 1, [0x30] = 1,
+		[0x31] = 1, [0x32] = 1, [0x33] = 1, [0x34] = 1, [0x36] = 1, [0x37] = 1, [0x38] = 1, [0x39] = 1,
+		[0x3a] = 1, [0x3b] = 1, [0x3c] = 1, [0x3d] = 1, [0x3e] = 1, [0x3f] = 1, [0x40] = 1, [0x41] = 1,
+		[0x42] = 1, [0x44] = 1, [0x46] = 1, [0x48] = 1, [0x49] = 1, [0x4a] = 1, [0x4b] = 1, [0x4c] = 1,
+		[0x4d] = 1, [0x4f] = 1, [0x50] = 1, [0x51] = 1, [0x52] = 1, [0x53] = 1, [0x54] = 1, [0x55] = 1,
+		[0x56] = 1, [0x57] = 1, [0x58] = 1, [0x59] = 1, [0x5a] = 1, [0x5b] = 1, [0x5c] = 1, [0x5d] = 1,
+		[0x5e] = 1, [0x5f] = 1, [0x60] = 1, [0x61] = 1, [0x62] = 1, [0x63] = 1, [0x64] = 1, [0x65] = 1,
+		[0x66] = 1, [0x67] = 1, [0x68] = 1, [0x69] = 1, [0x6a] = 1, [0x6b] = 1, [0x6c] = 1, [0x6e] = 1,
+		[0x6f] = 1, [0x70] = 1, [0x72] = 1, [0x73] = 1, [0x74] = 1, [0x75] = 1, [0x76] = 1, [0x77] = 1,
+		[0x78] = 1, [0x79] = 1, [0x7a] = 1, [0x7b] = 1, [0x7c] = 1, [0x7d] = 1, [0x7e] = 1, [0x7f] = 1
+	};
+
 	pthread_mutex_lock(&keymap_mtx);
 
 	int code;
@@ -335,10 +352,12 @@ static void update_keymap()
 	assert(kbd);
 
 	for (code = 1; code < 256; code++) {
-		if (!keymap[code].name) {
-			keymap[code].name = malloc(32);
-			keymap[code].shifted_name = malloc(32);
+		if (!valid_keycodes[code]) {
+			keymap[code].name[0] = 0;
+			keymap[code].shifted_name[0] = 0;
+			continue;
 		}
+
 		/* Blech */
 		CFDataRef layout_data = TISGetInputSourceProperty(kbd, kTISPropertyUnicodeKeyLayoutData);
 		const UCKeyboardLayout *layout = (const UCKeyboardLayout *)CFDataGetBytePtr(layout_data);
@@ -359,22 +378,41 @@ static void update_keymap()
 		CFStringGetCString(str, keymap[code].shifted_name, 32, kCFStringEncodingUTF8);
 		CFRelease(str);
 
-		if (!strcmp(keymap[code].name, "\033"))
-			strcpy(keymap[code].name, "esc");
-		if (!strcmp(keymap[code].name, ""))
-			strcpy(keymap[code].name, "backspace");
+		//TODO: probably missing some keys...
+#define fixup(keyname, newname) \
+	if (!strcmp(keymap[code].name, keyname)) { \
+		strcpy(keymap[code].name, newname); \
+		strcpy(keymap[code].shifted_name, ""); \
+	}
+		fixup("\033", "esc");
+		fixup("\x08", "backspace");
+		fixup("\x7f", "delete");
+#undef fixup
+
+		if (keymap[code].name[0] < 31) { /* Exclude anything else with non printable characters (control codes) */
+			strcpy(keymap[code].name, "");
+			strcpy(keymap[code].shifted_name, "");
+		}
 
 		switch (code) {
-			case 55: strcpy(keymap[code].name, "rightmeta"); break;
-			case 56: strcpy(keymap[code].name, "leftmeta"); break;
-			case 57: strcpy(keymap[code].name, "leftshift"); break;
-			case 58: strcpy(keymap[code].name, "capslock"); break;
-			case 59: strcpy(keymap[code].name, "leftalt"); break;
-			case 60: strcpy(keymap[code].name, "leftcontrol"); break;
-			case 61: strcpy(keymap[code].name, "rightshift"); break;
-			case 62: strcpy(keymap[code].name, "rightalt"); break;
-			case 63: strcpy(keymap[code].name, "rightcontrol"); break;
+#define set_name(keyname) \
+	strcpy(keymap[code].name, keyname); \
+	strcpy(keymap[code].shifted_name, ""); \
+	break;
+			case 55: set_name("rightmeta")
+			case 56: set_name("leftmeta")
+			case 57: set_name("leftshift")
+			case 58: set_name("capslock")
+			case 59: set_name("leftalt")
+			case 60: set_name("leftcontrol")
+			case 61: set_name("rightshift")
+			case 62: set_name("rightalt")
+			case 63: set_name("rightcontrol")
+#undef set_name
 		}
+
+		if (!strcmp(keymap[code].name, keymap[code].shifted_name))
+			strcpy(keymap[code].shifted_name, "");
 
 	}
 
