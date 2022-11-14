@@ -114,6 +114,7 @@ static int activation_loop(int mode)
 		case MODE_SCREEN_SELECTION:
 			screen_selection_mode();
 			mode = MODE_NORMAL;
+			ev = NULL;
 			break;
 		}
 
