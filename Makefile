@@ -26,6 +26,8 @@ CFLAGS:=-g\
 
 ifeq ($(PLATFORM), macos)
 	include mk/macos.mk
+else ifeq ($(PLATFORM), windows)
+	include mk/windows.mk
 else
 	include mk/linux.mk
 endif
