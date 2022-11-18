@@ -228,6 +228,7 @@ int main(int argc, char *argv[])
 		{"move", required_argument, NULL, 265},
 		{"record", no_argument, NULL, 266},
 		{"drag", no_argument, NULL, 267},
+		{"screen", no_argument, NULL, 268},
 		{0}
 	};
 
@@ -266,6 +267,9 @@ int main(int argc, char *argv[])
 				break;
 			case 262:
 				mode = MODE_HISTORY;
+				break;
+			case 268:
+				mode = MODE_SCREEN_SELECTION;
 				break;
 			case 263:
 				if (!mode)
