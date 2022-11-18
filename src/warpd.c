@@ -6,219 +6,18 @@
 
 #include "warpd.h"
 
-static int dragging = 0;
-
-void toggle_drag()
-{
-	int btn = config_get_int("drag_button");
-	dragging = !dragging;
-
-	if (dragging)
-		platform.mouse_down(btn);
-	else
-		platform.mouse_up(btn);
-}
-
-static int mode_flag = 0;
-static int click_arg = 0;
-static int movearg_x = -1;
-static int movearg_y = -1;
-static int record_flag = 0;
-static int drag_flag = 0;
-
-struct platform platform = {0};
+struct platform *platform = NULL;
 
 static const char *config_path;
 
-static int oneshot_mode = 0;
-
-static int activation_loop(int mode)
+uint64_t get_time_us()
 {
-	static int init = 0;
-	int oneshot_normal = 0;
-	int rc = 0;
+	struct timespec ts;
+	clock_gettime(CLOCK_MONOTONIC, &ts);
 
-	if (!init) {
-		init_mouse();
-		init_hints();
-
-		if (drag_flag)
-			toggle_drag();
-
-		init++;
-	}
-
-	if (oneshot_mode && mode == MODE_NORMAL) {
-		/*
-		 * If oneshot is used in conjunction with normal
-		 * we allow other intermediate modes before the
-		 * final selection.
-		 */
-		oneshot_normal = 1;
-	}
-
-	struct input_event *ev = NULL;
-
-	dragging = 0;
-
-	config_input_whitelist(NULL, 0);
-
-	while (1) {
-		switch (mode) {
-		case MODE_HISTORY:
-			if (history_hint_mode() < 0)
-				goto exit;
-
-			ev = NULL;
-			mode = MODE_NORMAL;
-			break;
-		case MODE_HINTSPEC:
-			hintspec_mode();
-			break;
-		case MODE_NORMAL:
-			ev = normal_mode(ev, oneshot_mode);
-
-			if (config_input_match(ev, "history"))
-				mode = MODE_HISTORY;
-			else if (config_input_match(ev, "hint"))
-				mode = MODE_HINT;
-			else if (config_input_match(ev, "hint2"))
-				mode = MODE_HINT2;
-			else if (config_input_match(ev, "grid"))
-				mode = MODE_GRID;
-			else if (config_input_match(ev, "screen"))
-				mode = MODE_SCREEN_SELECTION;
-			else if ((rc = config_input_match(ev, "oneshot_buttons")) || !ev) {
-				goto exit;
-			}
-			else if (config_input_match(ev, "exit") || !ev) {
-				rc = 0;
-				goto exit;
-			}
-
-			break;
-		case MODE_HINT2:
-		case MODE_HINT:
-			if (full_hint_mode(mode == MODE_HINT2) < 0)
-				goto exit;
-
-			ev = NULL;
-			mode = MODE_NORMAL;
-			break;
-		case MODE_GRID:
-			ev = grid_mode();
-			if (config_input_match(ev, "grid_exit"))
-				ev = NULL;
-			mode = MODE_NORMAL;
-			break;
-		case MODE_SCREEN_SELECTION:
-			screen_selection_mode();
-			mode = MODE_NORMAL;
-			ev = NULL;
-			break;
-		}
-
-		if (oneshot_mode &&
-			(!oneshot_normal || config_input_match(ev, "buttons"))) {
-			int rc = 0;
-			int x, y;
-			screen_t scr;
-
-			platform.mouse_get_position(&scr, NULL, NULL);
-
-			if (movearg_x != -1 && movearg_y != -1)
-				platform.mouse_move(scr, movearg_x, movearg_y);
-
-			if (click_arg) {
-				platform.mouse_click(click_arg);
-				rc = click_arg;
-			}
-
-			platform.mouse_get_position(NULL, &x, &y);
-
-			if (record_flag)
-				histfile_add(x, y);
-
-			if (mode == MODE_HINTSPEC)
-				printf("%d %d %s\n", x, y, last_selected_hint);
-			else
-				printf("%d %d\n", x, y);
-			exit(rc);
-		}
-	}
-
-exit:
-	if (dragging)
-		toggle_drag();
-
-	return rc;
+	return ts.tv_nsec / 1E3 + ts.tv_sec * 1E6;
 }
 
-static void mode_loop()
-{
-	parse_config(config_path);
-
-	exit(activation_loop(mode_flag));
-}
-
-static void daemon_loop()
-{
-	size_t i;
-	parse_config(config_path);
-
-	init_mouse();
-	init_hints();
-
-	const char *activation_keys[] = {
-		"activation_key",
-		"hint_activation_key",
-		"grid_activation_key",
-		"hint_oneshot_key",
-		"screen_activation_key",
-		"hint2_activation_key",
-		"hint2_oneshot_key",
-		"history_activation_key",
-	};
-
-	struct input_event activation_events[sizeof activation_keys / sizeof activation_keys[0]];
-
-	for (i = 0; i < sizeof activation_keys / sizeof activation_keys[0]; i++)
-		input_parse_string(&activation_events[i], config_get(activation_keys[i]));
-
-	while (1) {
-		int mode = 0;
-		struct input_event *ev = platform.input_wait(activation_events,
-							     sizeof(activation_events) /
-							     sizeof(activation_events[0]));
-
-		config_input_whitelist(activation_keys, sizeof activation_keys / sizeof activation_keys[0]);
-
-		if (config_input_match(ev, "activation_key"))
-			mode = MODE_NORMAL;
-		else if (config_input_match(ev, "grid_activation_key"))
-			mode = MODE_GRID;
-		else if (config_input_match(ev, "hint_activation_key"))
-			mode = MODE_HINT;
-		else if (config_input_match(ev, "hint2_activation_key"))
-			mode = MODE_HINT2;
-		else if (config_input_match(ev, "screen_activation_key"))
-			mode = MODE_SCREEN_SELECTION;
-		else if (config_input_match(ev, "history_activation_key"))
-			mode = MODE_HISTORY;
-		else if (config_input_match(ev, "hint2_oneshot_key")) {
-			full_hint_mode(1);
-			continue;
-		} else if (config_input_match(ev, "hint_oneshot_key")) {
-			full_hint_mode(0);
-			continue;
-		} else if (config_input_match(ev, "history_oneshot_key")) {
-			history_hint_mode();
-			continue;
-		}
-
-		activation_loop(mode);
-	}
-}
 
 const char *get_data_path(const char *file)
 {
@@ -304,21 +103,6 @@ static void daemonize()
 	dup2(fd, 2);
 }
 
-static void print_keys_loop()
-{
-	size_t i;
-	for (i = 1; i < 256; i++) {
-		const char *name = platform.input_lookup_name(i, 0);
-
-		if (name && name[0])
-			printf("%s\n", name);
-
-		name = platform.input_lookup_name(i, 1);
-		if (name && name[0])
-			printf("%s\n", name);
-	}
-}
-
 static void print_usage()
 {
 	const char *usage =
@@ -349,6 +133,76 @@ static void print_version()
 	printf("warpd " VERSION"\n");
 }
 
+
+static int drag_flag = 0;
+static int oneshot_flag = 0;
+static int click_flag = 0;
+static int x_flag = -1;
+static int y_flag = -1;
+static int record_flag = 0;
+static int mode = 0;
+
+/* Platform entry points. */
+int oneshot_main(struct platform *_platform)
+{
+	int ret = 0;
+	screen_t scr;
+	platform = _platform;
+
+	parse_config(config_path);
+	init_mouse();
+	init_hints();
+
+	platform->mouse_get_position(&scr, NULL, NULL);
+	if (x_flag == -1 && y_flag == -1) {
+		if (drag_flag)
+			platform->mouse_down(config_get_int("drag_button"));
+
+		ret = mode_loop(mode, oneshot_flag, record_flag);
+
+		if (drag_flag)
+			platform->mouse_up(config_get_int("drag_button"));
+
+	} else {
+		platform->mouse_move(scr, x_flag, y_flag);
+	}
+
+	if (click_flag)
+		platform->mouse_click(click_flag);
+
+	return ret;
+}
+
+int daemon_main(struct platform *_platform)
+{
+	platform = _platform;
+
+	parse_config(config_path);
+	init_mouse();
+	init_hints();
+
+	daemon_loop(config_path);
+
+	return 0;
+}
+
+int print_keys_main(struct platform *platform)
+{
+	size_t i;
+	for (i = 1; i < 256; i++) {
+		const char *name = platform->input_lookup_name(i, 0);
+
+		if (name && name[0])
+			printf("%s\n", name);
+
+		name = platform->input_lookup_name(i, 1);
+		if (name && name[0])
+			printf("%s\n", name);
+	}
+
+	return 0;
+}
+
 int main(int argc, char *argv[])
 {
 	int c;
@@ -377,8 +231,6 @@ int main(int argc, char *argv[])
 		{0}
 	};
 
-	platform_init();
-
 	while ((c = getopt_long(argc, argv, "qrhfvlc:", opts, NULL)) != -1) {
 		switch (c) {
 			case 'v':
@@ -388,7 +240,7 @@ int main(int argc, char *argv[])
 				print_usage();
 				return 0;
 			case 'l':
-				platform.run(print_keys_loop);
+				platform_run(print_keys_main);
 				return 0;
 			case 'c':
 				config_path = optarg;
@@ -397,37 +249,37 @@ int main(int argc, char *argv[])
 				foreground = 1;
 				break;
 			case 'q':
-				mode_flag = MODE_HINTSPEC;
-				oneshot_mode = 1;
+				mode = MODE_HINTSPEC;
+				oneshot_flag = 1;
 				break;
 			case 257:
-				mode_flag = MODE_HINT;
+				mode = MODE_HINT;
 				break;
 			case 258:
-				mode_flag = MODE_GRID;
+				mode = MODE_GRID;
 				break;
 			case 259:
-				mode_flag = MODE_NORMAL;
+				mode = MODE_NORMAL;
 				break;
 			case 261:
-				mode_flag = MODE_HINT2;
+				mode = MODE_HINT2;
 				break;
 			case 262:
-				mode_flag = MODE_HISTORY;
+				mode = MODE_HISTORY;
 				break;
 			case 263:
-				if (!mode_flag)
-					mode_flag = MODE_NORMAL;
+				if (!mode)
+					mode = MODE_NORMAL;
 
-				oneshot_mode = 1;
+				oneshot_flag = 1;
 				break;
 			case 264:
-				click_arg = atoi(optarg);
-				oneshot_mode = 1;
+				click_flag = atoi(optarg);
+				oneshot_flag = 1;
 				break;
 			case 265:
-				sscanf(optarg, "%d %d", &movearg_x, &movearg_y);
-				oneshot_mode = 1;
+				sscanf(optarg, "%d %d", &x_flag, &y_flag);
+				oneshot_flag = 1;
 				break;
 			case 266:
 				record_flag = 1;
@@ -443,8 +295,8 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	if (mode_flag || oneshot_mode) {
-		platform.run(mode_loop);
+	if (mode || oneshot_flag) {
+		platform_run(oneshot_main);
 	} else {
 		lock();
 
@@ -453,6 +305,7 @@ int main(int argc, char *argv[])
 
 		setvbuf(stdout, NULL, _IOLBF, 0);
 		printf("Starting warpd " VERSION "\n");
-		platform.run(daemon_loop);
+
+		platform_run(daemon_main);
 	}
 }

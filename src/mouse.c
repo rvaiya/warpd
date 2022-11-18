@@ -32,16 +32,9 @@ static int opnum = 0;
 
 static int cursor_size;
 
-static long get_time_us()
-{
-	struct timespec ts;
-	clock_gettime(CLOCK_MONOTONIC, &ts);
-	return (ts.tv_nsec / 1E3) + (ts.tv_sec * 1E6);
-}
-
 static int tonum(uint8_t code)
 {
-	const char *name = platform.input_lookup_name(code, 0);
+	const char *name = platform->input_lookup_name(code, 0);
 
 	if (!name)
 		return -1;
@@ -56,8 +49,8 @@ static void update_cursor_position()
 {
 	int ix, iy;
 
-	platform.mouse_get_position(&scr, &ix, &iy);
-	platform.screen_get_dimensions(scr, &sw, &sh);
+	platform->mouse_get_position(&scr, &ix, &iy);
+	platform->screen_get_dimensions(scr, &sw, &sh);
 
 	cx = (double)ix;
 	cy = (double)iy;
@@ -105,7 +98,7 @@ static void tick()
 	cy = cy > maxy ? maxy : cy;
 	cx = cx > maxx ? maxx : cx;
 
-	platform.mouse_move(scr, cx, cy);
+	platform->mouse_move(scr, cx, cy);
 }
 
 /*
@@ -167,7 +160,7 @@ int mouse_process_key(struct input_event *ev,
 		cx += inc * opnum * x;
 		cy += inc * opnum * y;
 
-		platform.mouse_move(scr, cx, cy);
+		platform->mouse_move(scr, cx, cy);
 
 		opnum = 0;
 

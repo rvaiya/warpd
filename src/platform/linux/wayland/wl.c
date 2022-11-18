@@ -50,7 +50,7 @@ static struct wl_registry_listener registry_listener = {
 	.global = handle_global,
 };
 
-void init_wl()
+void wl_init()
 {
 	wl.dpy = wl_display_connect(NULL);
 

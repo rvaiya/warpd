@@ -1,11 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "../../platform.h"
 
-void x_platform_init();
-void wl_platform_init();
+void x_init();
+void wayland_init();
 
 #ifndef WARPD_X
-void x_platform_init()
+void x_init()
 {
 	fprintf(stderr, "ERROR: warpd compiled without X support\n");
 	exit(-1);
@@ -13,17 +14,21 @@ void x_platform_init()
 #endif
 
 #ifndef WARPD_WAYLAND
-void wl_platform_init()
+void wayland_init()
 {
 	fprintf(stderr, "ERROR: warpd compiled without wayland support\n");
 	exit(-1);
 }
 #endif
 
-void platform_init()
+void platform_run(int (*main) (struct platform *platform))
 {
+	struct platform platform;
+
 	if (getenv("WAYLAND_DISPLAY"))
-		wl_platform_init();
+		wayland_init(&platform);
 	else
-		x_platform_init();
+		x_init(&platform);
+
+	exit(main(&platform));
 }

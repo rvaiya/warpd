@@ -9,7 +9,7 @@
 static void redraw(screen_t scr, int x, int y, int hide_cursor)
 {
 	int sw, sh;
-	platform.screen_get_dimensions(scr, &sw, &sh);
+	platform->screen_get_dimensions(scr, &sw, &sh);
 
 	const int gap = 10;
 	const int indicator_size = (config_get_int("indicator_size") * sh) / 1080;
@@ -18,29 +18,29 @@ static void redraw(screen_t scr, int x, int y, int hide_cursor)
 	const char *indicator = config_get("indicator");
 	const int cursz = config_get_int("cursor_size");
 
-	platform.screen_clear(scr);
+	platform->screen_clear(scr);
 
 	if (!hide_cursor)
-		platform.screen_draw_box(scr, x+1, y-cursz/2,
+		platform->screen_draw_box(scr, x+1, y-cursz/2,
 				cursz, cursz,
 				curcol);
 
 
 	if (!strcmp(indicator, "bottomleft"))
-		platform.screen_draw_box(scr, gap, sh-indicator_size-gap, indicator_size, indicator_size, indicator_color);
+		platform->screen_draw_box(scr, gap, sh-indicator_size-gap, indicator_size, indicator_size, indicator_color);
 	else if (!strcmp(indicator, "topleft"))
-		platform.screen_draw_box(scr, gap, gap, indicator_size, indicator_size, indicator_color);
+		platform->screen_draw_box(scr, gap, gap, indicator_size, indicator_size, indicator_color);
 	else if (!strcmp(indicator, "topright"))
-		platform.screen_draw_box(scr, sw-indicator_size-gap, gap, indicator_size, indicator_size, indicator_color);
+		platform->screen_draw_box(scr, sw-indicator_size-gap, gap, indicator_size, indicator_size, indicator_color);
 	else if (!strcmp(indicator, "bottomright"))
-		platform.screen_draw_box(scr, sw-indicator_size-gap, sh-indicator_size-gap, indicator_size, indicator_size, indicator_color);
+		platform->screen_draw_box(scr, sw-indicator_size-gap, sh-indicator_size-gap, indicator_size, indicator_size, indicator_color);
 
-	platform.commit();
+	platform->commit();
 }
 
 static void move(screen_t scr, int x, int y)
 {
-	platform.mouse_move(scr, x, y);
+	platform->mouse_move(scr, x, y);
 	redraw(scr, x, y, 0);
 }
 
@@ -50,6 +50,7 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
 	screen_t scr;
 	int sh, sw;
 	int mx, my;
+	int dragging = 0;
 
 	const char *keys[] = {
 		"accelerator",
@@ -81,12 +82,12 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
 	};
 
 
-	platform.input_grab_keyboard();
+	platform->input_grab_keyboard();
 
-	platform.mouse_get_position(&scr, &mx, &my);
-	platform.screen_get_dimensions(scr, &sw, &sh);
+	platform->mouse_get_position(&scr, &mx, &my);
+	platform->screen_get_dimensions(scr, &sw, &sh);
 
-	platform.mouse_hide();
+	platform->mouse_hide();
 	mouse_reset();
 	redraw(scr, mx, my, 0);
 
@@ -95,7 +96,7 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
 
 		config_input_whitelist(keys, sizeof keys / sizeof keys[0]);
 		if (start_ev == NULL) {
-			ev = platform.input_next_event(10);
+			ev = platform->input_next_event(10);
 		} else {
 			ev = start_ev;
 			start_ev = NULL;
@@ -103,7 +104,7 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
 
 		scroll_tick();
 		if (mouse_process_key(ev, "up", "down", "left", "right")) {
-			platform.mouse_get_position(&scr, &mx, &my);
+			platform->mouse_get_position(&scr, &mx, &my);
 			redraw(scr, mx, my, 0);
 			continue;
 		}
@@ -111,7 +112,7 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
 		if (!ev)
 			continue;
 
-		platform.mouse_get_position(&scr, &mx, &my);
+		platform->mouse_get_position(&scr, &mx, &my);
 
 		if (config_input_match(ev, "scroll_down")) {
 			redraw(scr, mx, my, 1);
@@ -165,9 +166,14 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
 
 			move(scr, mx, my);
 		} else if (config_input_match(ev, "drag")) {
-			toggle_drag();
+			dragging = !dragging;
+			if (dragging)
+				platform->mouse_down(config_get_int("drag_button"));
+			else
+				platform->mouse_up(config_get_int("drag_button"));
 		} else if (config_input_match(ev, "copy_and_exit")) {
-			platform.copy_selection();
+			platform->mouse_up(config_get_int("drag_button"));
+			platform->copy_selection();
 			ev = NULL;
 			goto exit;
 		} else if (config_input_match(ev, "exit") ||
@@ -191,20 +197,22 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
 
 				hist_add(mx, my);
 				histfile_add(mx, my);
-				platform.mouse_click(btn);
+				platform->mouse_click(btn);
 			} else if ((btn = config_input_match(ev, "oneshot_buttons"))) {
 				hist_add(mx, my);
-				platform.mouse_click(btn);
+				platform->mouse_click(btn);
 
 				const int timeout = config_get_int("oneshot_timeout");
-				int timeleft = timeout;
 
-				while (timeleft--) {
-					struct input_event *ev = platform.input_next_event(1);
-					if (ev && ev->pressed && 
+				while (1) {
+					struct input_event *ev = platform->input_next_event(timeout);
+
+					if (!ev)
+						break;
+
+					if (ev && ev->pressed &&
 						config_input_match(ev, "oneshot_buttons")) {
-						platform.mouse_click(btn);
-						timeleft = timeout;
+						platform->mouse_click(btn);
 					}
 				}
 
@@ -212,18 +220,17 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
 			}
 		}
 	next:
-		platform.mouse_get_position(&scr, &mx, &my);
+		platform->mouse_get_position(&scr, &mx, &my);
 
-		platform.commit();
+		platform->commit();
 	}
 
 exit:
+	platform->mouse_show();
+	platform->screen_clear(scr);
 
-	platform.mouse_show();
-	platform.screen_clear(scr);
+	platform->input_ungrab_keyboard();
 
-	platform.input_ungrab_keyboard();
-
-	platform.commit();
+	platform->commit();
 	return ev;
 }

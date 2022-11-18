@@ -24,10 +24,10 @@ static void draw_grid(screen_t scr,
 		return;
 
 	for (i = 0; i < nr+1; i++)
-		platform.screen_draw_box(scr, x, y+(ygap+sz)*i, w, sz, color);
+		platform->screen_draw_box(scr, x, y+(ygap+sz)*i, w, sz, color);
 
 	for (i = 0; i < nc+1; i++)
-		platform.screen_draw_box(scr, x+(xgap+sz)*i, y, sz, h, color);
+		platform->screen_draw_box(scr, x+(xgap+sz)*i, y, sz, h, color);
 }
 
 static void redraw(int mx, int my, int force)
@@ -55,7 +55,7 @@ static void redraw(int mx, int my, int force)
 	omx = mx;
 	omy = my;
 
-	platform.screen_clear(scr);
+	platform->screen_clear(scr);
 
 	/* Draw the border. */
 	draw_grid(scr, gbcol,
@@ -69,12 +69,12 @@ static void redraw(int mx, int my, int force)
 		  x+gbsz, y+gbsz,
 		  gw-gbsz*2, gh-gbsz*2);
 
-	platform.screen_draw_box(scr,
+	platform->screen_draw_box(scr,
 			x+gw/2-cursz/2, y+gh/2-cursz/2,
 			cursz, cursz,
 			config_get("cursor_color"));
 
-	platform.commit();
+	platform->commit();
 }
 
 /* Returns the terminating input event. */
@@ -86,16 +86,16 @@ struct input_event *grid_mode()
 	const int nc = config_get_int("grid_nc");
 	const int nr = config_get_int("grid_nr");
 
-	platform.input_grab_keyboard();
-	platform.mouse_hide();
+	platform->input_grab_keyboard();
+	platform->mouse_hide();
 	mouse_reset();
 
-	platform.mouse_get_position(&scr, NULL, NULL);
-	platform.screen_get_dimensions(scr, &grid_width, &grid_height);
+	platform->mouse_get_position(&scr, NULL, NULL);
+	platform->screen_get_dimensions(scr, &grid_width, &grid_height);
 
 	mx = grid_width / 2;
 	my = grid_height / 2;
-	platform.mouse_move(scr, mx, my);
+	platform->mouse_move(scr, mx, my);
 	redraw(mx, my, 1);
 
 	const char *keys[] = {
@@ -120,8 +120,8 @@ struct input_event *grid_mode()
 	while (1) {
 		int idx;
 
-		ev = platform.input_next_event(10);
-		platform.mouse_get_position(NULL, &mx, &my);
+		ev = platform->input_next_event(10);
+		platform->mouse_get_position(NULL, &mx, &my);
 
 		if (mouse_process_key(ev, "grid_up", "grid_down", "grid_left", "grid_right")) {
 			redraw(mx, my, 0);
@@ -141,7 +141,7 @@ struct input_event *grid_mode()
 			mx += grid_width / 2;
 			my += grid_height / 2;
 
-			platform.mouse_move(scr, mx, my);
+			platform->mouse_move(scr, mx, my);
 			redraw(mx, my, 0);
 		}
 
@@ -162,11 +162,11 @@ struct input_event *grid_mode()
 
 exit:
 	config_input_whitelist(NULL, 0);
-	platform.screen_clear(scr);
-	platform.mouse_show();
+	platform->screen_clear(scr);
+	platform->mouse_show();
 
-	platform.input_ungrab_keyboard();
+	platform->input_ungrab_keyboard();
 
-	platform.commit();
+	platform->commit();
 	return ev;
 }

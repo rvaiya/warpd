@@ -9,6 +9,7 @@
 static int nr_grabbed_device_ids = 0;
 static int grabbed_device_ids[64];
 
+
 uint8_t x_active_mods = 0;
 
 /* clear the X keyboard state. */
@@ -59,19 +60,21 @@ static XEvent *get_next_xev(int timeout)
 {
 	static int xfd = 0;
 	static XEvent ev;
-
-	fd_set fds;
-
-	if (!xfd)
-		xfd = XConnectionNumber(dpy);
+	char buf[1024];
 
 	if (XPending(dpy)) {
 		XNextEvent(dpy, &ev);
 		return &ev;
 	}
 
+	fd_set fds;
+
+	if (!xfd)
+		xfd = XConnectionNumber(dpy);
+
 	FD_ZERO(&fds);
 	FD_SET(xfd, &fds);
+
 	select(xfd + 1, &fds, NULL, NULL,
 	       timeout ? &(struct timeval){0, timeout * 1000} : NULL);
 
@@ -140,11 +143,39 @@ static int input_xerr(Display *dpy, XErrorEvent *ev)
 	fprintf(stderr,
 		"ERROR: Failed to grab %s (ensure it isn't mapped by another application)\n",
 		xerr_key);
-	exit(-1);
 	return 0;
 }
 
-static void xgrab_key(uint8_t code, uint8_t mods)
+static const char *input_tostr(struct input_event *ev)
+{
+	static char s[64];
+	const char *name = x_input_lookup_name(ev->code, ev->mods & PLATFORM_MOD_SHIFT ? 1 : 0);
+	int n = 0;
+
+	if (!ev)
+		return "NULL";
+
+	if (ev->mods & PLATFORM_MOD_CONTROL) {
+		s[n++] = 'C';
+		s[n++] = '-';
+	}
+
+	if (ev->mods & PLATFORM_MOD_ALT) {
+		s[n++] = 'A';
+		s[n++] = '-';
+	}
+
+	if (ev->mods & PLATFORM_MOD_META) {
+		s[n++] = 'M';
+		s[n++] = '-';
+	}
+
+	strcpy(s + n, name ? name : "UNDEFINED");
+
+	return s;
+}
+
+static void xgrab_key(uint8_t code, uint8_t mods, int grab)
 {
 	XSetErrorHandler(input_xerr);
 	int xmods = 0;
@@ -152,22 +183,27 @@ static void xgrab_key(uint8_t code, uint8_t mods)
 	if (!code)
 		return;
 
-	if (mods & MOD_CONTROL)
+	if (mods & PLATFORM_MOD_CONTROL)
 		xmods |= ControlMask;
-	if (mods & MOD_SHIFT)
+	if (mods & PLATFORM_MOD_SHIFT)
 		xmods |= ShiftMask;
-	if (mods & MOD_META)
+	if (mods & PLATFORM_MOD_META)
 		xmods |= Mod4Mask;
-	if (mods & MOD_ALT)
+	if (mods & PLATFORM_MOD_ALT)
 		xmods |= Mod1Mask;
 
-	xerr_key = input_event_tostr(&(struct input_event){code, mods, 0});
+	xerr_key = input_tostr(&(struct input_event){code, mods, 0});
 
-	XGrabKey(dpy, code, xmods, DefaultRootWindow(dpy), False,
-		 GrabModeAsync, GrabModeAsync);
+	if (grab) {
+		XGrabKey(dpy, code, xmods, DefaultRootWindow(dpy), False,
+			 GrabModeAsync, GrabModeAsync);
 
-	XGrabKey(dpy, code, xmods | Mod2Mask, /* numlock */
-		 DefaultRootWindow(dpy), False, GrabModeAsync, GrabModeAsync);
+		XGrabKey(dpy, code, xmods | Mod2Mask, /* numlock */
+			 DefaultRootWindow(dpy), False, GrabModeAsync, GrabModeAsync);
+	} else {
+		XUngrabKey(dpy, code, xmods, DefaultRootWindow(dpy));
+		XUngrabKey(dpy, code, xmods | Mod2Mask, DefaultRootWindow(dpy));
+	}
 
 	XSync(dpy, False);
 
@@ -250,33 +286,33 @@ uint8_t xmods_to_mods(int xmods)
 	uint8_t mods = 0;
 
 	if (xmods & ShiftMask)
-		mods |= MOD_SHIFT;
+		mods |= PLATFORM_MOD_SHIFT;
 	if (xmods & ControlMask)
-		mods |= MOD_CONTROL;
+		mods |= PLATFORM_MOD_CONTROL;
 	if (xmods & Mod1Mask)
-		mods |= MOD_ALT;
+		mods |= PLATFORM_MOD_ALT;
 	if (xmods & Mod4Mask)
-		mods |= MOD_META;
+		mods |= PLATFORM_MOD_META;
 
 	return mods;
 }
 
-uint8_t get_code_modifier(uint8_t code) 
+uint8_t get_code_modifier(uint8_t code)
 {
 	KeySym sym = XKeycodeToKeysym(dpy, code, 0);
 	switch (sym) {
 	case XK_Control_L:
 	case XK_Control_R:
-		return MOD_CONTROL;
+		return PLATFORM_MOD_CONTROL;
 	case XK_Meta_L:
 	case XK_Meta_R:
-		return MOD_META;
+		return PLATFORM_MOD_META;
 	case XK_Alt_L:
 	case XK_Alt_R:
-		return MOD_ALT;
+		return PLATFORM_MOD_ALT;
 	case XK_Shift_L:
 	case XK_Shift_R:
-		return MOD_SHIFT;
+		return PLATFORM_MOD_SHIFT;
 	default:
 		return 0;
 	}
@@ -330,24 +366,44 @@ struct input_event *x_input_wait(struct input_event *events, size_t sz)
 {
 	size_t i;
 	static struct input_event ev;
+	struct input_evnet *ret = NULL;
 
 	for (i = 0; i < sz; i++) {
 		struct input_event *ev = &events[i];
-		xgrab_key(ev->code, ev->mods);
+		xgrab_key(ev->code, ev->mods, 1);
 	}
 
 	while (1) {
-		XEvent *xev = get_next_xev(0);
+		XEvent *xev = get_next_xev(100);
 
-		if (xev->type == KeyPress || xev->type == KeyRelease) {
+		if (xev && (xev->type == KeyPress || xev->type == KeyRelease)) {
 			ev.code = (uint8_t)xev->xkey.keycode;
 			ev.mods = xmods_to_mods(xev->xkey.state);
 			ev.pressed = xev->type == KeyPress;
 
 			x_input_grab_keyboard();
-			return &ev;
+
+			ret = &ev;
+			goto exit;
+		} else {
+			size_t i;
+			for (i = 0; i < nr_monitored_files; i++) {
+				long mtime = x_get_mtime(monitored_files[i].path);
+				if (mtime != monitored_files[i].mtime) {
+					monitored_files[i].mtime = mtime;
+					goto exit;
+				}
+			}
 		}
 	}
+
+exit:
+	for (i = 0; i < sz; i++) {
+		struct input_event *ev = &events[i];
+		xgrab_key(ev->code, ev->mods, 0);
+	}
+
+	return ret;
 }
 
 /* Normalize keynames for non API code. */
@@ -361,6 +417,9 @@ struct {
 	{"-", "minus"},
 	{"/", "slash"},
 	{";", "semicolon"},
+	{"[", "bracketleft"},
+	{"]", "bracketright"},
+	{"'", "apostrophe"},
 	{"$", "dollar"},
 	{"backspace", "BackSpace"},
 };

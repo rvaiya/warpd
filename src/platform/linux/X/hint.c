@@ -40,7 +40,7 @@ static XftFont *get_font(const char *name, int height)
 	char xftname[256];
 	int h;
 
-	if (!strcmp(cached_name, name) && 
+	if (!strcmp(cached_name, name) &&
 		    cached_height == height)
 		return font;
 
@@ -173,9 +173,9 @@ void x_hint_draw(struct screen *scr, struct hint *hints, size_t n)
 		return;
 	}
 
-	/* 
+	/*
 	 * OPT: Cache large hint sets to avoid expensive shape calls. Note that
-	 * using a single cached window makes assumptions about the 
+	 * using a single cached window makes assumptions about the
 	 * call pattern, namely that it will consist of intermittent
 	 * large, and identical hint sets, with successive calls below
 	 * the caching threshold.
@@ -194,8 +194,9 @@ void x_hint_draw(struct screen *scr, struct hint *hints, size_t n)
 }
 
 void x_init_hint(const char *bgcol, const char *fgcol, int _border_radius,
-	       const char *_font_family)
+		 const char *_font_family)
 {
+	static int init = 0;
 	size_t i;
 
 	bgcolor = bgcol;
@@ -204,25 +205,29 @@ void x_init_hint(const char *bgcol, const char *fgcol, int _border_radius,
 	font_family = _font_family;
 
 
-	for (i = 0; i < nr_xscreens; i++) {
-		struct screen *scr = &xscreens[i];
+	if (!init) {
+		for (i = 0; i < nr_xscreens; i++) {
+			struct screen *scr = &xscreens[i];
 
-		scr->hintwin = create_window(bgcol);
-		scr->cached_hintwin = create_window(bgcol);
+			scr->hintwin = create_window(bgcol);
+			scr->cached_hintwin = create_window(bgcol);
 
-		scr->buf =
-		    XCreatePixmap(dpy, DefaultRootWindow(dpy), scr->w, scr->h,
-				  DefaultDepth(dpy, DefaultScreen(dpy)));
-		scr->cached_hintbuf =
-		    XCreatePixmap(dpy, DefaultRootWindow(dpy), scr->w, scr->h,
-				  DefaultDepth(dpy, DefaultScreen(dpy)));
+			scr->buf =
+			    XCreatePixmap(dpy, DefaultRootWindow(dpy), scr->w, scr->h,
+					  DefaultDepth(dpy, DefaultScreen(dpy)));
+			scr->cached_hintbuf =
+			    XCreatePixmap(dpy, DefaultRootWindow(dpy), scr->w, scr->h,
+					  DefaultDepth(dpy, DefaultScreen(dpy)));
 
 
-		XMoveResizeWindow(dpy, scr->hintwin, -1E6, -1E6, scr->w, scr->h);
-		XMoveResizeWindow(dpy, scr->cached_hintwin, -1E6, -1E6, scr->w, scr->h);
+			XMoveResizeWindow(dpy, scr->hintwin, -1E6, -1E6, scr->w, scr->h);
+			XMoveResizeWindow(dpy, scr->cached_hintwin, -1E6, -1E6, scr->w, scr->h);
 
-		XMapWindow(dpy, scr->hintwin);
-		XMapWindow(dpy, scr->cached_hintwin);
+			XMapWindow(dpy, scr->hintwin);
+			XMapWindow(dpy, scr->cached_hintwin);
+		}
 	}
 
+	for (i = 0; i < nr_xscreens; i++)
+		xscreens[i].nr_cached_hints = 0;
 }

@@ -8,6 +8,9 @@
 
 Display *dpy = NULL;
 
+struct monitored_file monitored_files[32];
+size_t nr_monitored_files = 0;
+
 int hex_to_rgba(const char *str, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a)
 {
 #define X2B(c) ((c >= '0' && c <= '9') ? (c & 0xF) : (((c | 0x20) - 'a') + 10))
@@ -165,7 +168,36 @@ Window create_window(const char *color)
 	return win;
 }
 
-void x_run(void (*init)(void))
+void x_commit()
+{
+	XSync(dpy, False);
+}
+
+long x_get_mtime(const char *path)
+{
+	struct stat st;
+	if (stat(path, &st))
+		return 0;
+
+	return st.st_mtime;
+}
+
+void x_monitor_file(const char *path)
+{
+	/*
+	 * OPT: We could use inotify, but that would reduce portability and involve
+	 * additional logic to handle renames. Polling is good enough.
+	 */
+	struct monitored_file *mf = &monitored_files[nr_monitored_files];
+	assert(nr_monitored_files < sizeof (monitored_files) / sizeof(monitored_files[0]));
+
+	strncpy(mf->path, path, sizeof mf->path);
+	mf->mtime = x_get_mtime(path);
+
+	nr_monitored_files++;
+}
+
+void x_init(struct platform *platform)
 {
 	dpy = XOpenDisplay(NULL);
 	if (!dpy) {
@@ -175,37 +207,28 @@ void x_run(void (*init)(void))
 
 	/* TODO: account for screen hotplugging */
 	init_xscreens();
-	init();
-}
 
-void x_commit() 
-{
-	XSync(dpy, False); 
-}
-
-void x_platform_init()
-{
-	platform.commit = x_commit;
-	platform.copy_selection = x_copy_selection;
-	platform.hint_draw = x_hint_draw;
-	platform.init_hint = x_init_hint;
-	platform.input_grab_keyboard = x_input_grab_keyboard;
-	platform.input_lookup_code = x_input_lookup_code;
-	platform.input_lookup_name = x_input_lookup_name;
-	platform.input_next_event = x_input_next_event;
-	platform.input_ungrab_keyboard = x_input_ungrab_keyboard;
-	platform.input_wait = x_input_wait;
-	platform.mouse_click = x_mouse_click;
-	platform.mouse_down = x_mouse_down;
-	platform.mouse_get_position = x_mouse_get_position;
-	platform.mouse_hide = x_mouse_hide;
-	platform.mouse_move = x_mouse_move;
-	platform.mouse_show = x_mouse_show;
-	platform.mouse_up = x_mouse_up;
-	platform.run = x_run;
-	platform.screen_clear = x_screen_clear;
-	platform.screen_draw_box = x_screen_draw_box;
-	platform.screen_get_dimensions = x_screen_get_dimensions;
-	platform.screen_list = x_screen_list;
-	platform.scroll = x_scroll;
+	platform->monitor_file = x_monitor_file;
+	platform->commit = x_commit;
+	platform->copy_selection = x_copy_selection;
+	platform->hint_draw = x_hint_draw;
+	platform->init_hint = x_init_hint;
+	platform->input_grab_keyboard = x_input_grab_keyboard;
+	platform->input_lookup_code = x_input_lookup_code;
+	platform->input_lookup_name = x_input_lookup_name;
+	platform->input_next_event = x_input_next_event;
+	platform->input_ungrab_keyboard = x_input_ungrab_keyboard;
+	platform->input_wait = x_input_wait;
+	platform->mouse_click = x_mouse_click;
+	platform->mouse_down = x_mouse_down;
+	platform->mouse_get_position = x_mouse_get_position;
+	platform->mouse_hide = x_mouse_hide;
+	platform->mouse_move = x_mouse_move;
+	platform->mouse_show = x_mouse_show;
+	platform->mouse_up = x_mouse_up;
+	platform->screen_clear = x_screen_clear;
+	platform->screen_draw_box = x_screen_draw_box;
+	platform->screen_get_dimensions = x_screen_get_dimensions;
+	platform->screen_list = x_screen_list;
+	platform->scroll = x_scroll;
 }

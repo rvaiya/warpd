@@ -10,10 +10,10 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#define MOD_CONTROL 1
-#define MOD_SHIFT 2
-#define MOD_META 4
-#define MOD_ALT 8
+#define PLATFORM_MOD_CONTROL 1
+#define PLATFORM_MOD_SHIFT 2
+#define PLATFORM_MOD_META 4
+#define PLATFORM_MOD_ALT 8
 
 #define SCROLL_DOWN 1
 #define SCROLL_RIGHT 2
@@ -42,12 +42,7 @@ struct hint {
 struct screen;
 typedef struct screen *screen_t;
 
-extern struct platform {
-	/* Main entry point for each platform. Must be called befor other functions are
-	 * usable. */
-
-	void (*run)(void (*init)(void));
-
+struct platform {
 	/* Input */
 
 	void (*input_grab_keyboard)();
@@ -81,6 +76,12 @@ extern struct platform {
 
 	void (*init_hint)(const char *bg, const char *fg, int border_radius, const char *font_family);
 
+	/* 
+	 * Modifications to files passed into this function will interrupt
+	 * input_wait (which returns NULL).
+	 */
+	void (*monitor_file)(const char *path);
+
 	/* Hints are centered around the provided x,y coordinates. */
 	void (*hint_draw)(struct screen *scr, struct hint *hints, size_t n);
 
@@ -93,7 +94,7 @@ extern struct platform {
 	* is called.
 	*/
 	void (*commit)();
-} platform;
+};
 
-void platform_init();
+void platform_run(int (*main) (struct platform *platform));
 #endif

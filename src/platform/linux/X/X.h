@@ -28,6 +28,7 @@
 #include <string.h>
 #include <sys/time.h>
 #include <unistd.h>
+#include <libgen.h>
 
 #define MAX_BOXES 64
 
@@ -59,6 +60,11 @@ struct screen {
 	size_t nr_boxes;
 };
 
+struct monitored_file {
+	char path[1024];
+	long mtime;
+};
+
 Window create_window(const char *color);
 
 int hex_to_rgba(const char *str, uint8_t *r, uint8_t *g, uint8_t *b,
@@ -73,7 +79,8 @@ extern struct screen xscreens[32];
 extern size_t nr_xscreens;
 extern uint8_t x_active_mods;
 
-void x_run(void (*init)(void));
+void x_init();
+
 void x_input_grab_keyboard();
 void x_input_ungrab_keyboard();
 struct input_event *x_input_next_event(int timeout);
@@ -96,5 +103,10 @@ void x_hint_draw(struct screen *scr, struct hint *hints, size_t n);
 void x_scroll(int direction);
 void x_copy_selection();
 void x_commit();
+void x_monitor_file(const char *path);
+long x_get_mtime(const char *path);
+
+extern struct monitored_file monitored_files[32];
+extern size_t nr_monitored_files;
 
 #endif

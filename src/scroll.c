@@ -31,22 +31,13 @@ static int direction = 0;
 
 static long traveled = 0; /* scroll units emitted. */
 
-static long get_time_ms()
-{
-	struct timespec ts;
-	clock_gettime(CLOCK_MONOTONIC, &ts);
-	return ts.tv_nsec / 1E6 + ts.tv_sec * 1E3;
-}
-
 void scroll_tick()
 {
 	int i;
 	/* Non zero to provide the illusion of continuous scrolling */
 
-	const float t =
-	    (float)(get_time_ms() -
-		    last_tick); // time elapsed since last tick in ms
-	last_tick = get_time_ms();
+	const float t = (float)(get_time_us()/1000 - last_tick); // time elapsed since last tick in ms
+	last_tick = get_time_us()/1000;
 
 	/* distance traveled since the last tick */
 	d += v * (t / 1000) + .5 * a * (t / 1000) * (t / 1000);
@@ -64,7 +55,7 @@ void scroll_tick()
 	}
 
 	for (i = 0; i < (long)d - traveled; i++)
-		platform.scroll(direction);
+		platform->scroll(direction);
 
 	traveled = (long)d;
 }

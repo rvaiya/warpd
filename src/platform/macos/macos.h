@@ -14,13 +14,13 @@
 #include <stdint.h>
 #include <pthread.h>
 
-/* 
+/*
  * NOTE: our API uses an upper left origin (ULO) coordinate system, while
  * most* of the macOS APIs use a lower left origin (LLO) coordinate system.
  * Translation between the coordinate systems should be done at the latest
  * point possible (i.e before the corresponding NS/CG calls). This is expected
  * to be understood implicitly when reading platform code.
- * 
+ *
  * * To compound matters, it seems some of the CG APIs use an ULO coordinate
  * system :/. When in doubt, consult docs from the high tower.
  */
@@ -100,7 +100,6 @@ extern struct screen screens[32];
 extern size_t nr_screens;
 extern uint8_t active_mods;
 
-void osx_run(void (*init)(void));
 void osx_input_grab_keyboard();
 void osx_input_ungrab_keyboard();
 struct input_event *osx_input_next_event(int timeout);

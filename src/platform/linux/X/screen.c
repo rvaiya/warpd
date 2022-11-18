@@ -7,9 +7,11 @@ static void window_set_color(Window w, const char *color)
 {
 	uint32_t col = parse_xcolor(color, NULL);
 
-	XChangeWindowAttributes(dpy, w,
-				CWBackPixel,
-				&(((XSetWindowAttributes) { .background_pixel = col })));
+	XSetWindowAttributes attr = {0};
+	attr.background_pixel = col;
+	XChangeWindowAttributes(dpy,w,CWBackPixel,&attr);
+
+	XClearWindow(dpy, w);
 }
 
 void init_xscreens()
@@ -73,8 +75,8 @@ void x_screen_clear(struct screen *scr)
 	scr->nr_boxes = 0;
 }
 
-void x_screen_draw_box(struct screen *scr, int x, int y, int w, int h, const char *color) 
-{ 
+void x_screen_draw_box(struct screen *scr, int x, int y, int w, int h, const char *color)
+{
 	assert(scr->nr_boxes < MAX_BOXES);
 
 	struct box *box = &scr->boxes[scr->nr_boxes++];

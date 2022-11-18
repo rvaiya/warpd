@@ -24,16 +24,16 @@ int input_parse_string(struct input_event *ev, const char *s)
 	while (s[1] == '-') {
 		switch (s[0]) {
 		case 'A':
-			ev->mods |= MOD_ALT;
+			ev->mods |= PLATFORM_MOD_ALT;
 			break;
 		case 'M':
-			ev->mods |= MOD_META;
+			ev->mods |= PLATFORM_MOD_META;
 			break;
 		case 'S':
-			ev->mods |= MOD_SHIFT;
+			ev->mods |= PLATFORM_MOD_SHIFT;
 			break;
 		case 'C':
-			ev->mods |= MOD_CONTROL;
+			ev->mods |= PLATFORM_MOD_CONTROL;
 			break;
 		default:
 			fprintf(stderr, "%s is not a valid modifier\n", s);
@@ -46,9 +46,9 @@ int input_parse_string(struct input_event *ev, const char *s)
 	if (s[0]) {
 		int shifted;
 
-		ev->code = platform.input_lookup_code(s, &shifted);
+		ev->code = platform->input_lookup_code(s, &shifted);
 		if (shifted)
-			ev->mods |= MOD_SHIFT;
+			ev->mods |= PLATFORM_MOD_SHIFT;
 
 		if (!ev->code)
 			return -1;
@@ -60,23 +60,23 @@ int input_parse_string(struct input_event *ev, const char *s)
 const char *input_event_tostr(struct input_event *ev)
 {
 	static char s[64];
-	const char *name = platform.input_lookup_name(ev->code, ev->mods & MOD_SHIFT ? 1 : 0);
+	const char *name = platform->input_lookup_name(ev->code, ev->mods & PLATFORM_MOD_SHIFT ? 1 : 0);
 	int n = 0;
 
 	if (!ev)
 		return "NULL";
 
-	if (ev->mods & MOD_CONTROL) {
+	if (ev->mods & PLATFORM_MOD_CONTROL) {
 		s[n++] = 'C';
 		s[n++] = '-';
 	}
 
-	if (ev->mods & MOD_ALT) {
+	if (ev->mods & PLATFORM_MOD_ALT) {
 		s[n++] = 'A';
 		s[n++] = '-';
 	}
 
-	if (ev->mods & MOD_META) {
+	if (ev->mods & PLATFORM_MOD_META) {
 		s[n++] = 'M';
 		s[n++] = '-';
 	}

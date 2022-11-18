@@ -44,7 +44,7 @@ static void cairo_draw_text(cairo_t *cr, const char *s, int x, int y, int w, int
 	cairo_show_text(cr, s);
 }
 
-void wl_hint_draw(struct screen *scr, struct hint *hints, size_t n) 
+void wl_hint_draw(struct screen *scr, struct hint *hints, size_t n)
 {
 	size_t i;
 	uint8_t r,g,b,a;

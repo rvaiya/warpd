@@ -25,15 +25,6 @@ static struct {
 	{"backspace", "BackSpace"},
 };
 
-void init_wl();
-
-void wl_run(void (*loop)(void))
-{
-	init_wl();
-
-	loop();
-}
-
 /* Input */
 
 uint8_t wl_input_lookup_code(const char *name, int *shifted)
@@ -180,7 +171,7 @@ void wl_scroll(int direction)
 void wl_copy_selection() { UNIMPLEMENTED }
 struct input_event *wl_input_wait(struct input_event *events, size_t sz) { UNIMPLEMENTED }
 
-void wl_screen_list(struct screen *scr[MAX_SCREENS], size_t *n) 
+void wl_screen_list(struct screen *scr[MAX_SCREENS], size_t *n)
 {
 	size_t i;
 	for (i = 0; i < nr_screens; i++)
@@ -189,33 +180,38 @@ void wl_screen_list(struct screen *scr[MAX_SCREENS], size_t *n)
 	*n = nr_screens;
 }
 
+void wl_monitor_file(const char *path) { UNIMPLEMENTED }
+
 void wl_commit()
 {
 }
 
-void wl_platform_init()
+void wayland_init(struct platform *platform)
 {
-	platform.commit = wl_commit;
-	platform.copy_selection = wl_copy_selection;
-	platform.hint_draw = wl_hint_draw;
-	platform.init_hint = wl_init_hint;
-	platform.input_grab_keyboard = wl_input_grab_keyboard;
-	platform.input_lookup_code = wl_input_lookup_code;
-	platform.input_lookup_name = wl_input_lookup_name;
-	platform.input_next_event = wl_input_next_event;
-	platform.input_ungrab_keyboard = wl_input_ungrab_keyboard;
-	platform.input_wait = wl_input_wait;
-	platform.mouse_click = wl_mouse_click;
-	platform.mouse_down = wl_mouse_down;
-	platform.mouse_get_position = wl_mouse_get_position;
-	platform.mouse_hide = wl_mouse_hide;
-	platform.mouse_move = wl_mouse_move;
-	platform.mouse_show = wl_mouse_show;
-	platform.mouse_up = wl_mouse_up;
-	platform.run = wl_run;
-	platform.screen_clear = wl_screen_clear;
-	platform.screen_draw_box = wl_screen_draw_box;
-	platform.screen_get_dimensions = wl_screen_get_dimensions;
-	platform.screen_list = wl_screen_list;
-	platform.scroll = wl_scroll;
+	wl_init();
+
+	platform->monitor_file = wl_monitor_file;
+
+	platform->commit = wl_commit;
+	platform->copy_selection = wl_copy_selection;
+	platform->hint_draw = wl_hint_draw;
+	platform->init_hint = wl_init_hint;
+	platform->input_grab_keyboard = wl_input_grab_keyboard;
+	platform->input_lookup_code = wl_input_lookup_code;
+	platform->input_lookup_name = wl_input_lookup_name;
+	platform->input_next_event = wl_input_next_event;
+	platform->input_ungrab_keyboard = wl_input_ungrab_keyboard;
+	platform->input_wait = wl_input_wait;
+	platform->mouse_click = wl_mouse_click;
+	platform->mouse_down = wl_mouse_down;
+	platform->mouse_get_position = wl_mouse_get_position;
+	platform->mouse_hide = wl_mouse_hide;
+	platform->mouse_move = wl_mouse_move;
+	platform->mouse_show = wl_mouse_show;
+	platform->mouse_up = wl_mouse_up;
+	platform->screen_clear = wl_screen_clear;
+	platform->screen_draw_box = wl_screen_draw_box;
+	platform->screen_get_dimensions = wl_screen_get_dimensions;
+	platform->screen_list = wl_screen_list;
+	platform->scroll = wl_scroll;
 }

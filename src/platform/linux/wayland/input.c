@@ -10,6 +10,7 @@ static size_t input_queue_sz;
 
 static struct surface input_pixel;
 static uint8_t x_active_mods = 0;
+static int infd = 0;
 
 static void noop() {}
 struct keymap_entry keymap[256] = {0};
@@ -23,33 +24,32 @@ void update_mods(uint8_t code, uint8_t pressed)
 
 	if (strstr(name, "Control") == name) {
 		if (pressed)
-			x_active_mods |= MOD_CONTROL;
+			x_active_mods |= PLATFORM_MOD_CONTROL;
 		else
-			x_active_mods &= ~MOD_CONTROL;
+			x_active_mods &= ~PLATFORM_MOD_CONTROL;
 	}
 
 	if (strstr(name, "Shift") == name) {
 		if (pressed)
-			x_active_mods |= MOD_SHIFT;
+			x_active_mods |= PLATFORM_MOD_SHIFT;
 		else
-			x_active_mods &= ~MOD_SHIFT;
+			x_active_mods &= ~PLATFORM_MOD_SHIFT;
 	}
 
 	if (strstr(name, "Super") == name) {
 		if (pressed)
-			x_active_mods |= MOD_META;
+			x_active_mods |= PLATFORM_MOD_META;
 		else
-			x_active_mods &= ~MOD_META;
+			x_active_mods &= ~PLATFORM_MOD_META;
 	}
 
 	if (strstr(name, "Alt") == name) {
 		if (pressed)
-			x_active_mods |= MOD_ALT;
+			x_active_mods |= PLATFORM_MOD_ALT;
 		else
-			x_active_mods &= ~MOD_ALT;
+			x_active_mods &= ~PLATFORM_MOD_ALT;
 	}
 }
-
 
 static void handle_key(void *data,
 		       struct wl_keyboard *wl_keyboard,
@@ -167,9 +167,9 @@ struct input_event *wl_input_next_event(int timeout)
 {
 	static struct input_event ev;
 
-	struct pollfd pfd = {
-		.fd = wl_display_get_fd(wl.dpy),
-		.events = POLLIN,
+	struct pollfd pfds[] = {
+		{ .fd = wl_display_get_fd(wl.dpy), .events = POLLIN },
+		{ .fd = infd, .events = POLLIN }
 	};
 
 	while (1) {
@@ -182,14 +182,14 @@ struct input_event *wl_input_next_event(int timeout)
 			return &ev;
 		}
 
-		if (!poll(&pfd, 1, timeout ? timeout : -1))
+		if (!poll(pfds, sizeof pfds / sizeof pfds[0], timeout ? timeout : -1))
 			return NULL;
 
 		wl_display_dispatch(wl.dpy);
 	}
 }
 
-void add_seat(struct wl_seat *seat) 
+void add_seat(struct wl_seat *seat)
 {
 	wl_keyboard_add_listener(wl_seat_get_keyboard(seat), &wl_keyboard_listener, NULL);
 	wl_pointer_add_listener(wl_seat_get_pointer(seat), &wl_pointer_listener, NULL);

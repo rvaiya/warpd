@@ -135,6 +135,7 @@ void wl_hint_draw(struct screen *scr, struct hint *hints, size_t n);
 void wl_scroll(int direction);
 void wl_copy_selection();
 void wl_commit();
+void wl_init();
 
 
 #endif

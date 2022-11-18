@@ -61,10 +61,10 @@ static void do_mouse_click(int btn, int pressed, int nclicks)
 		break;
 	}
 
-	if (active_mods & MOD_META) mask |= kCGEventFlagMaskCommand;
-	if (active_mods & MOD_ALT) mask |= kCGEventFlagMaskAlternate;
-	if (active_mods & MOD_CONTROL) mask |= kCGEventFlagMaskControl;
-	if (active_mods & MOD_SHIFT) mask |= kCGEventFlagMaskShift;
+	if (active_mods & PLATFORM_MOD_META) mask |= kCGEventFlagMaskCommand;
+	if (active_mods & PLATFORM_MOD_ALT) mask |= kCGEventFlagMaskAlternate;
+	if (active_mods & PLATFORM_MOD_CONTROL) mask |= kCGEventFlagMaskControl;
+	if (active_mods & PLATFORM_MOD_SHIFT) mask |= kCGEventFlagMaskShift;
 
 	if (pressed) {
 		ev = CGEventCreateMouseEvent(NULL, down, current_pos, button);

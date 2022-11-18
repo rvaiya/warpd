@@ -57,7 +57,7 @@ enum {
 };
 
 enum option_type {
-	OPT_STRING,
+	OPT_STRING = 1,
 	OPT_INT,
 
 	OPT_KEY,
@@ -65,8 +65,8 @@ enum option_type {
 };
 
 struct config_entry {
-	const char *key;
-	const char *value;
+	char key[32];
+	char value[64];
 	enum option_type type;
 
 	int whitelisted;
@@ -101,8 +101,6 @@ int config_input_match(struct input_event *ev, const char *str);
 
 size_t hist_hints(struct hint *hints, int w, int h);
 
-void toggle_drag();
-
 int mouse_process_key(struct input_event *ev, const char *up_key,
 		      const char *down_key, const char *left_key,
 		      const char *right_key);
@@ -135,5 +133,12 @@ const char *config_get(const char *key);
 int config_get_int(const char *key);
 void config_print_options();
 
+uint64_t get_time_us();
+
 extern struct config_entry *config;
+
+int mode_loop(int initial_mode, int oneshot, int record_history);
+void daemon_loop(const char *config_path);
+
+extern struct platform *platform;
 #endif

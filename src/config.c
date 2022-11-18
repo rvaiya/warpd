@@ -1,15 +1,15 @@
 #include "warpd.h"
+
 #include <stdio.h>
 #include <ctype.h>
-#include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
 
 struct config_entry *config = NULL;
 
 static struct {
-	const char *key;
-	const char *val;
+	char *key;
+	char *val;
 
 	const char *description;
 	enum option_type type;
@@ -140,8 +140,7 @@ enum option_type get_option_type(const char *key)
 			return options[i].type;
 	}
 
-	fprintf(stderr, "ERROR: %s is not a valid config option\n", key);
-	exit(-1);
+	return 0;
 }
 
 static void validate_key_option(const char *s)
@@ -155,7 +154,7 @@ static void validate_key_option(const char *s)
 	for (tok = strtok(buf, " "); tok; tok = strtok(NULL, " ")) {
 		if (input_parse_string(&ev, tok)) {
 			fprintf(stderr, "ERROR: %s is not a valid key name\n", tok);
-			exit(-1);
+			return;
 		}
 	}
 }
@@ -165,9 +164,17 @@ static void config_add(const char *key, const char *val)
 	struct config_entry *ent;
 	ent = malloc(sizeof(struct config_entry));
 
-	ent->key = key;
-	ent->value = val;
+	assert(strlen(key) < sizeof ent->key);
+	assert(strlen(val) < sizeof ent->value);
+
+	strcpy(ent->key, key);
+	strcpy(ent->value, val);
+
 	ent->type = get_option_type(key);
+	if (!ent->type) {
+		free(ent);
+		return;
+	}
 
 	switch (ent->type) {
 		int i;
@@ -201,34 +208,43 @@ void parse_config(const char *path)
 
 	FILE *fh = (path[0] == '-' && path[1] == 0) ? stdin : fopen(path, "r");
 
+	struct config_entry *ent = config;
+	while (ent) {
+		struct config_entry *tmp = ent;
+		ent = ent->next;
+		free(tmp);
+	}
+	config = NULL;
+
 	for (i = 0; i < sizeof(options) / sizeof(options[0]); i++)
 		config_add(options[i].key, options[i].val);
 
 	if (fh) {
+		char line[1024];
 		while (1) {
-			int ret;
-			size_t sz = 0;
-			char *line = NULL;
 			char *delim;
+			size_t len;
 
-			if ((ret=getline(&line, &sz, fh)) < 0) {
-				free(line);
+			if (!fgets(line, sizeof line, fh))
 				break;
-			}
 
-			line[ret-1] = 0;
 			delim = strchr(line, ':');
 
-			if (!delim || line[0] == '#') {
-				free(line);
+			if (!delim || line[0] == '#')
 				continue;
-			}
 
 			*delim = 0;
 			while (*++delim == ' ');
 
+			len = strlen(delim);
+			while (delim[len-1] == '\n' || delim[len-1] == '\r')
+				len--;
+
+			delim[len] = 0;
+
 			config_add(line, delim);
 		}
+
 		fclose(fh);
 	}
 }

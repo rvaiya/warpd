@@ -30,10 +30,10 @@ struct mod {
 	uint8_t code1;
 	uint8_t code2;
 } modifiers[] = {
-    {MOD_CONTROL, 60, 63},
-    {MOD_SHIFT, 57, 61},
-    {MOD_META, 55, 56},
-    {MOD_ALT, 59, 62},
+    {PLATFORM_MOD_CONTROL, 60, 63},
+    {PLATFORM_MOD_SHIFT, 57, 61},
+    {PLATFORM_MOD_META, 55, 56},
+    {PLATFORM_MOD_ALT, 59, 62},
 };
 
 static long get_time_ms()
