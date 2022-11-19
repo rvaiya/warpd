@@ -113,7 +113,8 @@ static struct {
 	{ "indicator_color", "#00ff00", "The color of the visual indicator color.", OPT_STRING },
 	{ "indicator_size", "12", "The size of the visual indicator in pixels.", OPT_INT },
 
-	{ "use_system_cursor", "0", "If set to non-zero, use the system cursor instead of warpd's internal one.", OPT_INT },
+	{ "normal_system_cursor", "0", "If set to non-zero, use the system cursor instead of warpd's internal one.", OPT_INT },
+	{ "normal_blink_interval", "0", "If set to non-zero, the blink interval of the normal mode cursor in miliseconds.", OPT_INT },
 };
 
 const char *config_get(const char *key)

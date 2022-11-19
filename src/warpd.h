@@ -85,8 +85,8 @@ int hintspec_mode();
 int history_hint_mode();
 int full_hint_mode(int second_pass);
 void screen_selection_mode();
-struct input_event *normal_mode(struct input_event *start_ev, int oneshot, int use_system_cursor);
 struct input_event *grid_mode();
+struct input_event *normal_mode(struct input_event *start_ev, int oneshot);
 
 void init_hints();
 void init_normal_mode();

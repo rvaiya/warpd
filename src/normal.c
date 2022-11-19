@@ -44,13 +44,19 @@ static void move(screen_t scr, int x, int y, int hide_cursor)
 	redraw(scr, x, y, hide_cursor);
 }
 
-struct input_event *normal_mode(struct input_event *start_ev, int oneshot, int use_system_cursor)
+struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
 {
+	const int cursz = config_get_int("cursor_size");
+	const int system_cursor = config_get_int("normal_system_cursor");
+	const int blink_interval = config_get_int("normal_blink_interval");
+
 	struct input_event *ev;
 	screen_t scr;
 	int sh, sw;
 	int mx, my;
 	int dragging = 0;
+	int show_cursor = !system_cursor;
+
 
 	const char *keys[] = {
 		"accelerator",
@@ -81,40 +87,44 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot, int u
 		"up",
 	};
 
-
 	platform->input_grab_keyboard();
 
 	platform->mouse_get_position(&scr, &mx, &my);
 	platform->screen_get_dimensions(scr, &sw, &sh);
 
-	if (!use_system_cursor)
+	if (!system_cursor)
 		platform->mouse_hide();
 
 	mouse_reset();
-	redraw(scr, mx, my, use_system_cursor);
+	redraw(scr, mx, my, !show_cursor);
 
+	uint64_t time = 0;
 	while (1) {
-		const int cursz = config_get_int("cursor_size");
-
 		config_input_whitelist(keys, sizeof keys / sizeof keys[0]);
 		if (start_ev == NULL) {
 			ev = platform->input_next_event(10);
+			time += 10;
 		} else {
 			ev = start_ev;
 			start_ev = NULL;
 		}
 
+		if (!system_cursor && blink_interval && ((time % blink_interval) == 0))
+			show_cursor = !show_cursor;
+
 		scroll_tick();
 		if (mouse_process_key(ev, "up", "down", "left", "right")) {
 			platform->mouse_get_position(&scr, &mx, &my);
-			redraw(scr, mx, my, use_system_cursor);
+			redraw(scr, mx, my, !show_cursor);
 			continue;
 		}
 
-		if (!ev)
-			continue;
-
 		platform->mouse_get_position(&scr, &mx, &my);
+
+		if (!ev) {
+			redraw(scr, mx, my, !show_cursor);
+			continue;
+		}
 
 		if (config_input_match(ev, "scroll_down")) {
 			redraw(scr, mx, my, 1);
@@ -147,26 +157,26 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot, int u
 		}
 
 		if (config_input_match(ev, "top"))
-			move(scr, mx, cursz / 2, use_system_cursor);
+			move(scr, mx, cursz / 2, !show_cursor);
 		else if (config_input_match(ev, "bottom"))
-			move(scr, mx, sh - cursz / 2, use_system_cursor);
+			move(scr, mx, sh - cursz / 2, !show_cursor);
 		else if (config_input_match(ev, "middle"))
-			move(scr, mx, sh / 2, use_system_cursor);
+			move(scr, mx, sh / 2, !show_cursor);
 		else if (config_input_match(ev, "start"))
-			move(scr, 1, my, use_system_cursor);
+			move(scr, 1, my, !show_cursor);
 		else if (config_input_match(ev, "end"))
-			move(scr, sw - cursz, my, use_system_cursor);
+			move(scr, sw - cursz, my, !show_cursor);
 		else if (config_input_match(ev, "hist_back")) {
 			hist_add(mx, my);
 			hist_prev();
 			hist_get(&mx, &my);
 
-			move(scr, mx, my, use_system_cursor);
+			move(scr, mx, my, !show_cursor);
 		} else if (config_input_match(ev, "hist_forward")) {
 			hist_next();
 			hist_get(&mx, &my);
 
-			move(scr, mx, my, use_system_cursor);
+			move(scr, mx, my, !show_cursor);
 		} else if (config_input_match(ev, "drag")) {
 			dragging = !dragging;
 			if (dragging)
