@@ -386,6 +386,7 @@ static void update_keymap()
 	}
 		fixup("\033", "esc");
 		fixup("\x08", "backspace");
+		fixup(" ", "space");
 		fixup("\x7f", "delete");
 #undef fixup
 
