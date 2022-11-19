@@ -166,6 +166,9 @@ Each option must be specified on its own line and have the format:
 
 <option>: <value>
 
+Options which take one or more keys may optionally be unset using the value
+"unbind".
+
 ## RULES
 
 - Options which expect one or more keys may be specified multiple times, in which case all accepted mappings are interchangeable. 

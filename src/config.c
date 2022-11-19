@@ -151,6 +151,9 @@ static void validate_key_option(const char *s)
 
 	strncpy(buf, s, sizeof buf);
 
+	if (!strcmp(s, "unbind"))
+		return;
+
 	for (tok = strtok(buf, " "); tok; tok = strtok(NULL, " ")) {
 		if (input_parse_string(&ev, tok)) {
 			fprintf(stderr, "ERROR: %s is not a valid key name\n", tok);
@@ -314,6 +317,9 @@ int config_input_match(struct input_event *ev, const char *config_key)
 	for (ent = config; ent; ent = ent->next) {
 		int idx;
 		int exact;
+
+		if (!strcmp(ent->key, config_key) && !strcmp(ent->value, "unbind"))
+			return 0;
 
 		if (ent->whitelisted && (idx = keyidx(ent->value, ev, &exact))) {
 			if ((ent->type == OPT_KEY && exact) || ent->type == OPT_BUTTON) {
