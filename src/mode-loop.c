@@ -22,7 +22,7 @@ int mode_loop(int initial_mode, int oneshot, int record_history)
 			hintspec_mode();
 			break;
 		case MODE_NORMAL:
-			ev = normal_mode(ev, oneshot);
+			ev = normal_mode(ev, oneshot, config_get_int("use_system_cursor"));
 
 			if (config_input_match(ev, "history"))
 				mode = MODE_HISTORY;

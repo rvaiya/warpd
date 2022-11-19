@@ -38,13 +38,13 @@ static void redraw(screen_t scr, int x, int y, int hide_cursor)
 	platform->commit();
 }
 
-static void move(screen_t scr, int x, int y)
+static void move(screen_t scr, int x, int y, int hide_cursor)
 {
 	platform->mouse_move(scr, x, y);
-	redraw(scr, x, y, 0);
+	redraw(scr, x, y, hide_cursor);
 }
 
-struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
+struct input_event *normal_mode(struct input_event *start_ev, int oneshot, int use_system_cursor)
 {
 	struct input_event *ev;
 	screen_t scr;
@@ -87,9 +87,11 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
 	platform->mouse_get_position(&scr, &mx, &my);
 	platform->screen_get_dimensions(scr, &sw, &sh);
 
-	platform->mouse_hide();
+	if (!use_system_cursor)
+		platform->mouse_hide();
+
 	mouse_reset();
-	redraw(scr, mx, my, 0);
+	redraw(scr, mx, my, use_system_cursor);
 
 	while (1) {
 		const int cursz = config_get_int("cursor_size");
@@ -105,7 +107,7 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
 		scroll_tick();
 		if (mouse_process_key(ev, "up", "down", "left", "right")) {
 			platform->mouse_get_position(&scr, &mx, &my);
-			redraw(scr, mx, my, 0);
+			redraw(scr, mx, my, use_system_cursor);
 			continue;
 		}
 
@@ -145,26 +147,26 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
 		}
 
 		if (config_input_match(ev, "top"))
-			move(scr, mx, cursz / 2);
+			move(scr, mx, cursz / 2, use_system_cursor);
 		else if (config_input_match(ev, "bottom"))
-			move(scr, mx, sh - cursz / 2);
+			move(scr, mx, sh - cursz / 2, use_system_cursor);
 		else if (config_input_match(ev, "middle"))
-			move(scr, mx, sh / 2);
+			move(scr, mx, sh / 2, use_system_cursor);
 		else if (config_input_match(ev, "start"))
-			move(scr, 1, my);
+			move(scr, 1, my, use_system_cursor);
 		else if (config_input_match(ev, "end"))
-			move(scr, sw - cursz, my);
+			move(scr, sw - cursz, my, use_system_cursor);
 		else if (config_input_match(ev, "hist_back")) {
 			hist_add(mx, my);
 			hist_prev();
 			hist_get(&mx, &my);
 
-			move(scr, mx, my);
+			move(scr, mx, my, use_system_cursor);
 		} else if (config_input_match(ev, "hist_forward")) {
 			hist_next();
 			hist_get(&mx, &my);
 
-			move(scr, mx, my);
+			move(scr, mx, my, use_system_cursor);
 		} else if (config_input_match(ev, "drag")) {
 			dragging = !dragging;
 			if (dragging)
