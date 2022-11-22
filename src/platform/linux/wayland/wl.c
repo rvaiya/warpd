@@ -25,11 +25,8 @@ static void handle_global(void *data,
 						 name, &wl_compositor_interface, 4);
 
 	if (!strcmp(interface, "wl_seat")) {
-		struct wl_seat *seat =
-			wl_registry_bind(registry,
-					 name, &wl_seat_interface, 7);
-
-		add_seat(seat);
+		assert(!wl.seat);
+		wl.seat = wl_registry_bind(registry, name, &wl_seat_interface, 7);
 	}
 
 	if (!strcmp(interface, "wl_output")) {
@@ -50,7 +47,7 @@ static struct wl_registry_listener registry_listener = {
 	.global = handle_global,
 };
 
-void wl_init()
+void way_init()
 {
 	wl.dpy = wl_display_connect(NULL);
 
@@ -89,4 +86,5 @@ void wl_init()
 	}
 
 	init_screen();
+	init_input();
 }

@@ -17,8 +17,8 @@ static void draw_grid(screen_t scr,
 {
 	int i;
 
-	const double ygap = (h - ((nr+1)*sz))/(double)nr;
-	const double xgap = (w - ((nc+1)*sz))/(double)nc;
+	const int ygap = (h - ((nr+1)*sz))/nr;
+	const int xgap = (w - ((nc+1)*sz))/nc;
 
 	if (xgap < 0 || ygap < 0)
 		return;

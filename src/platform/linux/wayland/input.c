@@ -8,16 +8,15 @@
 static struct input_event input_queue[32];
 static size_t input_queue_sz;
 
-static struct surface input_pixel;
 static uint8_t x_active_mods = 0;
 static int infd = 0;
 
 static void noop() {}
 struct keymap_entry keymap[256] = {0};
 
-void update_mods(uint8_t code, uint8_t pressed)
+static void update_mods(uint8_t code, uint8_t pressed)
 {
-	const char *name = wl_input_lookup_name(code, 0);
+	const char *name = way_input_lookup_name(code, 0);
 
 	if (!name)
 		return;
@@ -109,34 +108,6 @@ static void handle_keymap(void *data,
 	xkb_context_unref(ctx);
 }
 
-void handle_pointer_enter(void *data,
-			  struct wl_pointer *wl_pointer,
-			  uint32_t serial,
-			  struct wl_surface *surface, wl_fixed_t wlx,
-			  wl_fixed_t wly)
-{
-
-	if (active_screen->ptrx == -1 && surface == active_screen->overlay->wl_surface) {
-		int x = wl_fixed_to_int(wlx);
-		int y = wl_fixed_to_int(wly);
-
-		active_screen->ptrx = x;
-		active_screen->ptry = y;
-	}
-}
-
-struct wl_pointer_listener wl_pointer_listener = {
-	.enter = handle_pointer_enter,
-	.leave = noop,
-	.motion = noop,
-	.button = noop,
-	.axis = noop,
-	.frame = noop,
-	.axis_source = noop,
-	.axis_stop = noop,
-	.axis_discrete = noop,
-};
-
 static struct wl_keyboard_listener wl_keyboard_listener = {
 	.key = handle_key,
 	.keymap = handle_keymap,
@@ -146,24 +117,24 @@ static struct wl_keyboard_listener wl_keyboard_listener = {
 	.repeat_info = noop,
 };
 
-void wl_input_ungrab_keyboard()
-{
-	surface_hide(&input_pixel);
-}
-
+static struct surface *input_surface = NULL;
 /*
  * *Note*: Wayland does not allow for global input handlers.
  * Input events can only be captured by a focused window :(.
  */
-void wl_input_grab_keyboard()
+void way_input_grab_keyboard()
 {
-	if (!input_pixel.buf)
-		init_surface(&input_pixel, -1, -1, 1, 1, 1);
-
-	surface_show(&input_pixel, NULL);
+	input_surface = create_surface(&screens[0], -1, -1, 1, 1, 1);
 }
 
-struct input_event *wl_input_next_event(int timeout)
+void way_input_ungrab_keyboard()
+{
+	destroy_surface(input_surface);
+	input_surface = NULL;
+}
+
+
+struct input_event *way_input_next_event(int timeout)
 {
 	static struct input_event ev;
 
@@ -189,9 +160,7 @@ struct input_event *wl_input_next_event(int timeout)
 	}
 }
 
-void add_seat(struct wl_seat *seat)
+void init_input()
 {
-	wl_keyboard_add_listener(wl_seat_get_keyboard(seat), &wl_keyboard_listener, NULL);
-	wl_pointer_add_listener(wl_seat_get_pointer(seat), &wl_pointer_listener, NULL);
-	wl_seat_destroy(seat);
+	wl_keyboard_add_listener(wl_seat_get_keyboard(wl.seat), &wl_keyboard_listener, NULL);
 }

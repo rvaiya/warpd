@@ -44,26 +44,29 @@ static void cairo_draw_text(cairo_t *cr, const char *s, int x, int y, int w, int
 	cairo_show_text(cr, s);
 }
 
-void wl_hint_draw(struct screen *scr, struct hint *hints, size_t n)
+void way_hint_draw(struct screen *scr, struct hint *hints, size_t n)
 {
 	size_t i;
 	uint8_t r,g,b,a;
 
-	cairo_t *cr = scr->overlay->cr;
+	cairo_t *cr = scr->cr;
+
+	if (scr->hints)
+		destroy_surface(scr->hints);
 
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 	cairo_set_source_rgba(cr, 0, 0, 0, 0);
 	cairo_paint(cr);
 
 	for (i = 0; i < n; i++) {
-		wl_hex_to_rgba(bgcolor, &r, &g, &b, &a);
+		way_hex_to_rgba(bgcolor, &r, &g, &b, &a);
 		cairo_set_source_rgba(cr, r / 255.0, g / 255.0, b / 255.0,
 				      a / 255.0);
 		cairo_rectangle(cr, hints[i].x, hints[i].y, hints[i].w,
 				hints[i].h);
 		cairo_fill(cr);
 
-		wl_hex_to_rgba(fgcolor, &r, &g, &b, &a);
+		way_hex_to_rgba(fgcolor, &r, &g, &b, &a);
 		cairo_set_source_rgba(cr, r / 255.0, g / 255.0, b / 255.0,
 				      a / 255.0);
 
@@ -71,10 +74,10 @@ void wl_hint_draw(struct screen *scr, struct hint *hints, size_t n)
 				hints[i].w, hints[i].h);
 	}
 
-	surface_show(scr->overlay, scr->wl_output);
+	scr->hints = create_surface(scr, 0, 0, scr->w, scr->h, 0);
 }
 
-void wl_init_hint(const char *bg, const char *fg, int border_radius, const char *font)
+void way_init_hint(const char *bg, const char *fg, int border_radius, const char *font)
 {
 	strncpy(bgcolor, bg, sizeof bgcolor);
 	strncpy(fgcolor, fg, sizeof fgcolor);

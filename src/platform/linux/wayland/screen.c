@@ -5,14 +5,12 @@
  */
 #include "wayland.h"
 
-struct screen *active_screen = NULL;
-
 static void noop() {}
 
-void xdg_output_handle_logical_position(void *data,
-					struct zxdg_output_v1 *zxdg_output_v1,
-					int32_t x,
-					int32_t y)
+static void xdg_output_handle_logical_position(void *data,
+					       struct zxdg_output_v1
+					       *zxdg_output_v1, int32_t x,
+					       int32_t y)
 {
 	struct screen *scr = data;
 
@@ -21,10 +19,10 @@ void xdg_output_handle_logical_position(void *data,
 	scr->state++;
 }
 
-void xdg_output_handle_logical_size(void *data,
-				    struct zxdg_output_v1 *zxdg_output_v1,
-				    int32_t w,
-				    int32_t h)
+static void xdg_output_handle_logical_size(void *data,
+					   struct zxdg_output_v1
+					   *zxdg_output_v1, int32_t w,
+					   int32_t h)
 {
 	struct screen *scr = data;
 
@@ -41,52 +39,140 @@ static struct zxdg_output_v1_listener zxdg_output_v1_listener = {
 	.description = noop,
 };
 
+static void handle_pointer_enter(void *data,
+				 struct wl_pointer *wl_pointer,
+				 uint32_t serial,
+				 struct wl_surface *surface,
+				 wl_fixed_t wlx, wl_fixed_t wly)
+{
+	int i;
+	struct surface **overlays = data;
+
+	if (!ptr.scr) {
+		ptr.x = wl_fixed_to_int(wlx);
+		ptr.y = wl_fixed_to_int(wly);
+
+		for (i = 0; i < nr_screens; i++) {
+			if (surface == surface_get_wl_surface(overlays[i])) {
+				ptr.scr = &screens[i];
+			}
+		}
+	}
+}
+
+static struct wl_pointer_listener wl_pointer_listener = {
+	.enter = handle_pointer_enter,
+	.leave = noop,
+	.motion = noop,
+	.button = noop,
+	.axis = noop,
+	.frame = noop,
+	.axis_source = noop,
+	.axis_stop = noop,
+	.axis_discrete = noop,
+};
+
+/* 
+ * Register a pointer_listener and listen for enter events after
+ * creating a full screen surface for each screen in order to capture the initial
+ * cursor position. I couldn't find a better way to achieve this :/.
+ */
+static void discover_pointer_location()
+{
+	size_t i;
+	static struct surface *overlays[MAX_SCREENS];
+
+	wl_pointer_add_listener(wl_seat_get_pointer(wl.seat), &wl_pointer_listener, overlays);
+
+	for (i = 0; i < nr_screens; i++) {
+		struct screen *scr = &screens[i];
+		overlays[i] = create_surface(&screens[i], 0, 0, screens[i].w, screens[i].h, 0);
+	}
+
+	while (!ptr.scr)
+		wl_display_dispatch(wl.dpy);
+
+	for (i = 0; i < nr_screens; i++)
+		destroy_surface(overlays[i]);
+}
+
 void add_screen(struct wl_output *output)
 {
 	struct screen *scr = &screens[nr_screens++];
 	scr->wl_output = output;
 }
 
-void wl_screen_draw_box(struct screen *scr, int x, int y, int w, int h, const char *color)
+void way_screen_draw_box(struct screen *scr, int x, int y, int w, int h, const char *color)
 {
 	uint8_t r, g, b, a;
 
-	assert(scr->nr_surfaces < MAX_SURFACES);
-	struct surface *sfc = &scr->surfaces[scr->nr_surfaces++];
+	assert(scr->nr_boxes < MAX_BOXES);
 
-	init_surface(sfc, x, y, w, h, 0);
+	way_hex_to_rgba(color, &r, &g, &b, &a);
+	cairo_set_source_rgba(scr->cr, r / 255.0, g / 255.0, b / 255.0, a / 255.0);
+	cairo_rectangle(scr->cr, x, y, w, h);
+	cairo_fill(scr->cr);
 
-	wl_hex_to_rgba(color, &r, &g, &b, &a);
-	cairo_set_source_rgba(sfc->cr, r / 255.0, g / 255.0, b / 255.0, a / 255.0);
-	cairo_paint(sfc->cr);
-
-	surface_show(sfc, scr->wl_output);
+	scr->boxes[scr->nr_boxes++] = create_surface(scr, x, y, w, h, 0);
 }
 
 
-void wl_screen_get_dimensions(struct screen *scr, int *w, int *h)
+void way_screen_get_dimensions(struct screen *scr, int *w, int *h)
 {
 	*w = scr->w;
 	*h = scr->h;
 }
 
-void wl_screen_clear(struct screen *scr)
+void way_screen_clear(struct screen *scr)
 {
 	size_t i;
-	for (i = 0; i < scr->nr_surfaces; i++)
-		surface_destroy(&scr->surfaces[i]);
+	for (i = 0; i < scr->nr_boxes; i++)
+		destroy_surface(scr->boxes[i]);
 
-	scr->nr_surfaces = 0;
-	bzero(scr->overlay->buf, scr->overlay->bufsz);
-	surface_hide(scr->overlay);
+	destroy_surface(scr->hints);
+
+	scr->nr_boxes = 0;
+	scr->hints = NULL;
+}
+
+static void init_screen_pool(struct screen *scr)
+{
+	int fd;
+	static int shm_num = 0;
+	char shm_path[64];
+	size_t bufsz;
+	char *buf;
+	cairo_surface_t *cairo_surface;
+
+	scr->stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, scr->w);
+
+	bufsz = scr->stride * scr->h + scr->w * 4;
+	sprintf(shm_path, "/warpd_%d", shm_num++);
+
+	fd = shm_open(shm_path, O_CREAT|O_TRUNC|O_RDWR, 0600);
+	if (fd < 0) {
+		perror("shm_open");
+		exit(-1);
+	}
+
+	ftruncate(fd, bufsz);
+
+	scr->wl_pool = wl_shm_create_pool(wl.shm, fd, bufsz);
+	buf = mmap(NULL, bufsz, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
+	close(fd);
+
+	cairo_surface = cairo_image_surface_create_for_data(buf,
+							    CAIRO_FORMAT_ARGB32, scr->w,
+							    scr->h, scr->stride);
+	scr->cr = cairo_create(cairo_surface);
 }
 
 void init_screen()
 {
 	size_t i;
-	struct surface sfc;
 
 	for (i = 0; i < nr_screens; i++) {
+		struct surface *sfc;
 		struct screen *scr = &screens[i];
 
 		scr->xdg_output =
@@ -103,21 +189,9 @@ void init_screen()
 
 		scr->ptrx = -1;
 		scr->ptry = -1;
-		scr->overlay = calloc(1, sizeof(struct surface));
-		init_surface(scr->overlay, 0, 0, scr->w, scr->h, 0);
+
+		init_screen_pool(scr);
 	}
 
-	sfc.screen = 0;
-	init_surface(&sfc, 0, 0, 1, 1, 0);
-	surface_show(&sfc, NULL);
-	while(!sfc.screen)
-		wl_display_dispatch(wl.dpy);
-
-	active_screen = sfc.screen;
-	surface_destroy(&sfc);
-
-	surface_show(active_screen->overlay, active_screen->wl_output);
-	while (active_screen->ptrx == -1)
-		wl_display_dispatch(wl.dpy);
-	surface_hide(active_screen->overlay);
+	discover_pointer_location();
 }

@@ -25,9 +25,11 @@ static struct {
 	{"backspace", "BackSpace"},
 };
 
+struct ptr ptr = {0};
+
 /* Input */
 
-uint8_t wl_input_lookup_code(const char *name, int *shifted)
+uint8_t way_input_lookup_code(const char *name, int *shifted)
 {
 	size_t i;
 
@@ -47,7 +49,7 @@ uint8_t wl_input_lookup_code(const char *name, int *shifted)
 	return 0;
 }
 
-const char *wl_input_lookup_name(uint8_t code, int shifted)
+const char *way_input_lookup_name(uint8_t code, int shifted)
 {
 	size_t i;
 	const char *name = NULL;
@@ -64,7 +66,7 @@ const char *wl_input_lookup_name(uint8_t code, int shifted)
 	return name;
 }
 
-void wl_mouse_move(struct screen *scr, int x, int y)
+void way_mouse_move(struct screen *scr, int x, int y)
 {
 	size_t i;
 	int maxx = INT_MIN;
@@ -72,8 +74,9 @@ void wl_mouse_move(struct screen *scr, int x, int y)
 	int minx = INT_MAX;
 	int miny = INT_MAX;
 
-	active_screen->ptrx = x;
-	active_screen->ptry = y;
+	ptr.x = x;
+	ptr.y = y;
+	ptr.scr = scr;
 
 	for (i = 0; i < nr_screens; i++) {
 		int x = screens[i].x + screens[i].w;
@@ -101,7 +104,6 @@ void wl_mouse_move(struct screen *scr, int x, int y)
 						wl_fixed_from_int(maxy-miny));
 	zwlr_virtual_pointer_v1_frame(wl.ptr);
 
-	active_screen = scr;
 	wl_display_flush(wl.dpy);
 }
 
@@ -112,19 +114,19 @@ void wl_mouse_move(struct screen *scr, int x, int y)
 		case 3: btn = 273;break; \
 	}
 
-void wl_mouse_down(int btn)
+void way_mouse_down(int btn)
 {
 	normalize_btn(btn);
 	zwlr_virtual_pointer_v1_button(wl.ptr, 0, btn, 1);
 }
 
-void wl_mouse_up(int btn)
+void way_mouse_up(int btn)
 {
 	normalize_btn(btn);
 	zwlr_virtual_pointer_v1_button(wl.ptr, 0, btn, 0);
 }
 
-void wl_mouse_click(int btn)
+void way_mouse_click(int btn)
 {
 	normalize_btn(btn);
 
@@ -135,26 +137,26 @@ void wl_mouse_click(int btn)
 	wl_display_flush(wl.dpy);
 }
 
-void wl_mouse_get_position(struct screen **scr, int *x, int *y)
+void way_mouse_get_position(struct screen **scr, int *x, int *y)
 {
 	if (scr)
-		*scr = active_screen;
+		*scr = ptr.scr;
 	if (x)
-		*x = active_screen->ptrx;
+		*x = ptr.x;
 	if (y)
-		*y = active_screen->ptry;
+		*y = ptr.y;
 }
 
-void wl_mouse_show()
+void way_mouse_show()
 {
 }
 
-void wl_mouse_hide()
+void way_mouse_hide()
 {
 	fprintf(stderr, "wayland: mouse hiding not implemented\n");
 }
 
-void wl_scroll(int direction)
+void way_scroll(int direction)
 {
 	//TODO: add horizontal scroll
 	direction = direction == SCROLL_DOWN ? 1 : -1;
@@ -168,10 +170,10 @@ void wl_scroll(int direction)
 	wl_display_flush(wl.dpy);
 }
 
-void wl_copy_selection() { UNIMPLEMENTED }
-struct input_event *wl_input_wait(struct input_event *events, size_t sz) { UNIMPLEMENTED }
+void way_copy_selection() { UNIMPLEMENTED }
+struct input_event *way_input_wait(struct input_event *events, size_t sz) { UNIMPLEMENTED }
 
-void wl_screen_list(struct screen *scr[MAX_SCREENS], size_t *n)
+void way_screen_list(struct screen *scr[MAX_SCREENS], size_t *n)
 {
 	size_t i;
 	for (i = 0; i < nr_screens; i++)
@@ -180,38 +182,51 @@ void wl_screen_list(struct screen *scr[MAX_SCREENS], size_t *n)
 	*n = nr_screens;
 }
 
-void wl_monitor_file(const char *path) { UNIMPLEMENTED }
+void way_monitor_file(const char *path) { UNIMPLEMENTED }
 
-void wl_commit()
+void way_commit()
 {
+	wl_display_flush(wl.dpy);
+	wl_display_dispatch_pending(wl.dpy);
+}
+
+static void cleanup()
+{
+	/* wlroots doesn't seem to like it if we terminate before button up :/ */
+	zwlr_virtual_pointer_v1_button(wl.ptr, 0, 272, 0);
+	zwlr_virtual_pointer_v1_button(wl.ptr, 0, 274, 0);
+	zwlr_virtual_pointer_v1_button(wl.ptr, 0, 273, 0);
+	wl_display_flush(wl.dpy);
 }
 
 void wayland_init(struct platform *platform)
 {
-	wl_init();
+	way_init();
 
-	platform->monitor_file = wl_monitor_file;
+	platform->monitor_file = way_monitor_file;
 
-	platform->commit = wl_commit;
-	platform->copy_selection = wl_copy_selection;
-	platform->hint_draw = wl_hint_draw;
-	platform->init_hint = wl_init_hint;
-	platform->input_grab_keyboard = wl_input_grab_keyboard;
-	platform->input_lookup_code = wl_input_lookup_code;
-	platform->input_lookup_name = wl_input_lookup_name;
-	platform->input_next_event = wl_input_next_event;
-	platform->input_ungrab_keyboard = wl_input_ungrab_keyboard;
-	platform->input_wait = wl_input_wait;
-	platform->mouse_click = wl_mouse_click;
-	platform->mouse_down = wl_mouse_down;
-	platform->mouse_get_position = wl_mouse_get_position;
-	platform->mouse_hide = wl_mouse_hide;
-	platform->mouse_move = wl_mouse_move;
-	platform->mouse_show = wl_mouse_show;
-	platform->mouse_up = wl_mouse_up;
-	platform->screen_clear = wl_screen_clear;
-	platform->screen_draw_box = wl_screen_draw_box;
-	platform->screen_get_dimensions = wl_screen_get_dimensions;
-	platform->screen_list = wl_screen_list;
-	platform->scroll = wl_scroll;
+	atexit(cleanup);
+
+	platform->commit = way_commit;
+	platform->copy_selection = way_copy_selection;
+	platform->hint_draw = way_hint_draw;
+	platform->init_hint = way_init_hint;
+	platform->input_grab_keyboard = way_input_grab_keyboard;
+	platform->input_lookup_code = way_input_lookup_code;
+	platform->input_lookup_name = way_input_lookup_name;
+	platform->input_next_event = way_input_next_event;
+	platform->input_ungrab_keyboard = way_input_ungrab_keyboard;
+	platform->input_wait = way_input_wait;
+	platform->mouse_click = way_mouse_click;
+	platform->mouse_down = way_mouse_down;
+	platform->mouse_get_position = way_mouse_get_position;
+	platform->mouse_hide = way_mouse_hide;
+	platform->mouse_move = way_mouse_move;
+	platform->mouse_show = way_mouse_show;
+	platform->mouse_up = way_mouse_up;
+	platform->screen_clear = way_screen_clear;
+	platform->screen_draw_box = way_screen_draw_box;
+	platform->screen_get_dimensions = way_screen_get_dimensions;
+	platform->screen_list = way_screen_list;
+	platform->scroll = way_scroll;
 }
