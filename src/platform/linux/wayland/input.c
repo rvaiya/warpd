@@ -108,11 +108,30 @@ static void handle_keymap(void *data,
 	xkb_context_unref(ctx);
 }
 
+static int input_grabbed = 0;
+static void handle_enter(void *data,
+			 struct wl_keyboard *wl_keyboard,
+			 uint32_t serial,
+			 struct wl_surface *surface,
+			 struct wl_array *keys)
+{
+	input_grabbed = 1;
+}
+
+static void handle_leave(void *data,
+			 struct wl_keyboard *wl_keyboard,
+			 uint32_t serial,
+			 struct wl_surface *surface)
+{
+	input_grabbed = 0;
+}
+
+
 static struct wl_keyboard_listener wl_keyboard_listener = {
 	.key = handle_key,
 	.keymap = handle_keymap,
-	.enter = noop,
-	.leave = noop,
+	.enter = handle_enter,
+	.leave = handle_leave,
 	.modifiers = noop,
 	.repeat_info = noop,
 };
@@ -125,11 +144,16 @@ static struct surface *input_surface = NULL;
 void way_input_grab_keyboard()
 {
 	input_surface = create_surface(&screens[0], -1, -1, 1, 1, 1);
+	surface_show(input_surface);
+	while (!input_grabbed)
+		wl_display_dispatch(wl.dpy);
 }
 
 void way_input_ungrab_keyboard()
 {
 	destroy_surface(input_surface);
+	while (!input_grabbed)
+		wl_display_dispatch(wl.dpy);
 	input_surface = NULL;
 }
 

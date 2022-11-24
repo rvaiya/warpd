@@ -46,16 +46,15 @@ static void handle_pointer_enter(void *data,
 				 wl_fixed_t wlx, wl_fixed_t wly)
 {
 	int i;
-	struct surface **overlays = data;
 
 	if (!ptr.scr) {
 		ptr.x = wl_fixed_to_int(wlx);
 		ptr.y = wl_fixed_to_int(wly);
 
 		for (i = 0; i < nr_screens; i++) {
-			if (surface == surface_get_wl_surface(overlays[i])) {
-				ptr.scr = &screens[i];
-			}
+			struct screen *scr = &screens[i];
+			if (scr->overlay && surface == surface_get_wl_surface(scr->overlay))
+				ptr.scr = scr;
 		}
 	}
 }
@@ -80,25 +79,31 @@ static struct wl_pointer_listener wl_pointer_listener = {
 static void discover_pointer_location()
 {
 	size_t i;
-	static struct surface *overlays[MAX_SCREENS];
 
-	wl_pointer_add_listener(wl_seat_get_pointer(wl.seat), &wl_pointer_listener, overlays);
+	wl_pointer_add_listener(wl_seat_get_pointer(wl.seat), &wl_pointer_listener, NULL);
 
 	for (i = 0; i < nr_screens; i++) {
 		struct screen *scr = &screens[i];
-		overlays[i] = create_surface(&screens[i], 0, 0, screens[i].w, screens[i].h, 0);
+		scr->overlay = create_surface(scr, 0, 0, scr->w, scr->h, 0);
 	}
+
+	for (i = 0; i < nr_screens; i++)
+		surface_show(screens[i].overlay);
 
 	while (!ptr.scr)
 		wl_display_dispatch(wl.dpy);
 
-	for (i = 0; i < nr_screens; i++)
-		destroy_surface(overlays[i]);
+	for (i = 0; i < nr_screens; i++) {
+		struct screen *scr = &screens[i];
+		destroy_surface(scr->overlay);
+		scr->overlay = NULL;
+	}
 }
 
 void add_screen(struct wl_output *output)
 {
 	struct screen *scr = &screens[nr_screens++];
+	scr->overlay = NULL;
 	scr->wl_output = output;
 }
 

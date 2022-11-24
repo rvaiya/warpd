@@ -55,6 +55,7 @@ struct screen {
 	size_t nr_boxes;
 	struct surface *boxes[MAX_BOXES];
 
+	struct surface *overlay;
 	struct surface *hints;
 
 	struct wl_output *wl_output;
@@ -97,6 +98,7 @@ extern struct wl wl;
 struct surface *create_surface(struct screen *scr, int x, int y, int w, int h, int capture_input);
 void destroy_surface(struct surface *sfc);
 struct wl_surface *surface_get_wl_surface(struct surface *sfc);
+void surface_show(struct surface *sfc);
 
 /* Exported platform functions. */
 void way_run(void (*init)(void));
