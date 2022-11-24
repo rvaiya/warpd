@@ -27,6 +27,7 @@ static void handle_global(void *data,
 	if (!strcmp(interface, "wl_seat")) {
 		assert(!wl.seat);
 		wl.seat = wl_registry_bind(registry, name, &wl_seat_interface, 7);
+		init_input();
 	}
 
 	if (!strcmp(interface, "wl_output")) {
@@ -86,5 +87,4 @@ void way_init()
 	}
 
 	init_screen();
-	init_input();
 }

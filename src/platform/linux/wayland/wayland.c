@@ -192,7 +192,6 @@ void way_commit()
 
 static void cleanup()
 {
-	/* wlroots doesn't seem to like it if we terminate before button up :/ */
 	zwlr_virtual_pointer_v1_button(wl.ptr, 0, 272, 0);
 	zwlr_virtual_pointer_v1_button(wl.ptr, 0, 274, 0);
 	zwlr_virtual_pointer_v1_button(wl.ptr, 0, 273, 0);
