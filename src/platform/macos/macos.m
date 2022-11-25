@@ -119,11 +119,6 @@ void osx_copy_selection()
 	send_key(osx_input_lookup_code("c", &shifted), 0);
 }
 
-void osx_monitor_file(const char *path)
-{
-	printf("osx_monitor_file: implement me\n");
-}
-
 void osx_scroll(int direction)
 {
 	int y = 0;

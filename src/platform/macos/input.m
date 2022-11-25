@@ -69,6 +69,12 @@ static int read_message(int fd, void *msg, ssize_t sz, int timeout)
 	return 0;
 }
 
+void osx_input_interrupt()
+{
+	struct input_event ev = {0};
+	write_message(input_fds[1], &ev, sizeof ev);
+}
+
 static CGEventRef eventTapCallback(CGEventTapProxy proxy, CGEventType type,
 				   CGEventRef event, void *context)
 {
@@ -297,6 +303,9 @@ struct input_event *osx_input_next_event(int timeout)
 	if (read_message(input_fds[0], &ev, sizeof ev, timeout) < 0)
 		return 0;
 
+	if (ev.code == 0 && ev.mods == 0)
+		return NULL;
+
 	return &ev;
 }
 
@@ -308,6 +317,9 @@ struct input_event *osx_input_wait(struct input_event *keys, size_t sz)
 	while (1) {
 		size_t i;
 		struct input_event *ev = osx_input_next_event(0);
+
+		if (ev == NULL)
+			return NULL;
 
 		for (i = 0; i < sz; i++)
 			if (ev->pressed && keys[i].code == ev->code &&

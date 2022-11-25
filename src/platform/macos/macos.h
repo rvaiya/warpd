@@ -121,6 +121,8 @@ void osx_init_hint(const char *bg, const char *fg, int border_radius, const char
 void osx_hint_draw(struct screen *scr, struct hint *hints, size_t n);
 void osx_scroll(int direction);
 void osx_copy_selection();
+void osx_monitor_file(const char *_path);
+void osx_input_interrupt();
 void osx_commit();
 
 #endif
