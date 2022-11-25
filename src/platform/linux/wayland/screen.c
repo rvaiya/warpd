@@ -87,9 +87,7 @@ static void discover_pointer_location()
 		scr->overlay = create_surface(scr, 0, 0, scr->w, scr->h, 0);
 	}
 
-	for (i = 0; i < nr_screens; i++)
-		surface_show(screens[i].overlay);
-
+	wl_display_flush(wl.dpy);
 	while (!ptr.scr)
 		wl_display_dispatch(wl.dpy);
 

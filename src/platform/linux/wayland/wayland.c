@@ -186,17 +186,6 @@ void way_monitor_file(const char *path) { UNIMPLEMENTED }
 
 void way_commit()
 {
-	int i;
-	for (i = 0; i < nr_screens; i++) {
-		int j;
-		struct screen *scr = &screens[i];
-
-		for (j = 0; j < scr->nr_boxes; j++)
-			surface_show(scr->boxes[j]);
-
-		if (scr->hints)
-			surface_show(scr->hints);
-	}
 }
 
 static void cleanup()

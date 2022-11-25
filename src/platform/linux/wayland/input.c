@@ -144,7 +144,9 @@ static struct surface *input_surface = NULL;
 void way_input_grab_keyboard()
 {
 	input_surface = create_surface(&screens[0], -1, -1, 1, 1, 1);
-	surface_show(input_surface);
+
+	wl_display_flush(wl.dpy);
+	input_grabbed = 0;
 	while (!input_grabbed)
 		wl_display_dispatch(wl.dpy);
 }
@@ -152,8 +154,10 @@ void way_input_grab_keyboard()
 void way_input_ungrab_keyboard()
 {
 	destroy_surface(input_surface);
+
 	while (!input_grabbed)
 		wl_display_dispatch(wl.dpy);
+
 	input_surface = NULL;
 }
 
@@ -168,6 +172,7 @@ struct input_event *way_input_next_event(int timeout)
 	};
 
 	while (1) {
+		wl_display_flush(wl.dpy);
 		wl_display_dispatch_pending(wl.dpy);
 		if (input_queue_sz) {
 			input_queue_sz--;

@@ -22,7 +22,6 @@ struct surface {
 	struct wl_buffer *wl_buffer;
 
 	int configured;
-	int capture_input;
 	int destroyed;
 };
 
@@ -103,25 +102,16 @@ struct surface *create_surface(struct screen *scr, int x, int y, int w, int h, i
 
 	zwlr_layer_surface_v1_add_listener(sfc->wl_layer_surface, &layer_surface_listener, sfc);
 
-	sfc->capture_input = capture_input;
 	sfc->configured = 0;
 
-	return sfc;
-}
-
-void surface_show(struct surface *sfc)
-{
-	wl_surface_commit(sfc->wl_surface);
-	wl_display_flush(wl.dpy);
-
-	if (sfc->capture_input) {
+	if (capture_input) {
 		zwlr_layer_surface_v1_set_keyboard_interactivity(sfc->wl_layer_surface,
-								 ZWLR_LAYER_SURFACE_V1_KEYBOARD_INTERACTIVITY_EXCLUSIVE);
+								  ZWLR_LAYER_SURFACE_V1_KEYBOARD_INTERACTIVITY_EXCLUSIVE);
 	}
 
+	wl_surface_commit(sfc->wl_surface);
 
-	while (!sfc->configured)
-		wl_display_dispatch(wl.dpy);
+	return sfc;
 }
 
 struct wl_surface *surface_get_wl_surface(struct surface *sfc)
