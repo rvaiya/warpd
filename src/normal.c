@@ -48,8 +48,9 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
 {
 	const int cursz = config_get_int("cursor_size");
 	const int system_cursor = config_get_int("normal_system_cursor");
-	const int blink_interval = config_get_int("normal_blink_interval");
+	const char *blink_interval = config_get("normal_blink_interval");
 
+	int on_time, off_time;
 	struct input_event *ev;
 	screen_t scr;
 	int sh, sw;
@@ -57,6 +58,10 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
 	int dragging = 0;
 	int show_cursor = !system_cursor;
 
+	int n = sscanf(blink_interval, "%d %d", &on_time, &off_time);
+	assert(n > 0);
+	if (n == 1)
+		off_time = on_time;
 
 	const char *keys[] = {
 		"accelerator",
@@ -99,6 +104,7 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
 	redraw(scr, mx, my, !show_cursor);
 
 	uint64_t time = 0;
+	uint64_t last_blink_update = 0;
 	while (1) {
 		config_input_whitelist(keys, sizeof keys / sizeof keys[0]);
 		if (start_ev == NULL) {
@@ -109,8 +115,15 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
 			start_ev = NULL;
 		}
 
-		if (!system_cursor && blink_interval && ((time % blink_interval) == 0))
-			show_cursor = !show_cursor;
+		if (!system_cursor && on_time) {
+			if (show_cursor && (time - last_blink_update) >= on_time) {
+				show_cursor = 0;
+				last_blink_update = time;
+			} else if (!show_cursor && (time - last_blink_update) >= off_time) {
+				show_cursor = 1;
+				last_blink_update = time;
+			}
+		}
 
 		scroll_tick();
 		if (mouse_process_key(ev, "up", "down", "left", "right")) {

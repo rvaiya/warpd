@@ -114,7 +114,7 @@ static struct {
 	{ "indicator_size", "12", "The size of the visual indicator in pixels.", OPT_INT },
 
 	{ "normal_system_cursor", "0", "If set to non-zero, use the system cursor instead of warpd's internal one.", OPT_INT },
-	{ "normal_blink_interval", "0", "If set to non-zero, the blink interval of the normal mode cursor in miliseconds.", OPT_INT },
+	{ "normal_blink_interval", "0", "If set to non-zero, the blink interval of the normal mode cursor in miliseconds. If two values are supplied, the first corresponds to the time the cursor is visible, and the second corresponds to the amount of time it is invisible", OPT_STRING },
 };
 
 const char *config_get(const char *key)
