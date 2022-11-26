@@ -118,6 +118,7 @@ static void print_usage()
 		"  --hint2                     Start warpd in two pass hint mode and exit after the end of the session.\n"
 		"  --normal                    Start warpd in normal mode and exit after the end of the session.\n"
 		"  --grid                      Start warpd in hint grid and exit after the end of the session.\n"
+		"  --screen                    Start warpd in screen selection mode and exit after the end of the session.\n"
 		"  --oneshot                   When paired with one of the mode flags, exit warpd as soon as the mode is complete (i.e don't drop into normal mode). Principally useful for scripting.\n"
 		"  --move '<x> <y>'            Move the pointer to the specified coordinates.\n"
 		"  --click <button>            Send a mouse click corresponding to the supplied button and exit. May be paired with --move.\n"
