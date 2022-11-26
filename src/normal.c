@@ -9,6 +9,7 @@
 static void redraw(screen_t scr, int x, int y, int hide_cursor)
 {
 	int sw, sh;
+
 	platform->screen_get_dimensions(scr, &sw, &sh);
 
 	const int gap = 10;
@@ -115,31 +116,29 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
 			start_ev = NULL;
 		}
 
+		platform->mouse_get_position(&scr, &mx, &my);
+
 		if (!system_cursor && on_time) {
 			if (show_cursor && (time - last_blink_update) >= on_time) {
 				show_cursor = 0;
+				redraw(scr, mx, my, !show_cursor);
 				last_blink_update = time;
 			} else if (!show_cursor && (time - last_blink_update) >= off_time) {
 				show_cursor = 1;
+				redraw(scr, mx, my, !show_cursor);
 				last_blink_update = time;
 			}
 		}
 
 		scroll_tick();
 		if (mouse_process_key(ev, "up", "down", "left", "right")) {
-			platform->mouse_get_position(&scr, &mx, &my);
 			redraw(scr, mx, my, !show_cursor);
 			continue;
 		}
 
-		platform->mouse_get_position(&scr, &mx, &my);
-
-		if (!ev) {
-			redraw(scr, mx, my, !show_cursor);
+		if (!ev)  {
 			continue;
-		}
-
-		if (config_input_match(ev, "scroll_down")) {
+		} else if (config_input_match(ev, "scroll_down")) {
 			redraw(scr, mx, my, 1);
 
 			if (ev->pressed) {
