@@ -11,6 +11,8 @@
 	exit(-1);							 \
 }
 
+static uint8_t btn_state[3] = {0};
+
 static struct {
 	const char *name;
 	const char *xname;
@@ -116,12 +118,16 @@ void way_mouse_move(struct screen *scr, int x, int y)
 
 void way_mouse_down(int btn)
 {
+	assert(btn < (int)(sizeof btn_state / sizeof btn_state[0]));
+	btn_state[btn-1] = 1;
 	normalize_btn(btn);
 	zwlr_virtual_pointer_v1_button(wl.ptr, 0, btn, 1);
 }
 
 void way_mouse_up(int btn)
 {
+	assert(btn < (int)(sizeof btn_state / sizeof btn_state[0]));
+	btn_state[btn-1] = 0;
 	normalize_btn(btn);
 	zwlr_virtual_pointer_v1_button(wl.ptr, 0, btn, 0);
 }
@@ -190,9 +196,12 @@ void way_commit()
 
 static void cleanup()
 {
-	zwlr_virtual_pointer_v1_button(wl.ptr, 0, 272, 0);
-	zwlr_virtual_pointer_v1_button(wl.ptr, 0, 274, 0);
-	zwlr_virtual_pointer_v1_button(wl.ptr, 0, 273, 0);
+	if (btn_state[0])
+		zwlr_virtual_pointer_v1_button(wl.ptr, 0, 272, 0);
+	if (btn_state[1])
+		zwlr_virtual_pointer_v1_button(wl.ptr, 0, 274, 0);
+	if (btn_state[2])
+		zwlr_virtual_pointer_v1_button(wl.ptr, 0, 273, 0);
 	wl_display_flush(wl.dpy);
 }
 
