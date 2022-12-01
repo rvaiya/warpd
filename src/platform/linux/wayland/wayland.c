@@ -95,6 +95,10 @@ void way_mouse_move(struct screen *scr, int x, int y)
 			maxx = x;
 	}
 
+	printf("x: %d, y: %d, extx %d, exty: %d\n", x+scr->x-minx,
+						y+scr->y-miny,
+						maxx-minx,
+						maxy-miny);
 	/*
 	 * Virtual pointer space always beings at 0,0, while global compositor
 	 * space may have a negative real origin :/.
