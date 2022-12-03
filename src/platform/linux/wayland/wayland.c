@@ -71,10 +71,10 @@ const char *way_input_lookup_name(uint8_t code, int shifted)
 void way_mouse_move(struct screen *scr, int x, int y)
 {
 	size_t i;
-	int maxx = INT_MIN;
-	int maxy = INT_MIN;
-	int minx = INT_MAX;
-	int miny = INT_MAX;
+	int maxx = 0;
+	int maxy = 0;
+	int minx = 0;
+	int miny = 0;
 
 	ptr.x = x;
 	ptr.y = y;
