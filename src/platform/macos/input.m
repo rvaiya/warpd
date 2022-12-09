@@ -421,6 +421,10 @@ static void update_keymap()
 			case 61: set_name("rightshift")
 			case 62: set_name("rightalt")
 			case 63: set_name("rightcontrol")
+			case 124: set_name("leftarrow")
+			case 127: set_name("uparrow")
+			case 125: set_name("rightarrow")
+			case 126: set_name("downarrow")
 #undef set_name
 		}
 
