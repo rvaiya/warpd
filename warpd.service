@@ -1,0 +1,9 @@
+[Unit]
+Description=warpd - A modal keyboard driven interface for mouse manipulation.
+
+[Service]
+ExecStart=/usr/local/bin/warpd -f
+Restart=always
+
+[Install]
+WantedBy=default.target
