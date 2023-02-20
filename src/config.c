@@ -97,7 +97,7 @@ static struct {
 	{ "hint_undo", "backspace", "undo last selection step in one of the hint based modes.", OPT_KEY },
 	{ "hint_undo_all", "C-u", "undo all selection steps in one of the hint based modes.", OPT_KEY },
 
-	{ "hint2_chars", "hjkl;asdfgqwertyuiopzxcvb", "The character set used for the second hint selection, should consist of at least hint_grid_size^2 characters.", OPT_STRING },
+	{ "hint2_chars", "hjkl;asdfgqwertyuiopzxcvb", "The character set used for the second hint selection, should consist of at least hint2_grid_size^2 characters.", OPT_STRING },
 	{ "hint2_size", "20", "The size of hints in the secondary grid (range: 1-1000).", OPT_INT },
 	{ "hint2_gap_size", "1", "The spacing between hints in the secondary grid. (range: 1-1000)", OPT_INT },
 	{ "hint2_grid_size", "3", "The size of the secondary grid.", OPT_INT },
