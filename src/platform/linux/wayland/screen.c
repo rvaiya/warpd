@@ -88,8 +88,18 @@ static void discover_pointer_location()
 	}
 
 	wl_display_flush(wl.dpy);
-	while (!ptr.scr)
+	while (!ptr.scr) {
+		/*
+		 * Agitate the pointer to precipitate an entry
+		 * event. Hyprland appears to require this for
+		 * some reason.
+		 */
+		zwlr_virtual_pointer_v1_motion(wl.ptr, 0,
+					       wl_fixed_from_int(1),
+					       wl_fixed_from_int(1));
+
 		wl_display_dispatch(wl.dpy);
+	}
 
 	for (i = 0; i < nr_screens; i++) {
 		struct screen *scr = &screens[i];
