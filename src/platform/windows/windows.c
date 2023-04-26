@@ -22,7 +22,6 @@ static const char *input_lookup_name(uint8_t code, int shifted);
 static LRESULT CALLBACK keyboardHook(int nCode, WPARAM wParam, LPARAM lParam)
 {
 	KBDLLHOOKSTRUCT *ev = (KBDLLHOOKSTRUCT *)lParam;
-	static uint8_t keystate[256];
 
 	uint8_t code = ev->vkCode;
 	uint8_t mods = 0;
@@ -45,12 +44,11 @@ static LRESULT CALLBACK keyboardHook(int nCode, WPARAM wParam, LPARAM lParam)
 			goto passthrough;
 	}
 
-	keystate[code] = pressed;
 	mods = (
-		((keystate[VK_LSHIFT] || keystate[VK_RSHIFT]) ? PLATFORM_MOD_SHIFT : 0) |
-		((keystate[VK_LCONTROL] || keystate[VK_RCONTROL]) ? PLATFORM_MOD_CONTROL : 0) |
-		((keystate[VK_LMENU] || keystate[VK_RMENU]) ? PLATFORM_MOD_ALT : 0) |
-		((keystate[VK_LWIN] || keystate[VK_RWIN]) ? PLATFORM_MOD_META : 0));
+		((GetKeyState(VK_SHIFT) & 0x8000) ? PLATFORM_MOD_SHIFT : 0) |
+		((GetKeyState(VK_CONTROL) & 0x8000) ? PLATFORM_MOD_CONTROL : 0) |
+		((GetKeyState(VK_MENU) & 0x8000) ? PLATFORM_MOD_ALT : 0) |
+		((GetKeyState(VK_LWIN) & 0x8000 || GetKeyState(VK_RWIN) & 0x8000) ? PLATFORM_MOD_META : 0));
 
 	PostMessage(NULL, WM_KEY_EVENT, pressed << 16 | mods << 8 | code, 0);
 

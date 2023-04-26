@@ -16,3 +16,6 @@ all: $(OBJFILES)
 	-mkdir bin
 	$(CC) -o bin/warpd.exe src/windows/icon.res $(OBJFILES) $(CFLAGS)
 	#$(CC) /Fe:bin/warpd.exe $(OBJFILES) user32.lib gdi32.lib
+clean:
+	rm $(OBJFILES)
+	rm -rf bin

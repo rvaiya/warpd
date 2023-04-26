@@ -26,16 +26,20 @@
 #endif
 #include "platform.h"
 
-#include <getopt.h>
-#include <sys/types.h>
-#include <unistd.h>
 #include <assert.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
-#include <sys/file.h>
-#include <sys/stat.h>
 #include <time.h>
+
+#ifndef _MSC_VER
+	#include <getopt.h>
+	#include <unistd.h>
+	#include <sys/file.h>
+	#include <sys/stat.h>
+	#include <sys/types.h>
+#endif
+
 
 #ifndef PATH_MAX
 #define PATH_MAX 1024
@@ -43,6 +47,10 @@
 
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #define MAX_HIST_ENTS 16
+
+#ifdef _MSC_VER
+	typedef int ssize_t;
+#endif
 
 enum {
 	MODE_RESERVED,

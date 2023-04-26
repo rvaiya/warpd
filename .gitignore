@@ -9,3 +9,5 @@ lib/
 bin/
 *.o
 dist/
+*.obj
+*.exe

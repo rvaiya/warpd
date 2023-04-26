@@ -15,6 +15,7 @@
 static HWND icon_wnd;
 static HMENU icon_menu;
 static char config_path[1024];
+static char config_dir[1024];
 
 static const char *icon_menu_items[] = {
 	"edit config",
@@ -143,17 +144,34 @@ static int platform_main(struct platform *_platform)
 	return 0;
 }
 
+void redirect_stdout()
+{
+	long lStdHandle = (long)GetStdHandle(STD_OUTPUT_HANDLE);
+	int hConHandle = _open_osfhandle(lStdHandle, _O_TEXT);
+	FILE *fp = _fdopen( hConHandle, "w" );
+	*stdout = *fp;
+	setvbuf( stdout, NULL, _IONBF, 0 );
+}
+
+
 int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd)
 {
 	CreateMutex( NULL, TRUE, "warpd" );
 
-	if (GetLastError() == ERROR_ALREADY_EXISTS) {
+	if (GetLastError() ==  ERROR_ALREADY_EXISTS) {
 		MessageBox(NULL, "warpd is already running", "", MB_OK|MB_ICONSTOP);
 		exit(0);
 	}
-	sprintf(config_path, "%s\\warpd\\warpd.conf", getenv("APPDATA"));
+
+	sprintf(config_dir, "%s\\warpd", getenv("APPDATA"));
+	sprintf(config_path, "%s\\warpd.conf", config_dir);
+
+	CreateDirectory(config_dir, NULL);
+	HANDLE fh = CreateFile(config_path, GENERIC_WRITE, 0, 0, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, 0);
+	CloseHandle(fh);
 
 	CreateThread(0, 0, icon_thread, 0, 0, NULL);
 
 	platform_run(platform_main);
+
 }
