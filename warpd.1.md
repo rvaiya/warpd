@@ -62,6 +62,8 @@ mode for a second time to warp the pointer to the desired region's terminal
 point.  
 
 In its simplest form, warpd can be used as a poor man's xdotool (--move/--click).
+Scrolling can be acheived by using _e_ and _y_ in normal mode. For a full list of
+bindings see _--list-options_.
 
 A description of each mode follows (see also _USAGE_NOTES_):
 
