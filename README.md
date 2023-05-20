@@ -170,7 +170,7 @@ bindsym Mod4+Mod1+g exec warpd --grid
 
 ## Arch
 
-Available as an [AUR](https://aur.archlinux.org/packages/warpd-git/) package (maintained by Matheus Fillipe).
+Available in the [AUR](https://aur.archlinux.org/): [warpd](https://aur.archlinux.org/packages/warpd/), [warpd-wayland](https://aur.archlinux.org/packages/warpd-wayland), [warpd-git](https://aur.archlinux.org/packages/warpd-git) maintained by Matheus Fillipe.
 
 If you are interesting in adding warpd to your distribution's repository please contact me.
 
