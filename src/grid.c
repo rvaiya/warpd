@@ -103,6 +103,10 @@ struct input_event *grid_mode()
 		"grid_down",
 		"grid_right",
 		"grid_left",
+		"grid_cut_up",
+		"grid_cut_down",
+		"grid_cut_right",
+		"grid_cut_left",
 		"grid_keys",
 
 		"buttons",
@@ -140,6 +144,38 @@ struct input_event *grid_mode()
 			grid_width /= nc;
 			mx += grid_width / 2;
 			my += grid_height / 2;
+
+			platform->mouse_move(scr, mx, my);
+			redraw(mx, my, 0);
+		}
+
+		if (config_input_match(ev, "grid_cut_up")) {
+			my -= grid_height/4;
+			grid_height /= 2;
+
+			platform->mouse_move(scr, mx, my);
+			redraw(mx, my, 0);
+		}
+
+		if (config_input_match(ev, "grid_cut_down")) {
+			my += grid_height/4;
+			grid_height /= 2;
+
+			platform->mouse_move(scr, mx, my);
+			redraw(mx, my, 0);
+		}
+
+		if (config_input_match(ev, "grid_cut_left")) {
+			mx -= grid_width/4;
+			grid_width /= 2;
+
+			platform->mouse_move(scr, mx, my);
+			redraw(mx, my, 0);
+		}
+
+		if (config_input_match(ev, "grid_cut_right")) {
+			mx += grid_width/4;
+			grid_width /= 2;
 
 			platform->mouse_move(scr, mx, my);
 			redraw(mx, my, 0);

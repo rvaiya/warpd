@@ -76,6 +76,10 @@ static struct {
 	{ "grid_left", "a", "Move the grid left.", OPT_KEY },
 	{ "grid_down", "s", "Move the grid down.", OPT_KEY },
 	{ "grid_right", "d", "Move the grid right.", OPT_KEY },
+	{ "grid_cut_up", "W", "Cut the grid up.", OPT_KEY },
+	{ "grid_cut_left", "A", "Cut the grid left.", OPT_KEY },
+	{ "grid_cut_down", "S", "Cut the grid down.", OPT_KEY },
+	{ "grid_cut_right", "D", "Cut the grid right.", OPT_KEY },
 	{ "grid_keys", "u i j k", "A sequence of comma delimited keybindings which are ordered bookwise with respect to grid position.", OPT_KEY },
 	{ "grid_exit", "c", "Exit grid mode and return to normal mode.", OPT_KEY },
 
