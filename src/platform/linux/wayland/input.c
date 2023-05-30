@@ -9,7 +9,6 @@ static struct input_event input_queue[32];
 static size_t input_queue_sz;
 
 static uint8_t x_active_mods = 0;
-static int infd = 0;
 
 static void noop() {}
 struct keymap_entry keymap[256] = {0};
@@ -168,7 +167,6 @@ struct input_event *way_input_next_event(int timeout)
 
 	struct pollfd pfds[] = {
 		{ .fd = wl_display_get_fd(wl.dpy), .events = POLLIN },
-		{ .fd = infd, .events = POLLIN }
 	};
 
 	while (1) {
