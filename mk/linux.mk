@@ -27,11 +27,11 @@ endif
 OBJECTS=$(CFILES:.c=.o)
 
 all: $(OBJECTS)
-	-mkdir bin
+	-mkdir -p bin
 	$(CC)  -o bin/warpd $(OBJECTS) $(CFLAGS)
 clean:
-	-rm $(OBJECTS)
-	-rm -r bin
+	-rm -f $(OBJECTS)
+	-rm -rf bin
 install:
 	mkdir -p $(DESTDIR)$(PREFIX)/share/man/man1/ $(DESTDIR)$(PREFIX)/bin/
 	install -m644 files/warpd.1.gz $(DESTDIR)$(PREFIX)/share/man/man1/
