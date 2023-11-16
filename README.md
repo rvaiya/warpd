@@ -193,6 +193,14 @@ Available in the [AUR](https://aur.archlinux.org/): [warpd](https://aur.archlinu
 
 If you are interesting in adding warpd to your distribution's repository please contact me.
 
+# Documentation / Configuration
+
+Documentation and configuration options can be found with:
+
+```
+warpd --list-options
+```
+
 # Limitations/Bugs
 
 - Programs which use Xinput and or Xtest for keyboard may not work correctly
