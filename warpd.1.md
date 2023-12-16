@@ -168,7 +168,7 @@ with _--list-options_.
 
 Each option must be specified on its own line and have the format:
 
-<option>: <value>
+`<option>: <value>`
 
 Options which take one or more keys may optionally be unset using the value
 "unbind".
