@@ -126,6 +126,7 @@ launchctl unload /Library/LaunchAgents/com.warpd.warpd.plist
 
 # Quickstart
 
+0. Meta key on typical PC is "⊞win" key
 1. Run `warpd`
 
 ## Hint Mode
