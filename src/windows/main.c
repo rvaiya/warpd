@@ -69,7 +69,18 @@ static LRESULT CALLBACK IconWindowProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARA
 				exit(0);
 			} else if (!strcmp(icon_menu_items[wParam], "edit config")) {
 				//TODO: make this path globall accessible
-				ShellExecute(NULL, "edit", config_path, NULL, NULL, SW_SHOWNORMAL);
+				HINSTANCE res =	ShellExecute(NULL, "edit", config_path, NULL, NULL, SW_SHOWNORMAL);
+ 				// MSDN cite
+ 				// If the function succeeds, it returns a value greater than 32
+				if ((INT_PTR)res <= 32) {
+					// Retry with default verb, it is most probably "open"
+					res = ShellExecute(NULL, NULL, config_path, NULL, NULL, SW_SHOWNORMAL);
+				}
+				if ((INT_PTR)res <= 32) {
+					static char err_msg[1024];
+					sprintf(err_msg, "Unable to edit the file %s\nError code: %d", config_path, (int)res);
+					MessageBox(NULL, err_msg, "warpd", MB_OK|MB_ICONSTOP);
+				}
 			}
 			break;
 	}
