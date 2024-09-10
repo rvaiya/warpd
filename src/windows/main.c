@@ -45,9 +45,11 @@ static LRESULT CALLBACK IconWindowProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARA
 			return 1;
 			break;
 		case WM_USER:
-			if (lParam == WM_RBUTTONDOWN) {
+			if (lParam == WM_RBUTTONDOWN || lParam == WM_LBUTTONDOWN) {
 				POINT pt;
 				GetCursorPos(&pt);
+				// Otherwise the popup menu will never disappear unless user selects something in it
+				SetForegroundWindow(icon_wnd);
 				TrackPopupMenu(icon_menu, TPM_RIGHTALIGN,
 						pt.x, pt.y,
 						0,
@@ -159,7 +161,7 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 	CreateMutex( NULL, TRUE, "warpd" );
 
 	if (GetLastError() ==  ERROR_ALREADY_EXISTS) {
-		MessageBox(NULL, "warpd is already running", "", MB_OK|MB_ICONSTOP);
+		MessageBox(NULL, "warpd is already running", "warpd", MB_OK|MB_ICONSTOP);
 		exit(0);
 	}
 
