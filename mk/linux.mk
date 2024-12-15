@@ -35,9 +35,11 @@ clean:
 install:
 	mkdir -p $(DESTDIR)$(PREFIX)/share/man/man1/ $(DESTDIR)$(PREFIX)/bin/
 	install -m644 files/warpd.1.gz $(DESTDIR)$(PREFIX)/share/man/man1/
+	install -m644 files/warpd.service $(DESTDIR)/etc/systemd/user/
 	install -m755 bin/warpd $(DESTDIR)$(PREFIX)/bin/
 uninstall:
-	rm $(DESTDIR)$(PREFIX)/share/man/man1/warpd.1.gz\
-		$(DESTDIR)$(PREFIX)/bin/warpd
+	rm $(DESTDIR)$(PREFIX)/share/man/man1/warpd.1.gz \
+		$(DESTDIR)$(PREFIX)/bin/warpd \
+		$(DESTDIR)/etc/systemd/user/warpd.service
 
 .PHONY: all platform assets install uninstall bin

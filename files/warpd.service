@@ -1,0 +1,7 @@
+[Install]
+WantedBy=default.target
+
+[Service]
+Type=simple
+# `-f` option is to make output go to journald
+ExecStart=warpd -f
