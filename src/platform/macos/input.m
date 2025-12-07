@@ -150,8 +150,14 @@ static CGEventRef eventTapCallback(CGEventTapProxy proxy, CGEventType type,
 		break;
 	}
 
-	if (!is_key_event)
+	if (!is_key_event) {
+        // When "Use Caps Lock key to switch to and from ABC" is enabled,
+        // the system emits an additional event (code 224) after Caps Lock.
+        // If grabbed is not reset to 0, the program enters an infinite loop with "grabbed = 0" and stops emitting any
+        // events it has intercepted, resulting in the inability to input any text except the grabbed_keys.
+		grabbed = 0;
 		return event;
+	}
 
 	if (pressed == 1)
 		pressed_timestamps[code] = get_time_ms();
