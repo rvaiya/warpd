@@ -11,3 +11,4 @@ bin/
 dist/
 *.obj
 *.exe
+.idea/
