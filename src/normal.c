@@ -142,18 +142,26 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
 			redraw(scr, mx, my, 1);
 
 			if (ev->pressed) {
-				scroll_stop();
-				scroll_accelerate(SCROLL_DOWN);
-			} else
-				scroll_decelerate();
+				while (1) {
+					platform->scroll(SCROLL_DOWN);
+					struct input_event *next_ev = platform->input_next_event(50);
+					if (next_ev && (!config_input_match(next_ev, "scroll_down") || !next_ev->pressed)) {
+						break;
+					}
+				}
+			}
 		} else if (config_input_match(ev, "scroll_up")) {
 			redraw(scr, mx, my, 1);
 
 			if (ev->pressed) {
-				scroll_stop();
-				scroll_accelerate(SCROLL_UP);
-			} else
-				scroll_decelerate();
+				while (1) {
+					platform->scroll(SCROLL_UP);
+					struct input_event *next_ev = platform->input_next_event(50);
+					if (next_ev && (!config_input_match(next_ev, "scroll_up") || !next_ev->pressed)) {
+						break;
+					}
+				}
+			}
 		} else if (config_input_match(ev, "accelerator")) {
 			if (ev->pressed)
 				mouse_fast();

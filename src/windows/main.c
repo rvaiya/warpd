@@ -69,7 +69,9 @@ static LRESULT CALLBACK IconWindowProc(HWND hWnd, UINT Msg, WPARAM wParam, LPARA
 				exit(0);
 			} else if (!strcmp(icon_menu_items[wParam], "edit config")) {
 				//TODO: make this path globall accessible
-				ShellExecute(NULL, "edit", config_path, NULL, NULL, SW_SHOWNORMAL);
+				if ((int)ShellExecute(NULL, "edit", config_path, NULL, NULL, SW_SHOWNORMAL) <= 32) {
+					ShellExecute(NULL, "open", config_path, NULL, NULL, SW_SHOWNORMAL);
+				}
 			}
 			break;
 	}
