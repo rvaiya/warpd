@@ -38,8 +38,6 @@ struct box {
 	NSColor *color;
 };
 
-size_t nr_boxes;
-
 struct drawing_hook {
 	void (*hook)(void *arg, NSView *view);
 	void *arg;

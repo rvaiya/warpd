@@ -13,6 +13,9 @@ endif
 %.o: %.c Makefile mk/*.mk
 	$(CC) -c $< -o $@ $(CFLAGS)
 
+%.o: %.m Makefile mk/*.mk
+	$(CC) -c $< -o $@ $(CFLAGS)
+
 CFLAGS:=-g\
        -Wall\
        -Wextra\
