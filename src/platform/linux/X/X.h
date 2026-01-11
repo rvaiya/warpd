@@ -20,6 +20,7 @@
 #include <X11/extensions/Xinerama.h>
 #include <X11/extensions/shape.h>
 #include <X11/keysym.h>
+#include <X11/XKBlib.h>
 #include <assert.h>
 #include <ctype.h>
 #include <stdint.h>

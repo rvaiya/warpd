@@ -440,20 +440,32 @@ uint8_t x_input_lookup_code(const char *name, int *shifted)
 	
 	code = XKeysymToKeycode(dpy, sym);
 
-	if (XKeycodeToKeysym(dpy, code, 0) != sym)
-		*shifted = 1;
-	else
-		*shifted = 0;
+	KeySym lower_sym;
+	KeySym upper_sym;
+	XConvertCase(sym, &lower_sym, &upper_sym);
 
+	if (sym == lower_sym)
+		*shifted = 0;
+	else
+		*shifted = 1;
 
 	return code;
+}
+
+unsigned int get_current_group() {
+	XkbStateRec st;
+	if (XkbGetState(dpy, XkbUseCoreKbd, &st) != Success) {
+		return 0;
+	}
+	return st.group;
 }
 
 const char *x_input_lookup_name(uint8_t code, int shifted)
 {
 	size_t i;
 	const char *name;
-	KeySym sym = XKeycodeToKeysym(dpy, code, shifted);
+	unsigned int group = get_current_group();
+	KeySym sym = XkbKeycodeToKeysym(dpy, code, group, shifted);
 	if (!sym)
 		return NULL;
 
