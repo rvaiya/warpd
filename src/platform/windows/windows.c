@@ -144,7 +144,8 @@ static void init_hint(const char *bg, const char *fg, int border_radius, const c
 
 void screen_list(screen_t scr[MAX_SCREENS], size_t *n)
 {
-	printf("screen_list UNIMPLEMENTED\n");
+	//printf("screen_list UNIMPLEMENTED\n");
+	wn_screen_list(scr,n);
 }
 //====================================================================================
 
@@ -342,7 +343,8 @@ static void mouse_get_position(screen_t *_scr, int *x, int *y)
 	GetCursorPos(&p);
 
 	struct screen *scr = wn_get_screen_at(p.x, p.y);
-	assert(scr);
+	//assert(scr);
+	if(!scr) return;
 
 	wn_screen_get_dimensions(scr, &sx, &sy, NULL, NULL);
 

@@ -93,7 +93,7 @@ static void tick()
 	if (v > vf)
 		v = vf;
 
-	cx = cx < minx ? minx : cx;
+	//cx = cx < minx ? minx : cx;
 	cy = cy < miny ? miny : cy;
 	cy = cy > maxy ? maxy : cy;
 	cx = cx > maxx ? maxx : cx;

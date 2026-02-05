@@ -22,5 +22,7 @@ void wn_screen_get_dimensions(struct screen *scr, int *xoff, int *yoff, int *w, 
 void wn_screen_set_hints(struct screen *scr, struct hint *hints, size_t nhints);
 void wn_screen_set_hintinfo(COLORREF _hint_bgcol, COLORREF _hint_fgcol);
 void wn_monitor_file(const char *path);
+// ADD THIS LINE:
+void wn_screen_list(screen_t scr[MAX_SCREENS], size_t *n);
 
 #endif
