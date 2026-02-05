@@ -6,6 +6,10 @@
 
 #include "warpd.h"
 
+#ifdef WINDOWS
+#include <windows.h>
+#endif
+
 struct platform *platform = NULL;
 
 static const char *config_path;
@@ -22,44 +26,94 @@ uint64_t get_time_us()
 const char *get_data_path(const char *file)
 {
 	static char path[PATH_MAX];
-
+	
+#ifdef WINDOWS
+	// Windows: Use APPDATA environment variable
+	const char *appdata = getenv("APPDATA");
+	if (!appdata) {
+		const char *userprofile = getenv("USERPROFILE");
+		if (userprofile) {
+			snprintf(path, sizeof(path), "%s\\AppData\\Roaming\\warpd", userprofile);
+		} else {
+			snprintf(path, sizeof(path), "C:\\Users\\Default\\AppData\\Roaming\\warpd");
+		}
+	} else {
+		snprintf(path, sizeof(path), "%s\\warpd", appdata);
+	}
+	
+	CreateDirectoryA(path, NULL);
+	
+	strncat(path, "\\", sizeof(path) - strlen(path) - 1);
+	strncat(path, file, sizeof(path) - strlen(path) - 1);
+	
+#else
+	// Linux/Unix version
 	if (getenv("XDG_DATA_DIR")) {
-		sprintf(path, "%s/warpd", getenv("XDG_DATA_DIR"));
+		snprintf(path, sizeof(path), "%s/warpd", getenv("XDG_DATA_DIR"));
 		mkdir(path, 0700);
 	} else {
-		sprintf(path, "%s/.local", getenv("HOME"));
+		snprintf(path, sizeof(path), "%s/.local", getenv("HOME"));
 		mkdir(path, 0700);
 		strcat(path, "/share");
 		mkdir(path, 0700);
 		strcat(path, "/warpd");
 		mkdir(path, 0700);
 	}
-
+	
 	strcat(path, "/");
 	strcat(path, file);
-
+#endif
+	
 	return path;
 }
+
 
 const char *get_config_path(const char *file)
 {
 	static char path[PATH_MAX];
-
+	
+#ifdef WINDOWS
+	// Windows: Use APPDATA environment variable
+	const char *appdata = getenv("APPDATA");
+	if (!appdata) {
+		// Fallback to USERPROFILE if APPDATA not set
+		const char *userprofile = getenv("USERPROFILE");
+		if (userprofile) {
+			snprintf(path, sizeof(path), "%s\\AppData\\Roaming\\warpd", userprofile);
+		} else {
+			// Last resort fallback
+			snprintf(path, sizeof(path), "C:\\Users\\Default\\AppData\\Roaming\\warpd");
+		}
+	} else {
+		snprintf(path, sizeof(path), "%s\\warpd", appdata);
+	}
+	
+	// Create directory if it doesn't exist (Windows version)
+	CreateDirectoryA(path, NULL);
+	
+	// Append filename
+	strncat(path, "\\", sizeof(path) - strlen(path) - 1);
+	strncat(path, file, sizeof(path) - strlen(path) - 1);
+	
+#else
+	// Linux/Unix: Use XDG_CONFIG_HOME or HOME
 	if (getenv("XDG_CONFIG_HOME")) {
-		sprintf(path, "%s/warpd", getenv("XDG_CONFIG_HOME"));
+		snprintf(path, sizeof(path), "%s/warpd", getenv("XDG_CONFIG_HOME"));
 		mkdir(path, 0700);
 	} else {
-		sprintf(path, "%s/.config", getenv("HOME"));
+		snprintf(path, sizeof(path), "%s/.config", getenv("HOME"));
 		mkdir(path, 0700);
 		strcat(path, "/warpd");
 		mkdir(path, 0700);
 	}
-
+	
 	strcat(path, "/");
 	strcat(path, file);
-
+#endif
+	
 	return path;
 }
+
 
 
 static void lock()
@@ -67,7 +121,8 @@ static void lock()
 	int fd;
 	char path[64];
 
-	sprintf(path, "/tmp/warpd_%d.lock", getuid());
+	//sprintf(path, "/tmp/warpd_%d.lock", getuid());
+	sprintf(path, "warpd.lock");
 	fd = open(path, O_RDONLY|O_CREAT, 0600);
 
 	if (fd < 0) {

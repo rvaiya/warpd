@@ -76,10 +76,15 @@ static void clear(struct screen *scr)
 	if (!br)
 		br = CreateSolidBrush(TRANSPARENT_COLOR);
 
-	rect.left = scr->x;
-	rect.top = scr->y;
-	rect.right = scr->x+scr->w;
-	rect.bottom = scr->y+scr->h;
+//	rect.left = scr->x;
+	//rect.top = scr->y;
+	//rect.right = scr->x+scr->w;
+	//rect.bottom = scr->y+scr->h;
+
+	rect.left = 0;
+	rect.top =0;
+	rect.right = scr->w;
+	rect.bottom = scr->h;
 
 	FillRect(scr->dc,  &rect, br);
 }
@@ -159,8 +164,8 @@ AcquireMutex(mtx);
 
     struct screen *scr = &screens[nscreens++];
 
-    scr->x = dim->top;
-    scr->y = dim->left;
+    scr->x = dim->left;
+    scr->y = dim->top;
     scr->h = dim->bottom - dim->top;
     scr->w = dim->right - dim->left;
 
@@ -203,6 +208,7 @@ ReleaseMutex(mtx);
 
 void wn_screen_redraw(struct screen *scr)
 {
+	SetWindowPos(scr->overlay,HWND_TOPMOST,0,0,0,0,SWP_NOMOVE|SWP_NOSIZE|SWP_NOACTIVATE );
 	PostThreadMessage(ui_thread_id, WM_USER, 0, (LPARAM)scr);
 }
 
@@ -276,9 +282,30 @@ struct screen *wn_get_screen_at(int x, int y)
 		if (
 			x >= screens[i].x && x <= screens[i].x + screens[i].w &&
 			y >= screens[i].y && y <= screens[i].y + screens[i].h
-		)
-			return &screens[i];
+		){
+						//printf("i:%d",i);
+						return &screens[i];
+		}
+
 	}
 
 	return NULL;
+}
+
+
+void wn_screen_list(screen_t scr[MAX_SCREENS], size_t *n)
+{
+	size_t i;
+	
+	AcquireMutex(mtx);
+	
+	// Fill array first (same order as other platforms)
+	for (i = 0; i < nscreens && i < MAX_SCREENS; i++) {
+		scr[i] = &screens[i];
+	}
+	
+	// Set n last
+	*n = nscreens;
+	
+	ReleaseMutex(mtx);
 }
