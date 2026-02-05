@@ -1,0 +1,18 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug warpd (Foreground)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/warpd.exe",
+            "args": ["--foreground"],  // Forces foreground mode
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": true,
+            "MIMode": "gdb",
+            "miDebuggerPath": "D:/Develop_Env/MSYS2/mingw64/bin/gdb.exe"
+        }
+    ]
+}
