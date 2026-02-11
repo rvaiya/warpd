@@ -104,6 +104,7 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
 	mouse_reset();
 	redraw(scr, mx, my, !show_cursor);
 
+	int prev_mx = mx, prev_my = my;
 	uint64_t time = 0;
 	uint64_t last_blink_update = 0;
 	while (1) {
@@ -140,7 +141,7 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
 		}
 
 		if (!ev)  {
-			continue;
+			goto next;
 		} else if (config_input_match(ev, "scroll_down")) {
 			redraw(scr, mx, my, 1);
 
@@ -249,6 +250,11 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
 	next:
 		platform->mouse_get_position(&scr, &mx, &my);
 
+		if (!scroll_active() && (mx != prev_mx || my != prev_my))
+			redraw(scr, mx, my, !show_cursor);
+
+		prev_mx = mx;
+		prev_my = my;
 		platform->commit();
 	}
 
