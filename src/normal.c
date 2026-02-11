@@ -130,7 +130,10 @@ struct input_event *normal_mode(struct input_event *start_ev, int oneshot)
 			}
 		}
 
+		int was_scrolling = scroll_active();
 		scroll_tick();
+		if (was_scrolling && !scroll_active())
+			redraw(scr, mx, my, !show_cursor);
 		if (mouse_process_key(ev, "up", "down", "left", "right")) {
 			redraw(scr, mx, my, !show_cursor);
 			continue;
