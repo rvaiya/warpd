@@ -89,3 +89,8 @@ void scroll_impart_impulse()
 {
 	v += fling_velocity;
 }
+
+int scroll_active()
+{
+	return v > 0;
+}
