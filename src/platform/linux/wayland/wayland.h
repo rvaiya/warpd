@@ -98,6 +98,7 @@ extern struct wl wl;
 struct surface *create_surface(struct screen *scr, int x, int y, int w, int h, int capture_input);
 void destroy_surface(struct surface *sfc);
 void surface_set_input_passthrough(struct surface *sfc);
+void surface_set_keyboard_interactivity(struct surface *sfc, int exclusive);
 struct wl_surface *surface_get_wl_surface(struct surface *sfc);
 void surface_show(struct surface *sfc);
 
@@ -105,6 +106,8 @@ void surface_show(struct surface *sfc);
 void way_run(void (*init)(void));
 void way_input_grab_keyboard();
 void way_input_ungrab_keyboard();
+void way_input_suspend_keyboard();
+void way_input_resume_keyboard();
 struct input_event *way_input_next_event(int timeout);
 uint8_t way_input_lookup_code(const char *name, int *shifted);
 const char *way_input_lookup_name(uint8_t code, int shifted);

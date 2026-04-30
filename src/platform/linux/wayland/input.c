@@ -167,6 +167,25 @@ void way_input_ungrab_keyboard()
 	 */
 }
 
+void way_input_suspend_keyboard()
+{
+	if (input_surface) {
+		surface_set_keyboard_interactivity(input_surface, 0);
+		wl_display_flush(wl.dpy);
+		input_grabbed = 0;
+	}
+}
+
+void way_input_resume_keyboard()
+{
+	if (input_surface) {
+		surface_set_keyboard_interactivity(input_surface, 1);
+		wl_display_flush(wl.dpy);
+		input_grabbed = 0;
+		while (!input_grabbed)
+			wl_display_dispatch(wl.dpy);
+	}
+}
 
 struct input_event *way_input_next_event(int timeout)
 {

@@ -114,6 +114,15 @@ struct surface *create_surface(struct screen *scr, int x, int y, int w, int h, i
 	return sfc;
 }
 
+void surface_set_keyboard_interactivity(struct surface *sfc, int exclusive)
+{
+	zwlr_layer_surface_v1_set_keyboard_interactivity(sfc->wl_layer_surface,
+							 exclusive
+							 ? ZWLR_LAYER_SURFACE_V1_KEYBOARD_INTERACTIVITY_EXCLUSIVE
+							 : ZWLR_LAYER_SURFACE_V1_KEYBOARD_INTERACTIVITY_NONE);
+	wl_surface_commit(sfc->wl_surface);
+}
+
 void surface_set_input_passthrough(struct surface *sfc)
 {
 	struct wl_region *region = wl_compositor_create_region(wl.compositor);
