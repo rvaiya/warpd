@@ -97,6 +97,7 @@ extern struct wl wl;
 /* Surface manipulation */
 struct surface *create_surface(struct screen *scr, int x, int y, int w, int h, int capture_input);
 void destroy_surface(struct surface *sfc);
+void surface_set_input_passthrough(struct surface *sfc);
 struct wl_surface *surface_get_wl_surface(struct surface *sfc);
 void surface_show(struct surface *sfc);
 
