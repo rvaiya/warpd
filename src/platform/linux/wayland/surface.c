@@ -95,7 +95,7 @@ struct surface *create_surface(struct screen *scr, int x, int y, int w, int h, i
 
 	assert(sfc->wl_layer_surface);
 
-	zwlr_layer_surface_v1_set_size(sfc->wl_layer_surface, 10, 10);
+	zwlr_layer_surface_v1_set_size(sfc->wl_layer_surface, w, h);
 	zwlr_layer_surface_v1_set_anchor(sfc->wl_layer_surface, ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP|ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT);
 	zwlr_layer_surface_v1_set_margin(sfc->wl_layer_surface, y, 0, 0, x);
 	zwlr_layer_surface_v1_set_exclusive_zone(sfc->wl_layer_surface, -1);
@@ -112,6 +112,23 @@ struct surface *create_surface(struct screen *scr, int x, int y, int w, int h, i
 	wl_surface_commit(sfc->wl_surface);
 
 	return sfc;
+}
+
+void surface_set_keyboard_interactivity(struct surface *sfc, int exclusive)
+{
+	zwlr_layer_surface_v1_set_keyboard_interactivity(sfc->wl_layer_surface,
+							 exclusive
+							 ? ZWLR_LAYER_SURFACE_V1_KEYBOARD_INTERACTIVITY_EXCLUSIVE
+							 : ZWLR_LAYER_SURFACE_V1_KEYBOARD_INTERACTIVITY_NONE);
+	wl_surface_commit(sfc->wl_surface);
+}
+
+void surface_set_input_passthrough(struct surface *sfc)
+{
+	struct wl_region *region = wl_compositor_create_region(wl.compositor);
+	wl_surface_set_input_region(sfc->wl_surface, region);
+	wl_region_destroy(region);
+	wl_surface_commit(sfc->wl_surface);
 }
 
 struct wl_surface *surface_get_wl_surface(struct surface *sfc)

@@ -153,13 +153,39 @@ void way_input_grab_keyboard()
 void way_input_ungrab_keyboard()
 {
 	destroy_surface(input_surface);
-
-	while (!input_grabbed)
-		wl_display_dispatch(wl.dpy);
+	wl_display_flush(wl.dpy);
 
 	input_surface = NULL;
+	input_grabbed = 0;
+
+	/*
+	 * The original code waited for keyboard focus to return to another
+	 * warpd surface. On Hyprland, no other warpd surface exists to
+	 * receive focus after the input surface is destroyed, causing a hang.
+	 * Instead, just flush and return — callers that need the keyboard
+	 * back will call way_input_grab_keyboard().
+	 */
 }
 
+void way_input_suspend_keyboard()
+{
+	if (input_surface) {
+		surface_set_keyboard_interactivity(input_surface, 0);
+		wl_display_flush(wl.dpy);
+		input_grabbed = 0;
+	}
+}
+
+void way_input_resume_keyboard()
+{
+	if (input_surface) {
+		surface_set_keyboard_interactivity(input_surface, 1);
+		wl_display_flush(wl.dpy);
+		input_grabbed = 0;
+		while (!input_grabbed)
+			wl_display_dispatch(wl.dpy);
+	}
+}
 
 struct input_event *way_input_next_event(int timeout)
 {

@@ -91,14 +91,15 @@ static void discover_pointer_location()
 	while (!ptr.scr) {
 		/*
 		 * Agitate the pointer to precipitate an entry
-		 * event. Hyprland appears to require this for
-		 * some reason.
+		 * event. Hyprland requires this.
 		 */
 		zwlr_virtual_pointer_v1_motion(wl.ptr, 0,
 					       wl_fixed_from_int(1),
 					       wl_fixed_from_int(1));
+		zwlr_virtual_pointer_v1_frame(wl.ptr);
+		wl_display_flush(wl.dpy);
 
-		wl_display_dispatch(wl.dpy);
+		wl_display_roundtrip(wl.dpy);
 	}
 
 	for (i = 0; i < nr_screens; i++) {
@@ -126,7 +127,9 @@ void way_screen_draw_box(struct screen *scr, int x, int y, int w, int h, const c
 	cairo_rectangle(scr->cr, x, y, w, h);
 	cairo_fill(scr->cr);
 
-	scr->boxes[scr->nr_boxes++] = create_surface(scr, x, y, w, h, 0);
+	scr->boxes[scr->nr_boxes] = create_surface(scr, x, y, w, h, 0);
+	surface_set_input_passthrough(scr->boxes[scr->nr_boxes]);
+	scr->nr_boxes++;
 }
 
 

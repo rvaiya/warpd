@@ -13,6 +13,12 @@
 
 static uint8_t btn_state[3] = {0};
 
+/*
+ * Delay (microseconds) for the compositor to process click side-effects
+ * (e.g. workspace switches) before reclaiming keyboard exclusivity.
+ */
+#define CLICK_SETTLE_DELAY_US 50000
+
 static struct {
 	const char *name;
 	const char *xname;
@@ -116,6 +122,11 @@ void way_mouse_move(struct screen *scr, int x, int y)
 		case 3: btn = 273;break; \
 	}
 
+/*
+ * Note: mouse_down/mouse_up do not suspend keyboard interactivity.
+ * They are used for drag operations where the caller manages the
+ * keyboard grab lifecycle independently.
+ */
 void way_mouse_down(int btn)
 {
 	assert(btn < (int)(sizeof btn_state / sizeof btn_state[0]));
@@ -136,11 +147,26 @@ void way_mouse_click(int btn)
 {
 	normalize_btn(btn);
 
+	/*
+	 * Hyprland routes virtual pointer events to the keyboard-exclusive
+	 * surface. Temporarily drop keyboard exclusivity so the click
+	 * reaches the target window, without destroying/recreating the
+	 * surface (which causes workspace bounce on Hyprland).
+	 */
+	way_input_suspend_keyboard();
+
 	zwlr_virtual_pointer_v1_button(wl.ptr, 0, btn, 1);
 	zwlr_virtual_pointer_v1_button(wl.ptr, 0, btn, 0);
 	zwlr_virtual_pointer_v1_frame(wl.ptr);
-
 	wl_display_flush(wl.dpy);
+
+	/*
+	 * Hyprland needs time to process actions triggered by the click
+	 * (e.g. workspace switches) before we reclaim keyboard exclusivity,
+	 * otherwise the new focus steal bounces back to the old workspace.
+	 */
+	usleep(CLICK_SETTLE_DELAY_US);
+	way_input_resume_keyboard();
 }
 
 void way_mouse_get_position(struct screen **scr, int *x, int *y)
@@ -176,6 +202,10 @@ void way_scroll(int direction)
 	wl_display_flush(wl.dpy);
 }
 
+void way_commit()
+{
+}
+
 void way_copy_selection() { UNIMPLEMENTED }
 struct input_event *way_input_wait(struct input_event *events, size_t sz) { UNIMPLEMENTED }
 
@@ -189,10 +219,6 @@ void way_screen_list(struct screen *scr[MAX_SCREENS], size_t *n)
 }
 
 void way_monitor_file(const char *path) { UNIMPLEMENTED }
-
-void way_commit()
-{
-}
 
 static void cleanup()
 {
