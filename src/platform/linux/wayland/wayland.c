@@ -136,11 +136,19 @@ void way_mouse_click(int btn)
 {
 	normalize_btn(btn);
 
+	/*
+	 * Hyprland routes virtual pointer events to the keyboard-exclusive
+	 * surface. Destroy and recreate the input surface around the click
+	 * so it reaches the target window.
+	 */
+	way_input_ungrab_keyboard();
+
 	zwlr_virtual_pointer_v1_button(wl.ptr, 0, btn, 1);
 	zwlr_virtual_pointer_v1_button(wl.ptr, 0, btn, 0);
 	zwlr_virtual_pointer_v1_frame(wl.ptr);
-
 	wl_display_flush(wl.dpy);
+
+	way_input_grab_keyboard();
 }
 
 void way_mouse_get_position(struct screen **scr, int *x, int *y)
@@ -176,6 +184,10 @@ void way_scroll(int direction)
 	wl_display_flush(wl.dpy);
 }
 
+void way_commit()
+{
+}
+
 void way_copy_selection() { UNIMPLEMENTED }
 struct input_event *way_input_wait(struct input_event *events, size_t sz) { UNIMPLEMENTED }
 
@@ -189,10 +201,6 @@ void way_screen_list(struct screen *scr[MAX_SCREENS], size_t *n)
 }
 
 void way_monitor_file(const char *path) { UNIMPLEMENTED }
-
-void way_commit()
-{
-}
 
 static void cleanup()
 {

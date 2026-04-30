@@ -75,6 +75,7 @@ void way_hint_draw(struct screen *scr, struct hint *hints, size_t n)
 	}
 
 	scr->hints = create_surface(scr, 0, 0, scr->w, scr->h, 0);
+	surface_set_input_passthrough(scr->hints);
 }
 
 void way_init_hint(const char *bg, const char *fg, int border_radius, const char *font)
