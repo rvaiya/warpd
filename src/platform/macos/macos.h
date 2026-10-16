@@ -80,11 +80,12 @@ void window_register_draw_hook(struct window *win,
 			       void *arg);
 
 struct window *create_window(const char *color, size_t w, size_t h);
-struct window *create_overlay_window();
+struct window *create_overlay_window(int x, int y, int w, int h);
 
 void macos_init_input();
 void macos_init_mouse();
 void macos_init_screen();
+void macos_sync_screens();
 
 void macos_draw_box(struct screen *scr, NSColor *col, float x, float y, float w,
 		    float h, float r);
@@ -96,7 +97,7 @@ void send_key(uint8_t code, int pressed);
 
 NSColor *nscolor_from_hex(const char *str);
 
-extern struct screen screens[32];
+extern struct screen screens[MAX_SCREENS];
 extern size_t nr_screens;
 extern uint8_t active_mods;
 
@@ -123,6 +124,7 @@ void osx_scroll(int direction);
 void osx_copy_selection();
 void osx_monitor_file(const char *_path);
 void osx_input_interrupt();
+void osx_input_interrupt_screen_change();
 void osx_commit();
 
 #endif

@@ -137,31 +137,51 @@ void osx_mouse_get_position(struct screen **_scr, int *_x, int *_y)
 	int x = loc.x;
 	int y = loc.y;
 
+	struct screen *scr = &screens[0];
+	long best = -1;
 
+	/*
+	 * Pick the screen containing the pointer, or failing that (e.g the
+	 * display configuration changed under us), the nearest one.
+	 */
 	for (i = 0; i < nr_screens; i++) {
-		struct screen *scr = &screens[i];
+		long dx = 0, dy = 0, dist;
 
-		if (x >= scr->x &&
-		    x <= scr->x+scr->w &&
-		    y >= scr->y &&
-		    y <= scr->y+scr->h) {
-			x -= scr->x;
-			y -= scr->y;
+		if (x < screens[i].x)
+			dx = screens[i].x - x;
+		else if (x > screens[i].x + screens[i].w)
+			dx = x - (screens[i].x + screens[i].w);
 
-			y = scr->h - y;
+		if (y < screens[i].y)
+			dy = screens[i].y - y;
+		else if (y > screens[i].y + screens[i].h)
+			dy = y - (screens[i].y + screens[i].h);
 
-			if (_x)
-				*_x = x;
-			if (_y)
-				*_y = y;
-			if (_scr)
-				*_scr = scr;
-			return;
+		dist = dx*dx + dy*dy;
+		if (best < 0 || dist < best) {
+			best = dist;
+			scr = &screens[i];
 		}
+
+		if (dist == 0)
+			break;
 	}
 
-	fprintf(stderr, "Could not find active screen within (%d, %d)\n", x, y);
-	exit(-1);
+	x -= scr->x;
+	y -= scr->y;
+
+	y = scr->h - y;
+
+	/* Clamp in case we fell back to a screen which doesn't contain the pointer. */
+	x = x < 0 ? 0 : (x > scr->w ? scr->w : x);
+	y = y < 0 ? 0 : (y > scr->h ? scr->h : y);
+
+	if (_x)
+		*_x = x;
+	if (_y)
+		*_y = y;
+	if (_scr)
+		*_scr = scr;
 }
 
 void osx_mouse_move(struct screen *scr, int x, int y)

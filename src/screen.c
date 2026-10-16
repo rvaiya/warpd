@@ -32,7 +32,7 @@ void screen_selection_mode()
 	platform->input_grab_keyboard();
 	while (1) {
 		ev = platform->input_next_event(0);
-		if (ev->pressed)
+		if (ev && ev->pressed)
 			break;
 	}
 	platform->input_ungrab_keyboard();

@@ -122,7 +122,8 @@ static int hint_selection(screen_t scr, struct hint *_hints, size_t _nr_hints)
 
 		ev = platform->input_next_event(0);
 
-		if (!ev->pressed)
+		/* NULL if interrupted (e.g config or display change). */
+		if (!ev || !ev->pressed)
 			continue;
 
 		len = strlen(buf);
