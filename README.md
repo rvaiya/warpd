@@ -99,14 +99,22 @@ or (from source)
 # don't already have them.
 xcode-select --install
 
-make && sudo make install && launchctl load /Library/LaunchAgents/com.warpd.warpd.plist
+# One time: create a private code signing identity in your login keychain so
+# the Accessibility permission survives rebuilds (optional, builds are signed
+# ad-hoc without it).
+make signing-setup
+
+# Per-user install into ~/.local/bin (no sudo), starts warpd at login.
+make && make install-user
 ```
 
 Uninstallation:
 
 ```
-sudo make uninstall
+make uninstall-user
 ```
+
+(System-wide `sudo make install` / `sudo make uninstall` are still available.)
 
 *Note:* On initialization you may be prompted to add the warpd binary to your
 accessibility settings. **If you are upgrading it may also be necessary to run
